@@ -49,7 +49,7 @@ export class ReadSubscription
         readSubscriptionDto
       );
     } catch (error) {
-      return Result.fail<ReadSubscriptionDto>(error.message);
+      return Result.fail<null>(error.message);
     }
   }
 }

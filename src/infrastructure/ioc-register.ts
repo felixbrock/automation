@@ -14,6 +14,7 @@ import CreateAlertRepository from './persistence/create-alert-repository';
 import ReadSubscriptionRepository from './persistence/read-subscription-repository';
 import ReadSelectorRepository from './persistence/read-selector-repository';
 import ReadAlertRepository from './persistence/read-alert-repository';
+import { ReadSubscriptionAlerts } from '../domain/use-cases/read-subscription-alerts';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -24,6 +25,7 @@ iocRegister.register({
   createSubscription: asClass(CreateSubscription),
   createAlert: asClass(CreateAlert),
   readSubscription: asClass(ReadSubscription),
+  readSubscriptionAlerts: asClass(ReadSubscriptionAlerts),
   readSelector: asClass(ReadSelector),
   readAlert: asClass(ReadAlert),
 
@@ -34,7 +36,6 @@ iocRegister.register({
   readAlertRepository: asClass(ReadAlertRepository),
 });
 
-// TODO update
 const subscriptionMain =
   iocRegister.resolve<SubscriptionDomain>('subscriptionDomain');
 

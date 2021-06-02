@@ -19,7 +19,6 @@ export default class ReadSubscriptionController extends BaseController {
     id: httpRequest.params.id,
   });
 
-  // TODO - replace all try catch with then catch
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
       const requestDto: ReadSubscriptionRequestDto = this.#buildRequestDto(req);
