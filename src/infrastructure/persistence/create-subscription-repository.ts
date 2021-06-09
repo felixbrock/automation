@@ -4,20 +4,20 @@ import {
   CreateSubscriptionDto,
   ICreateSubscriptionRepository,
 } from '../../domain/use-cases/create-subscription';
-import { Subscription } from '../../domain/entities/reference-types';
+import { Subscription } from '../../domain/object-types/entities';
 
 export default class CreateSubscriptionRepositoryImpl
   implements ICreateSubscriptionRepository
 {
-  public findByAutomationId = async (
-    automationId: string
+  public findByAutomationName = async (
+    automationName: string
   ): Promise<CreateSubscriptionDto | null> => {
     const data: string = fs.readFileSync(path.resolve(__dirname, '../../../db.json'), 'utf-8');
     const db = JSON.parse(data);
 
     const result = db.subscriptions.find(
-      (subscriptionEntity: { automationId: string }) =>
-        subscriptionEntity.automationId === automationId
+      (subscriptionEntity: { automationName: string }) =>
+        subscriptionEntity.automationName === automationName
     );
 
     return result || null;
@@ -34,7 +34,7 @@ export default class CreateSubscriptionRepositoryImpl
 
   #toPersistence = (subscription: Subscription): CreateSubscriptionDto => ({
     id: subscription.id,
-    automationId: subscription.automationId,
+    automationName: subscription.automationName,
     targets: subscription.targets,
     createdOn: subscription.createdOn,
     modifiedOn: subscription.modifiedOn,

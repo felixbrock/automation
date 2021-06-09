@@ -1,21 +1,18 @@
-import { v4 as uuidv4 } from 'uuid';
-import IUseCase from '../shared';
-import { Id, Result } from '../entities/value-types';
-import { Alert, AlertProps } from '../entities/reference-types';
+import {IUseCase, Result} from '../shared';
+import { Alert, AlertProps } from '../object-types/entities';
 
 export interface CreateAlertRequestDto {
   selectorId: string;
   systemId: string;
 }
 
-export type CreateAlertResponseDto = Result<CreateAlertDto | null>;
-
 export interface CreateAlertDto {
-  id: string;
   selectorId: string;
   systemId: string;
   createdOn: number;
 }
+
+export type CreateAlertResponseDto = Result<CreateAlertDto | null>;
 
 export interface ICreateAlertRepository {
   save(alert: Alert): Promise<void>;
@@ -29,8 +26,6 @@ export class CreateAlert
   public constructor(createAlertRepository: ICreateAlertRepository) {
     this.#createAlertRepository = createAlertRepository;
   }
-
-  // TODO return resolve or reject promis return instead
 
   public async execute(
     request: CreateAlertRequestDto
@@ -51,7 +46,6 @@ export class CreateAlert
   }
 
   #buildAlertDto = (alert: Alert): CreateAlertDto => ({
-    id: alert.id,
     selectorId: alert.selectorId,
     systemId: alert.systemId,
     createdOn: alert.createdOn,
@@ -61,7 +55,6 @@ export class CreateAlert
     request: CreateAlertRequestDto
   ): Result<Alert | null> => {
     const alertProps: AlertProps = {
-      id: Id.next(uuidv4).id,
       selectorId: request.selectorId,
       systemId: request.systemId,
     };

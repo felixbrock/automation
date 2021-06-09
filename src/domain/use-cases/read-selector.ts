@@ -1,21 +1,21 @@
-import IUseCase from '../shared';
-import { Result } from '../entities/value-types';
-import { Target } from '../entities/reference-types';
+import {IUseCase, Result} from '../shared';
 
 export interface ReadSelectorRequestDto {
-  target: Target;
+  id: string;
+}
+
+export interface ReadSelectorDto {
+  id: string;
+  content: string;
+  systemId: string;
+  modifiedOn: number;
+  createdOn: number;
 }
 
 export type ReadSelectorResponseDto = Result<ReadSelectorDto | null>;
 
-export interface ReadSelectorDto {
-  selectorContent: string;
-  systemName: string;
-}
-
 export interface IReadSelectorRepository {
-  getSelectorContent(selectorId: string): Promise<string | null>;
-  getSystemName(systemId: string): Promise<string | null>;
+  getSelectorById(selectorId: string): Promise<ReadSelectorDto | null>;
 }
 
 export class ReadSelector
@@ -27,31 +27,21 @@ export class ReadSelector
     this.#readSelectorRepository = readSelectorRepository;
   }
 
-  // TODO return resolve or reject promis return instead
-
   public async execute(
     request: ReadSelectorRequestDto
   ): Promise<ReadSelectorResponseDto> {
     try {
-      const selectorContent: string | null =
-        await this.#readSelectorRepository.getSelectorContent(
-          request.target.selectorId
-        );
-      const systemName: string | null =
-        await this.#readSelectorRepository.getSystemName(
-          request.target.systemId
+      const readSelectorDto: ReadSelectorDto | null =
+        await this.#readSelectorRepository.getSelectorById(
+          request.id
         );
 
-      if (!selectorContent)
+      if (!readSelectorDto)
         return Result.fail<null>(
-          `Content of selector ${request.target.selectorId} not found.`
-        );
-      if (!systemName)
-        return Result.fail<null>(
-          `Name of system ${request.target.systemId} not found.`
+          `No selector found for id ${request.id}`
         );
 
-      return Result.ok<ReadSelectorDto>({selectorContent, systemName});
+      return Result.ok<ReadSelectorDto>(readSelectorDto);
     } catch (error) {
       return Result.fail<ReadSelectorDto>(error.message);
     }

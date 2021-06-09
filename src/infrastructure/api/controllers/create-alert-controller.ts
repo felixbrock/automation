@@ -16,8 +16,6 @@ export default class CreateAlertController extends BaseController {
       selectorId: httpRequest.body.selectorId,
     })
 
-
-  // TODO - replace all try catch with then catch 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
       const requestDto : CreateAlertRequestDto = this.#buildRequestDto(req);

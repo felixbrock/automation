@@ -16,7 +16,7 @@ export default class ReadSubscriptionController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): ReadSubscriptionRequestDto => ({
-    id: httpRequest.params.id,
+    id: httpRequest.params.subscriptionId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {

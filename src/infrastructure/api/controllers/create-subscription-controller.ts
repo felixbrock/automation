@@ -16,12 +16,11 @@ export default class CreateSubscriptionController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): CreateSubscriptionRequestDto => ({
-    automationId: httpRequest.body.automationId,
+    automationName: httpRequest.body.automationName,
     systemId: httpRequest.body.systemId,
     selectorId: httpRequest.body.selectorId,
   });
 
-  // TODO - replace all try catch with then catch
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
       const requestDto: CreateSubscriptionRequestDto = this.#buildRequestDto(req);

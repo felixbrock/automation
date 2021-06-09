@@ -1,6 +1,4 @@
-import IUseCase from '../shared';
-import { Result } from '../entities/value-types';
-import { Target } from '../entities/reference-types';
+import {IUseCase, Result} from '../shared';
 import {
   ReadSubscription,
   ReadSubscriptionRequestDto,
@@ -8,23 +6,25 @@ import {
 } from './read-subscription';
 import { ReadAlert, ReadAlertResponseDto } from './read-alert';
 import { ReadSelector, ReadSelectorResponseDto } from './read-selector';
+import { ReadSystem, ReadSystemResponseDto } from './read-system';
+import { ReadTargetDto } from './read-target';
 
 export interface ReadSubscriptionAlertsRequestDto {
   id: string;
-}
-
-export type ReadSubscriptionAlertsResponseDto =
-  Result<ReadSubscriptionAlertsDto | null>;
-
-export interface ReadSubscriptionAlertsDto {
-  alerts: ReadSubscriptionAlertDto[];
-  warnings: ReadSubscriptionAlertDto[];
 }
 
 export interface ReadSubscriptionAlertDto {
   id: string;
   message: string;
 }
+
+export interface ReadSubscriptionAlertsDto {
+  alerts: ReadSubscriptionAlertDto[];
+  warnings: ReadSubscriptionAlertDto[];
+}
+
+export type ReadSubscriptionAlertsResponseDto =
+  Result<ReadSubscriptionAlertsDto | null>;
 
 export class ReadSubscriptionAlerts
   implements
@@ -39,17 +39,19 @@ export class ReadSubscriptionAlerts
 
   #readSelector: ReadSelector;
 
+  #readSystem: ReadSystem;
+
   public constructor(
     readSubscription: ReadSubscription,
     readAlert: ReadAlert,
-    readSelector: ReadSelector
+    readSelector: ReadSelector,
+    readSystem: ReadSystem
   ) {
     this.#readSubscription = readSubscription;
     this.#readAlert = readAlert;
     this.#readSelector = readSelector;
+    this.#readSystem = readSystem;
   }
-
-  // TODO return resolve or reject promis return instead
 
   public async execute(
     request: ReadSubscriptionAlertsRequestDto
@@ -68,8 +70,10 @@ export class ReadSubscriptionAlerts
       const readSubscriptionAlertsDto: ReadSubscriptionAlertsResponseDto =
         await this.readAlerts(subscriptionResponse.value.targets);
 
-      if (readSubscriptionAlertsDto.error) return Result.fail<null>(readSubscriptionAlertsDto.error);
-      if (!readSubscriptionAlertsDto.value) return Result.fail<null>('An error occurred while generating alerts');
+      if (readSubscriptionAlertsDto.error)
+        return Result.fail<null>(readSubscriptionAlertsDto.error);
+      if (!readSubscriptionAlertsDto.value)
+        return Result.fail<null>('An error occurred while reading alerts');
 
       return readSubscriptionAlertsDto;
     } catch (error) {
@@ -77,8 +81,9 @@ export class ReadSubscriptionAlerts
     }
   }
 
+  // TODO CreatTargetDto usage doesn't make sense at this point. A agnostic TargetDto would probably make more sense
   private async readAlerts(
-    targets: Target[]
+    targets: ReadTargetDto[]
   ): Promise<ReadSubscriptionAlertsResponseDto> {
     const alerts: ReadSubscriptionAlertDto[] = [];
     const warnings: ReadSubscriptionAlertDto[] = [];
@@ -86,20 +91,27 @@ export class ReadSubscriptionAlerts
     try {
       await Promise.all(
         targets.map(async (target) => {
+          const readSelectorResponseDto: ReadSelectorResponseDto =
+            await this.#readSelector.execute({ id: target.selectorId });
+
+          if (readSelectorResponseDto.error) return;
+          if (!readSelectorResponseDto.value) return;
+
+          const readSystemResponseDto: ReadSystemResponseDto =
+            await this.#readSystem.execute({ id: target.systemId });
+
+          if (readSystemResponseDto.error) return;
+          if (!readSystemResponseDto.value) return;
+
           const alertDto: ReadAlertResponseDto = await this.#readAlert.execute({
-            target,
+            selectorId: target.selectorId,
+            systemId: target.systemId,
           });
 
           if (!alertDto || !alertDto.value) return;
 
-          const selectorDto: ReadSelectorResponseDto =
-            await this.#readSelector.execute({ target });
-
-          if (selectorDto.error) return;
-          if (!selectorDto.value) return;
-
           if (alertDto.value.selectorId === target.selectorId) {
-            const alertMessage = `An error occurred on selector ${selectorDto.value.selectorContent} in system ${selectorDto.value.systemName}.`;
+            const alertMessage = `An error occurred on selector ${readSelectorResponseDto.value.content} in system ${readSystemResponseDto.value.name}.`;
 
             const alert = alerts.find(
               (alertEntity: { message: string }) =>
@@ -109,7 +121,7 @@ export class ReadSubscriptionAlerts
             if (!alert)
               alerts.push({ id: alertDto.value.id, message: alertMessage });
           } else if (alertDto.value.systemId === target.systemId) {
-            const warningMessage = `An error occurred in system ${selectorDto.value.systemName} on a selector. Your automation might be affected.`;
+            const warningMessage = `An error occurred in system ${readSystemResponseDto.value.name} on a selector. Your automation might be affected.`;
 
             const warning = warnings.find(
               (warningEntity: { message: string }) =>

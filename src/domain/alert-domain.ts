@@ -1,5 +1,5 @@
-import { CreateAlert } from '../use-cases/create-alert';
-import { ReadAlert } from '../use-cases/read-alert';
+import { CreateAlert } from './use-cases/create-alert';
+import { ReadAlert } from './use-cases/read-alert';
 
 export default class AlertDomain {
   #createAlert: CreateAlert;

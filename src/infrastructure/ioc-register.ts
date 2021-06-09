@@ -1,7 +1,7 @@
 import { InjectionMode, asClass, createContainer } from 'awilix';
 
-import SubscriptionDomain from '../domain/domains/subscription-domain';
-import AlertDomain from '../domain/domains/alert-domain';
+import SubscriptionDomain from '../domain/subscription-domain';
+import AlertDomain from '../domain/alert-domain';
 
 import { CreateSubscription } from '../domain/use-cases/create-subscription';
 import { CreateAlert } from '../domain/use-cases/create-alert';
@@ -15,6 +15,12 @@ import ReadSubscriptionRepository from './persistence/read-subscription-reposito
 import ReadSelectorRepository from './persistence/read-selector-repository';
 import ReadAlertRepository from './persistence/read-alert-repository';
 import { ReadSubscriptionAlerts } from '../domain/use-cases/read-subscription-alerts';
+import { CreateTarget } from '../domain/use-cases/create-target';
+import CreateTargetRepository from './persistence/create-target-repository';
+import ReadSystemRepository from './persistence/read-system-repository';
+import ReadTargetRepository from './persistence/read-target-repository';
+import { ReadTarget } from '../domain/use-cases/read-target';
+import { ReadSystem } from '../domain/use-cases/read-system';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -23,17 +29,25 @@ iocRegister.register({
   alertDomain: asClass(AlertDomain),
 
   createSubscription: asClass(CreateSubscription),
+  createTarget: asClass(CreateTarget),
   createAlert: asClass(CreateAlert),
   readSubscription: asClass(ReadSubscription),
   readSubscriptionAlerts: asClass(ReadSubscriptionAlerts),
-  readSelector: asClass(ReadSelector),
   readAlert: asClass(ReadAlert),
+  readTarget: asClass(ReadTarget),
+
+  readSelector: asClass(ReadSelector),
+  readSystem: asClass(ReadSystem),
 
   createSubscriptionRepository: asClass(CreateSubscriptionRepository),
   createAlertRepository: asClass(CreateAlertRepository),
+  readTargetRepository: asClass(CreateTargetRepository),
   readSubscriptionRepository: asClass(ReadSubscriptionRepository),
-  readSelectorRepository: asClass(ReadSelectorRepository),
   readAlertRepository: asClass(ReadAlertRepository),
+  createTargetRepository: asClass(ReadTargetRepository),
+
+  readSelectorRepository: asClass(ReadSelectorRepository),
+  readSystemRepository: asClass(ReadSystemRepository),
 });
 
 const subscriptionMain =

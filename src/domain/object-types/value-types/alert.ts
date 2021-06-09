@@ -1,23 +1,16 @@
-import { Result } from '../value-types';
+import { Result } from '../../shared';
 
 export interface AlertProps {
-  id: string;
   selectorId: string;
   systemId: string;
 }
 
 export class Alert {
-  #id: string;
-
   #createdOn: number;
 
   #selectorId: string;
 
   #systemId: string;
-
-  public get id(): string {
-    return this.#id;
-  }
 
   public get createdOn(): number {
     return this.#createdOn;
@@ -32,7 +25,6 @@ export class Alert {
   }
 
   private constructor(props: AlertProps) {
-    this.#id = props.id;
     this.#createdOn = Date.now();
     this.#selectorId = props.selectorId;
     this.#systemId = props.systemId;
@@ -41,8 +33,6 @@ export class Alert {
   public static create(props: AlertProps): Result<Alert | null> {
     if (!props.selectorId)
       return Result.fail<null>('Alert must have selector id');
-    if (!props.id) return Result.fail<null>('Alert must have id');
-    // TODO move source logic to controller layer
 
     const alert = new Alert(props);
     return Result.ok<Alert>(alert);

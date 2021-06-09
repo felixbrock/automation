@@ -1,12 +1,9 @@
-import IUseCase from '../shared';
-import { Result } from '../entities/value-types';
-import { Target} from '../entities/reference-types';
+import {IUseCase, Result} from '../shared';
 
 export interface ReadAlertRequestDto {
-  target: Target;
+  selectorId: string;
+  systemId: string;
 }
-
-export type ReadAlertResponseDto = Result<ReadAlertDto | null>;
 
 export interface ReadAlertDto {
   id: string;
@@ -15,8 +12,10 @@ export interface ReadAlertDto {
   createdOn: number;
 }
 
+export type ReadAlertResponseDto = Result<ReadAlertDto | null>;
+
 export interface IReadAlertRepository {
-  findByTarget(target: Target): Promise<ReadAlertDto | null>;
+  findByTarget(selectorId: string, systemId: string): Promise<ReadAlertDto | null>;
 }
 
 export class ReadAlert
@@ -28,18 +27,16 @@ export class ReadAlert
     this.#readAlertRepository = readAlertRepository;
   }
 
-  // TODO return resolve or reject promis return instead
-
   public async execute(
     request: ReadAlertRequestDto
   ): Promise<ReadAlertResponseDto> {
   
     try {
-      const readAlertDto: ReadAlertDto | null = await this.#readAlertRepository.findByTarget(request.target);
+      const readAlertDto: ReadAlertDto | null = await this.#readAlertRepository.findByTarget(request.selectorId, request.systemId);
 
       if (!readAlertDto)
         return Result.fail<null>(
-          `No alerts or warnings for selector ${request.target.selectorId} or system ${request.target.systemId}.`
+          `No alerts or warnings for selector ${request.selectorId} or system ${request.systemId}.`
         );
 
       return Result.ok<ReadAlertDto>(

@@ -1,39 +1,48 @@
+// TODO Violation of Dependency Rule
 import { v4 as uuidv4 } from 'uuid';
-import IUseCase from '../shared';
-import { Id, Result } from '../entities/value-types';
-import { Subscription, SubscriptionProps, Target} from '../entities/reference-types';
+import {IUseCase, Result} from '../shared';
+import {Id} from '../object-types/value-types';
+import {
+  Subscription,
+  SubscriptionProps,
+} from '../object-types/entities';
+import { CreateTargetDto } from './create-target';
 
 export interface CreateSubscriptionRequestDto {
-  automationId: string;
+  automationName: string;
   systemId: string;
   selectorId: string;
 }
 
-export type CreateSubscriptionResponseDto = Result<CreateSubscriptionDto | null>;
-
 export interface CreateSubscriptionDto {
   id: string;
-  automationId: string;
-  targets: Target[];
+  automationName: string;
+  targets: CreateTargetDto[];
   modifiedOn: number;
   createdOn: number;
 }
 
+export type CreateSubscriptionResponseDto =
+  Result<CreateSubscriptionDto | null>;
+
 export interface ICreateSubscriptionRepository {
-  findByAutomationId(automationId: string): Promise<CreateSubscriptionDto | null>;
+  findByAutomationName(
+    automationName: string
+  ): Promise<CreateSubscriptionDto | null>;
   save(subscription: Subscription): Promise<void>;
 }
 
 export class CreateSubscription
-  implements IUseCase<CreateSubscriptionRequestDto, CreateSubscriptionResponseDto>
+  implements
+    IUseCase<CreateSubscriptionRequestDto, CreateSubscriptionResponseDto>
 {
   #createSubscriptionRepository: ICreateSubscriptionRepository;
 
-  public constructor(createSubscriptionRepository: ICreateSubscriptionRepository) {
+  public constructor(
+    createSubscriptionRepository: ICreateSubscriptionRepository
+  ) {
     this.#createSubscriptionRepository = createSubscriptionRepository;
   }
-
-  // TODO return resolve or reject promis return instead
 
   public async execute(
     request: CreateSubscriptionRequestDto
@@ -44,8 +53,8 @@ export class CreateSubscription
 
     try {
       const createSubscriptionDto: CreateSubscriptionDto | null =
-        await this.#createSubscriptionRepository.findByAutomationId(
-          subscription.value.automationId
+        await this.#createSubscriptionRepository.findByAutomationName(
+          subscription.value.automationName
         );
       if (createSubscriptionDto)
         return Result.fail<null>(
@@ -62,9 +71,11 @@ export class CreateSubscription
     }
   }
 
-  #buildSubscriptionDto = (subscription: Subscription): CreateSubscriptionDto => ({
+  #buildSubscriptionDto = (
+    subscription: Subscription
+  ): CreateSubscriptionDto => ({
     id: subscription.id,
-    automationId: subscription.automationId,
+    automationName: subscription.automationName,
     targets: subscription.targets,
     createdOn: subscription.createdOn,
     modifiedOn: subscription.modifiedOn,
@@ -75,9 +86,7 @@ export class CreateSubscription
   ): Result<Subscription | null> => {
     const subscriptionProps: SubscriptionProps = {
       id: Id.next(uuidv4).id,
-      automationId: request.automationId,
-      selectorId: request.selectorId,
-      systemId: request.systemId,
+      automationName: request.automationName,
     };
 
     return Subscription.create(subscriptionProps);

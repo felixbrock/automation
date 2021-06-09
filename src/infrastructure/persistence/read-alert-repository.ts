@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { Target } from '../../domain/entities/reference-types';
 import {
   IReadAlertRepository,
   ReadAlertDto,
@@ -8,7 +7,8 @@ import {
 
 export default class ReadAlertRepositoryImpl implements IReadAlertRepository {
   public findByTarget = async (
-    target: Target
+    selectorId: string,
+    systemId: string
   ): Promise<ReadAlertDto | null> => {
     const data: string = fs.readFileSync(
       path.resolve(__dirname, '../../../db.json'),
@@ -18,14 +18,14 @@ export default class ReadAlertRepositoryImpl implements IReadAlertRepository {
 
     let result = db.alerts.find(
       (alertEntity: { selectorId: string }) =>
-        alertEntity.selectorId === target.selectorId
+        alertEntity.selectorId === selectorId
     );
 
     if (result) return result;
 
     result = db.alerts.find(
       (alertEntity: { systemId: string }) =>
-        alertEntity.systemId === target.systemId
+        alertEntity.systemId === systemId
     );
 
     return result || null;

@@ -3,9 +3,10 @@ import {
   CreateSubscriptionController,
   ReadSubscriptionController,
   ReadSubscriptionAlertsController,
+  CreateTargetController,
 } from '../controllers';
 import app from '../../ioc-register';
-import SubscriptionDomain from '../../../domain/domains/subscription-domain';
+import SubscriptionDomain from '../../../domain/subscription-domain';
 
 const subscriptionRoutes = Router();
 
@@ -13,6 +14,10 @@ const subscriptionDomain: SubscriptionDomain = app.subscriptionMain;
 
 const createSubscriptionController = new CreateSubscriptionController(
   subscriptionDomain.createSubscription
+);
+
+const createTargetController = new CreateTargetController(
+  subscriptionDomain.createTarget
 );
 
 const readSubscriptionController = new ReadSubscriptionController(
@@ -27,11 +32,15 @@ subscriptionRoutes.post('/', (req, res) =>
   createSubscriptionController.execute(req, res)
 );
 
-subscriptionRoutes.get('/:id', (req, res) =>
+subscriptionRoutes.post(':subscriptionId/target', (req, res) =>
+  createTargetController.execute(req, res)
+);
+
+subscriptionRoutes.get('/:subscriptionId', (req, res) =>
   readSubscriptionController.execute(req, res)
 );
 
-subscriptionRoutes.get('/:id/alerts', (req, res) =>
+subscriptionRoutes.get('/:subscriptionId/alerts', (req, res) =>
   readSubscriptionAlertsController.execute(req, res)
 );
 

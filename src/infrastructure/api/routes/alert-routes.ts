@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { CreateAlertController } from '../controllers';
 import app from '../../ioc-register';
-import AlertDomain from '../../../domain/domains/alert-domain';
+import AlertDomain from '../../../domain/alert-domain';
 
 const alertRoutes = Router();
 const alertDomain: AlertDomain = app.alertMain;

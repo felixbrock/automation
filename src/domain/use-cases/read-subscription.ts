@@ -1,20 +1,20 @@
-import IUseCase from '../shared';
-import { Result } from '../entities/value-types';
-import { Target} from '../entities/reference-types';
+import {IUseCase, Result} from '../shared';
+import { ReadTargetDto } from './read-target';
 
 export interface ReadSubscriptionRequestDto {
   id: string;
 }
 
-export type ReadSubscriptionResponseDto = Result<ReadSubscriptionDto | null>;
-
 export interface ReadSubscriptionDto {
   id: string;
-  automationId: string;
-  targets: Target[];
+  automationName: string;
+  // TODO Must be read target dto
+  targets: ReadTargetDto[];
   modifiedOn: number;
   createdOn: number;
 }
+
+export type ReadSubscriptionResponseDto = Result<ReadSubscriptionDto | null>;
 
 export interface IReadSubscriptionRepository {
   findById(id: string): Promise<ReadSubscriptionDto | null>;
@@ -28,8 +28,6 @@ export class ReadSubscription
   public constructor(readSubscriptionRepository: IReadSubscriptionRepository) {
     this.#readSubscriptionRepository = readSubscriptionRepository;
   }
-
-  // TODO return resolve or reject promis return instead
 
   public async execute(
     request: ReadSubscriptionRequestDto

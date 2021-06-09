@@ -4,7 +4,7 @@ import {
   CreateAlertDto,
   ICreateAlertRepository,
 } from '../../domain/use-cases/create-alert';
-import { Alert } from '../../domain/entities/reference-types';
+import { Alert } from '../../domain/object-types/entities';
 
 export default class CreateAlertRepositoryImpl
   implements ICreateAlertRepository
@@ -19,7 +19,6 @@ export default class CreateAlertRepositoryImpl
   }
 
   #toPersistence = (alert: Alert): CreateAlertDto => ({
-    id: alert.id,
     systemId: alert.systemId,
     selectorId: alert.selectorId,
     createdOn: alert.createdOn,

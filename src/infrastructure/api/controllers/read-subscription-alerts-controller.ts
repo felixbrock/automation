@@ -19,7 +19,7 @@ export default class ReadSubscriptionAlertsController extends BaseController {
   #buildRequestDto = (
     httpRequest: Request
   ): ReadSubscriptionAlertsRequestDto => ({
-    id: httpRequest.params.id,
+    id: httpRequest.params.subscriptionId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
