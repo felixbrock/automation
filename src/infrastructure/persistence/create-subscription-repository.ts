@@ -9,20 +9,6 @@ import { Subscription } from '../../domain/object-types/entities';
 export default class CreateSubscriptionRepositoryImpl
   implements ICreateSubscriptionRepository
 {
-  public findByAutomationName = async (
-    automationName: string
-  ): Promise<CreateSubscriptionDto | null> => {
-    const data: string = fs.readFileSync(path.resolve(__dirname, '../../../db.json'), 'utf-8');
-    const db = JSON.parse(data);
-
-    const result = db.subscriptions.find(
-      (subscriptionEntity: { automationName: string }) =>
-        subscriptionEntity.automationName === automationName
-    );
-
-    return result || null;
-  };
-
   public async save(subscription: Subscription): Promise<void> {
     const data: string = fs.readFileSync(path.resolve(__dirname, '../../../db.json'), 'utf-8');
     const db = JSON.parse(data);

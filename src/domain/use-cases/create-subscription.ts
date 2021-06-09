@@ -26,9 +26,6 @@ export type CreateSubscriptionResponseDto =
   Result<CreateSubscriptionDto | null>;
 
 export interface ICreateSubscriptionRepository {
-  findByAutomationName(
-    automationName: string
-  ): Promise<CreateSubscriptionDto | null>;
   save(subscription: Subscription): Promise<void>;
 }
 
@@ -52,15 +49,6 @@ export class CreateSubscription
     if (!subscription.value) return subscription;
 
     try {
-      const createSubscriptionDto: CreateSubscriptionDto | null =
-        await this.#createSubscriptionRepository.findByAutomationName(
-          subscription.value.automationName
-        );
-      if (createSubscriptionDto)
-        return Result.fail<null>(
-          `Automation is already subscribed under id ${createSubscriptionDto.id}`
-        );
-
       await this.#createSubscriptionRepository.save(subscription.value);
 
       return Result.ok<CreateSubscriptionDto>(
