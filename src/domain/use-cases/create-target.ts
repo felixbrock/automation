@@ -1,5 +1,5 @@
-import {IUseCase, Result} from '../shared';
-import {Target, TargetProps } from '../object-types/value-types';
+import { IUseCase, Result } from '../shared';
+import { Target, TargetProps } from '../object-types/value-types';
 import {
   IReadSubscriptionRepository,
   ReadSubscriptionDto,
@@ -97,7 +97,12 @@ export class CreateTarget
 
     if (readSelectorResponse.error)
       return Result.fail<null>(readSelectorResponse.error);
+    if (!readSelectorResponse.value)
+      return Result.fail<null>(`No selector was found for id ${target.selectorId}`);
 
+    if (readSelectorResponse.value?.systemId !== target.systemId)
+      return Result.fail<null>(`Provided system id ${target.systemId} doesn't match the selector's system ${readSelectorResponse.value.systemId}`);
+    
     return Result.ok<null>(null);
   }
 
