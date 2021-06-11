@@ -1,11 +1,11 @@
 // TODO Violation of Dependency Rule
 import { v4 as uuidv4 } from 'uuid';
 import {IUseCase, Result} from '../shared';
-import {Id} from '../object-types/value-types';
+import {Id} from '../value-types';
 import {
   Subscription,
   SubscriptionProps,
-} from '../object-types/entities';
+} from '../entities';
 import { CreateTargetDto } from './create-target';
 
 export interface CreateSubscriptionRequestDto {

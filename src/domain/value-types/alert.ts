@@ -1,4 +1,4 @@
-import { Result } from '../../shared';
+import { Result } from '../shared';
 
 export interface AlertProps {
   selectorId: string;

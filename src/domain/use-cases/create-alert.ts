@@ -1,5 +1,5 @@
 import { IUseCase, Result } from '../shared';
-import { Alert, AlertProps } from '../object-types/entities';
+import { Alert, AlertProps } from '../entities';
 import { ReadSelector, ReadSelectorResponseDto } from './read-selector';
 
 export interface CreateAlertRequestDto {

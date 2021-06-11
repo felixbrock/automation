@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { Target } from '../../domain/object-types/value-types';
+import { Target } from '../../domain/value-types';
 import {
   CreateTargetDto,
   ICreateTargetRepository,

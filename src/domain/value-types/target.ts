@@ -1,4 +1,4 @@
-import { Result } from '../../shared';
+import { Result } from '../shared';
 
 export interface TargetProps {
   subscriptionId: string;

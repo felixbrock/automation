@@ -1,5 +1,5 @@
 import { IUseCase, Result } from '../shared';
-import { Target, TargetProps } from '../object-types/value-types';
+import { Target, TargetProps } from '../value-types';
 import {
   IReadSubscriptionRepository,
   ReadSubscriptionDto,

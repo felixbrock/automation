@@ -4,7 +4,7 @@ import {
   CreateSubscriptionDto,
   ICreateSubscriptionRepository,
 } from '../../domain/use-cases/create-subscription';
-import { Subscription } from '../../domain/object-types/entities';
+import { Subscription } from '../../domain/entities';
 
 export default class CreateSubscriptionRepositoryImpl
   implements ICreateSubscriptionRepository

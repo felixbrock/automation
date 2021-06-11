@@ -4,7 +4,7 @@ import {
   CreateAlertDto,
   ICreateAlertRepository,
 } from '../../domain/use-cases/create-alert';
-import { Alert } from '../../domain/object-types/entities';
+import { Alert } from '../../domain/entities';
 
 export default class CreateAlertRepositoryImpl
   implements ICreateAlertRepository

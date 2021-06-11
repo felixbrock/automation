@@ -1,4 +1,4 @@
-import { Result } from '../../shared';
+import { Result } from '../shared';
 import { Target } from '../value-types/target';
 
 export interface SubscriptionProps {
