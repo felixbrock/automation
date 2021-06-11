@@ -67,15 +67,15 @@ export class ReadSubscriptionAlerts
           `No subscription was returned for subscription id ${request.id}`
         );
 
-      const readSubscriptionAlertsDto: ReadSubscriptionAlertsResponseDto =
+      const readSubscriptionAlertsResponse: ReadSubscriptionAlertsResponseDto =
         await this.readAlerts(subscriptionResponse.value.targets);
 
-      if (readSubscriptionAlertsDto.error)
-        return Result.fail<null>(readSubscriptionAlertsDto.error);
-      if (!readSubscriptionAlertsDto.value)
+      if (readSubscriptionAlertsResponse.error)
+        return Result.fail<null>(readSubscriptionAlertsResponse.error);
+      if (!readSubscriptionAlertsResponse.value)
         return Result.fail<null>('An error occurred while reading alerts');
 
-      return readSubscriptionAlertsDto;
+      return readSubscriptionAlertsResponse;
     } catch (error) {
       return Result.fail<null>(error.message);
     }
@@ -91,27 +91,27 @@ export class ReadSubscriptionAlerts
     try {
       await Promise.all(
         targets.map(async (target) => {
-          const readSelectorResponseDto: ReadSelectorResponseDto =
+          const readSelectorResponse: ReadSelectorResponseDto =
             await this.#readSelector.execute({ id: target.selectorId });
 
-          if (readSelectorResponseDto.error) return;
-          if (!readSelectorResponseDto.value) return;
+          if (readSelectorResponse.error) return;
+          if (!readSelectorResponse.value) return;
 
-          const readSystemResponseDto: ReadSystemResponseDto =
+          const readSystemResponse: ReadSystemResponseDto =
             await this.#readSystem.execute({ id: target.systemId });
 
-          if (readSystemResponseDto.error) return;
-          if (!readSystemResponseDto.value) return;
+          if (readSystemResponse.error) return;
+          if (!readSystemResponse.value) return;
 
-          const alertDto: ReadAlertResponseDto = await this.#readAlert.execute({
+          const readAlertResponse: ReadAlertResponseDto = await this.#readAlert.execute({
             selectorId: target.selectorId,
             systemId: target.systemId,
           });
 
-          if (!alertDto || !alertDto.value) return;
+          if (!readAlertResponse || !readAlertResponse.value) return;
 
-          if (alertDto.value.selectorId === target.selectorId) {
-            const alertMessage = `An error occurred on selector ${readSelectorResponseDto.value.content} in system ${readSystemResponseDto.value.name}.`;
+          if (readAlertResponse.value.selectorId === target.selectorId) {
+            const alertMessage = `An error occurred on selector ${readSelectorResponse.value.content} in system ${readSystemResponse.value.name}.`;
 
             const alert = alerts.find(
               (alertEntity: { message: string }) =>
@@ -119,9 +119,9 @@ export class ReadSubscriptionAlerts
             );
 
             if (!alert)
-              alerts.push({ id: alertDto.value.id, message: alertMessage });
-          } else if (alertDto.value.systemId === target.systemId) {
-            const warningMessage = `An error occurred in system ${readSystemResponseDto.value.name} on a selector. Your automation might be affected.`;
+              alerts.push({ id: readAlertResponse.value.id, message: alertMessage });
+          } else if (readAlertResponse.value.systemId === target.systemId) {
+            const warningMessage = `An error occurred in system ${readSystemResponse.value.name} on a selector. Your automation might be affected.`;
 
             const warning = warnings.find(
               (warningEntity: { message: string }) =>
@@ -129,7 +129,7 @@ export class ReadSubscriptionAlerts
             );
 
             if (!warning)
-              warnings.push({ id: alertDto.value.id, message: warningMessage });
+              warnings.push({ id: readAlertResponse.value.id, message: warningMessage });
           }
         })
       );

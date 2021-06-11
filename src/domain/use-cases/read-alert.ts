@@ -32,15 +32,15 @@ export class ReadAlert
   ): Promise<ReadAlertResponseDto> {
   
     try {
-      const readAlertDto: ReadAlertDto | null = await this.#readAlertRepository.findByTarget(request.selectorId, request.systemId);
+      const readAlertResult: ReadAlertDto | null = await this.#readAlertRepository.findByTarget(request.selectorId, request.systemId);
 
-      if (!readAlertDto)
+      if (!readAlertResult)
         return Result.fail<null>(
           `No alerts or warnings for selector ${request.selectorId} or system ${request.systemId}.`
         );
 
       return Result.ok<ReadAlertDto>(
-        readAlertDto
+        readAlertResult
       );
     } catch (error) {
       return Result.fail<ReadAlertDto>(error.message);

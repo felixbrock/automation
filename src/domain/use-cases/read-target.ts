@@ -30,16 +30,16 @@ export class ReadTarget
     request: ReadTargetRequestDto
   ): Promise<ReadTargetResponseDto> {
     try {
-      const readTargetDto: ReadTargetDto | null =
+      const readTargetResult: ReadTargetDto | null =
         await this.#readTargetRepository.findBySelectorId(
           request.subscriptionId,
           request.selectorId
         );
 
-      if (!readTargetDto)
+      if (!readTargetResult)
         return Result.fail<null>(`No target found for selector id ${request.selectorId}`);
 
-      return Result.ok<ReadTargetDto>(readTargetDto);
+      return Result.ok<ReadTargetDto>(readTargetResult);
     } catch (error) {
       return Result.fail<ReadTargetDto>(error.message);
     }

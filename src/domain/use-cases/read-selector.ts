@@ -31,17 +31,17 @@ export class ReadSelector
     request: ReadSelectorRequestDto
   ): Promise<ReadSelectorResponseDto> {
     try {
-      const readSelectorDto: ReadSelectorDto | null =
+      const readSelectorResponse: ReadSelectorDto | null =
         await this.#readSelectorRepository.getSelectorById(
           request.id
         );
 
-      if (!readSelectorDto)
+      if (!readSelectorResponse)
         return Result.fail<null>(
           `No selector found for id ${request.id}`
         );
 
-      return Result.ok<ReadSelectorDto>(readSelectorDto);
+      return Result.ok<ReadSelectorDto>(readSelectorResponse);
     } catch (error) {
       return Result.fail<ReadSelectorDto>(error.message);
     }

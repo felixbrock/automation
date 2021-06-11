@@ -30,15 +30,15 @@ export class ReadSystem
     request: ReadSystemRequestDto
   ): Promise<ReadSystemResponseDto> {
     try {
-      const readSystemDto: ReadSystemDto | null =
+      const readSystemResult: ReadSystemDto | null =
         await this.#readSystemRepository.getSystemById(request.id);
 
-      if (!readSystemDto)
+      if (!readSystemResult)
         return Result.fail<null>(
           `No system found for id ${request.id}`
         );
 
-      return Result.ok<ReadSystemDto>(readSystemDto);
+      return Result.ok<ReadSystemDto>(readSystemResult);
     } catch (error) {
       return Result.fail<ReadSystemDto>(error.message);
     }

@@ -34,17 +34,17 @@ export class ReadSubscription
   ): Promise<ReadSubscriptionResponseDto> {
   
     try {
-      const readSubscriptionDto: ReadSubscriptionDto | null =
+      const readSubscriptionResult: ReadSubscriptionDto | null =
         await this.#readSubscriptionRepository.findById(
           request.id
         );
-      if (!readSubscriptionDto)
+      if (!readSubscriptionResult)
         return Result.fail<null>(
           `Subscription with id ${request.id} does not exist.`
         );
 
       return Result.ok<ReadSubscriptionDto>(
-        readSubscriptionDto
+        readSubscriptionResult
       );
     } catch (error) {
       return Result.fail<null>(error.message);
