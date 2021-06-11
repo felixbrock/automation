@@ -1,11 +1,11 @@
 import fetch from 'node-fetch';
-import {  } from '../../domain/use-cases/read-selector';
-import { IReadSystemRepository, ReadSystemDto } from '../../domain/use-cases/read-system';
+import {  } from '../../domain/use-cases/get-selector';
+import { IGetSystemRepository, GetSystemDto } from '../../domain/use-cases/get-system';
 
-export default class ReadSystemRepositoryImpl
-  implements IReadSystemRepository
+export default class GetSystemRepositoryImpl
+  implements IGetSystemRepository
 {
-  public getSystemById = async (id: string): Promise<ReadSystemDto | null> => {
+  public getSystemById = async (id: string): Promise<GetSystemDto | null> => {
     try {
       const response = await fetch(
         `http://localhost:3000/api/v1/system/${id}`

@@ -1,6 +1,6 @@
 import { IUseCase, Result } from '../shared';
 import { Alert, AlertProps } from '../entities';
-import { ReadSelector, ReadSelectorResponseDto } from './read-selector';
+import { GetSelector, GetSelectorResponseDto } from './get-selector';
 
 export interface CreateAlertRequestDto {
   selectorId: string;
@@ -24,14 +24,14 @@ export class CreateAlert
 {
   #createAlertRepository: ICreateAlertRepository;
 
-  #readSelector: ReadSelector;
+  #getSelector: GetSelector;
 
   public constructor(
     createAlertRepository: ICreateAlertRepository,
-    readSelector: ReadSelector
+    getSelector: GetSelector
   ) {
     this.#createAlertRepository = createAlertRepository;
-    this.#readSelector = readSelector;
+    this.#getSelector = getSelector;
   }
 
   public async execute(
@@ -54,21 +54,21 @@ export class CreateAlert
   }
 
   private async validateRequest(alert: Alert): Promise<Result<null>> {
-    const readSelectorResponse: ReadSelectorResponseDto =
-      await this.#readSelector.execute({
+    const getSelectorResponse: GetSelectorResponseDto =
+      await this.#getSelector.execute({
         id: alert.selectorId,
       });
 
-    if (readSelectorResponse.error)
-      return Result.fail<null>(readSelectorResponse.error);
-    if (!readSelectorResponse.value)
+    if (getSelectorResponse.error)
+      return Result.fail<null>(getSelectorResponse.error);
+    if (!getSelectorResponse.value)
       return Result.fail<null>(
         `No selector was found for id ${alert.selectorId}`
       );
 
-    if (readSelectorResponse.value?.systemId !== alert.systemId)
+    if (getSelectorResponse.value?.systemId !== alert.systemId)
       return Result.fail<null>(
-        `Provided system id ${alert.systemId} doesn't match the selector's system ${readSelectorResponse.value.systemId}`
+        `Provided system id ${alert.systemId} doesn't match the selector's system ${getSelectorResponse.value.systemId}`
       );
 
     return Result.ok<null>(null);

@@ -1,12 +1,12 @@
 import fetch from 'node-fetch';
-import { IReadSelectorRepository, ReadSelectorDto } from '../../domain/use-cases/read-selector';
+import { IGetSelectorRepository, GetSelectorDto } from '../../domain/use-cases/get-selector';
 
-export default class ReadSelectorRepositoryImpl
-  implements IReadSelectorRepository
+export default class GetSelectorRepositoryImpl
+  implements IGetSelectorRepository
 {
   public getSelectorById = async (
     id: string
-  ): Promise<ReadSelectorDto | null> => {
+  ): Promise<GetSelectorDto | null> => {
     try {
       const response = await fetch(
         `http://localhost:3000/api/v1/selector/${id}`

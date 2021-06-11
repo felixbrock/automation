@@ -7,20 +7,20 @@ import { CreateSubscription } from '../domain/use-cases/create-subscription';
 import { CreateAlert } from '../domain/use-cases/create-alert';
 import { ReadSubscription } from '../domain/use-cases/read-subscription';
 import { ReadAlert } from '../domain/use-cases/read-alert';
-import { ReadSelector } from '../domain/use-cases/read-selector';
+import { GetSelector } from '../domain/use-cases/get-selector';
 
 import CreateSubscriptionRepository from './persistence/create-subscription-repository';
 import CreateAlertRepository from './persistence/create-alert-repository';
 import ReadSubscriptionRepository from './persistence/read-subscription-repository';
-import ReadSelectorRepository from './persistence/read-selector-repository';
+import GetSelectorRepository from './persistence/get-selector-repository';
 import ReadAlertRepository from './persistence/read-alert-repository';
 import { ReadSubscriptionAlerts } from '../domain/use-cases/read-subscription-alerts';
 import { CreateTarget } from '../domain/use-cases/create-target';
 import CreateTargetRepository from './persistence/create-target-repository';
-import ReadSystemRepository from './persistence/read-system-repository';
+import GetSystemRepository from './persistence/get-system-repository';
 import ReadTargetRepository from './persistence/read-target-repository';
 import { ReadTarget } from '../domain/use-cases/read-target';
-import { ReadSystem } from '../domain/use-cases/read-system';
+import { GetSystem } from '../domain/use-cases/get-system';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -36,8 +36,8 @@ iocRegister.register({
   readAlert: asClass(ReadAlert),
   readTarget: asClass(ReadTarget),
 
-  readSelector: asClass(ReadSelector),
-  readSystem: asClass(ReadSystem),
+  getSelector: asClass(GetSelector),
+  getSystem: asClass(GetSystem),
 
   createSubscriptionRepository: asClass(CreateSubscriptionRepository),
   createAlertRepository: asClass(CreateAlertRepository),
@@ -46,8 +46,8 @@ iocRegister.register({
   readAlertRepository: asClass(ReadAlertRepository),
   createTargetRepository: asClass(ReadTargetRepository),
 
-  readSelectorRepository: asClass(ReadSelectorRepository),
-  readSystemRepository: asClass(ReadSystemRepository),
+  getSelectorRepository: asClass(GetSelectorRepository),
+  getSystemRepository: asClass(GetSystemRepository),
 });
 
 const subscriptionMain =
