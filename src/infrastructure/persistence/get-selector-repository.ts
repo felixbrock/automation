@@ -4,7 +4,7 @@ import { IGetSelectorRepository, GetSelectorDto } from '../../domain/use-cases/g
 export default class GetSelectorRepositoryImpl
   implements IGetSelectorRepository
 {
-  public getSelectorById = async (
+  public getById = async (
     id: string
   ): Promise<GetSelectorDto | null> => {
     try {

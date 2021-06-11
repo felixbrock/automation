@@ -1,11 +1,14 @@
 import { IUseCase, Result } from '../shared';
 import { Target, TargetProps } from '../value-types';
 import {
-  IReadSubscriptionRepository,
+  ReadSubscription,
   ReadSubscriptionDto,
 } from './read-subscription';
 import { GetSelector, GetSelectorResponseDto } from './get-selector';
-import { IReadTargetRepository, ReadTargetDto } from './read-target';
+import {
+  ReadTarget,
+  ReadTargetDto,
+} from './read-target';
 
 export interface CreateTargetRequestDto {
   subscriptionId: string;
@@ -31,21 +34,21 @@ export class CreateTarget
 {
   #createTargetRepository: ICreateTargetRepository;
 
-  #readTargetRepository: IReadTargetRepository;
+  #readTarget: ReadTarget;
 
-  #readSubscriptionRepository: IReadSubscriptionRepository;
+  #readSubscription: ReadSubscription;
 
   #getSelector: GetSelector;
 
   public constructor(
     createTargetRepository: ICreateTargetRepository,
-    readTargetRepository: IReadTargetRepository,
-    readSubscriptionRepository: IReadSubscriptionRepository,
+    readTarget: ReadTarget,
+    readSubscription: ReadSubscription,
     getSelector: GetSelector
   ) {
     this.#createTargetRepository = createTargetRepository;
-    this.#readTargetRepository = readTargetRepository;
-    this.#readSubscriptionRepository = readSubscriptionRepository;
+    this.#readTarget = readTarget;
+    this.#readSubscription = readSubscription;
     this.#getSelector = getSelector;
   }
 
@@ -70,24 +73,27 @@ export class CreateTarget
   }
 
   private async validateRequest(target: Target): Promise<Result<null>> {
-    const readSubscriptionResult: ReadSubscriptionDto | null =
-      await this.#readSubscriptionRepository.findById(target.subscriptionId);
+    const readSubscriptionResult: Result<ReadSubscriptionDto | null> =
+      await this.#readSubscription.execute({ id: target.subscriptionId });
 
-    if (!readSubscriptionResult)
+    if (readSubscriptionResult.error)
+      return Result.fail<null>(readSubscriptionResult.error);
+    if (!readSubscriptionResult.value)
       return Result.fail<null>(
-        `Subscription ${target.subscriptionId} does not exist`
+        `Couldn't read subscription ${target.subscriptionId}`
       );
 
-    // TODO Fix naming in all existing use cases createTargetDto is misleading
-    const targetSearchResult: ReadTargetDto | null =
-      await this.#readTargetRepository.findBySelectorId(
-        readSubscriptionResult.id,
-        target.selectorId
-      );
+    const targetSearchResult: Result<ReadTargetDto | null> =
+      await this.#readTarget.execute({
+        selectorId: target.selectorId,
+        subscriptionId: readSubscriptionResult.value.id,
+      });
 
-    if (targetSearchResult)
+    if (targetSearchResult.error)
+      return Result.fail<null>(targetSearchResult.error);
+    if (targetSearchResult.value)
       return Result.fail<null>(
-        `Target with selector ${targetSearchResult.selectorId} already exists for subscription ${readSubscriptionResult.id}`
+        `Target with selector ${targetSearchResult.value.selectorId} already exists for subscription ${readSubscriptionResult.value.id}`
       );
 
     const getSelectorResponse: GetSelectorResponseDto =
@@ -98,11 +104,15 @@ export class CreateTarget
     if (getSelectorResponse.error)
       return Result.fail<null>(getSelectorResponse.error);
     if (!getSelectorResponse.value)
-      return Result.fail<null>(`No selector was found for id ${target.selectorId}`);
+      return Result.fail<null>(
+        `No selector was found for id ${target.selectorId}`
+      );
 
     if (getSelectorResponse.value?.systemId !== target.systemId)
-      return Result.fail<null>(`Provided system id ${target.systemId} doesn't match the selector's system ${getSelectorResponse.value.systemId}`);
-    
+      return Result.fail<null>(
+        `Provided system id ${target.systemId} doesn't match the selector's system ${getSelectorResponse.value.systemId}`
+      );
+
     return Result.ok<null>(null);
   }
 
