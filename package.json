@@ -1,5 +1,5 @@
 {
-  "name": "alert",
+  "name": "subscription",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/felix-brockmeier/alert.git"
+    "url": "git+https://github.com/felix-brockmeier/subscription.git"
   },
   "author": "",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/felix-brockmeier/alert/issues"
+    "url": "https://github.com/felix-brockmeier/subscription/issues"
   },
-  "homepage": "https://github.com/felix-brockmeier/alert#readme",
+  "homepage": "https://github.com/felix-brockmeier/subscription#readme",
   "devDependencies": {
     "@tsconfig/node14": "^1.0.0",
     "@types/dotenv": "^8.2.0",
