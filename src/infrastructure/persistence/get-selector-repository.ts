@@ -1,9 +1,10 @@
 import fetch from 'node-fetch';
-import { IGetSelectorRepository, GetSelectorDto } from '../../domain/use-cases/get-selector';
+import { IGetSelectorRepository, GetSelectorDto } from '../../domain/selector/get-selector';
 
 export default class GetSelectorRepositoryImpl
   implements IGetSelectorRepository
 {
+  // TODO Should return a selector object and not a DTO!! When to use a Dto?
   public getById = async (
     id: string
   ): Promise<GetSelectorDto | null> => {

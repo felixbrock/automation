@@ -1,14 +1,20 @@
-import {IUseCase, Result} from '../shared';
+// TODO Should those really be use cases?
+import Result from '../value-types/transient-types';
+import IUseCase from '../services/use-case';
 
 export interface GetSystemRequestDto {
   id: string;
 }
 
+export interface Warning {
+  createdOn: number;
+}
+
 export interface GetSystemDto {
   id: string;
   name: string;
+  warnings: Warning[];
   modifiedOn: number;
-  createdOn: number;
 }
 
 export type GetSystemResponseDto = Result<GetSystemDto | null>;

@@ -4,7 +4,7 @@ import {
   ReadSubscription,
   ReadSubscriptionRequestDto,
   ReadSubscriptionResponseDto,
-} from '../../../domain/use-cases/read-subscription';
+} from '../../../domain/subscription/read-subscription';
 import { BaseController, CodeHttp } from '../../shared';
 
 export default class ReadSubscriptionController extends BaseController {

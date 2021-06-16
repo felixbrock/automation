@@ -6,7 +6,7 @@ import {
   ReadSubscriptionAlerts,
   ReadSubscriptionAlertsRequestDto,
   ReadSubscriptionAlertsResponseDto,
-} from '../../../domain/use-cases/read-subscription-alerts';
+} from '../../../domain/alerts/read-alerts';
 
 export default class ReadSubscriptionAlertsController extends BaseController {
   #readSubscriptionAlerts: ReadSubscriptionAlerts;
@@ -19,7 +19,7 @@ export default class ReadSubscriptionAlertsController extends BaseController {
   #buildRequestDto = (
     httpRequest: Request
   ): ReadSubscriptionAlertsRequestDto => ({
-    id: httpRequest.params.subscriptionId,
+    subscriptionId: httpRequest.params.subscriptionId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {

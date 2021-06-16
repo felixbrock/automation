@@ -1,25 +1,14 @@
-import { Result } from '../shared';
+import Result from "./transient-types";
 
-export interface TargetProps {
-  subscriptionId: string;
+export interface TargetProperties {
   systemId: string;
   selectorId: string;
 }
 
 export class Target {
-  #subscriptionId: string;
-
   #selectorId: string;
   
   #systemId: string;
-
-  #createdOn: number;
-
-  #modifiedOn: number;
-
-  public get subscriptionId(): string {
-    return this.#subscriptionId;
-  }
 
   public get selectorId(): string {
     return this.#selectorId;
@@ -29,28 +18,16 @@ export class Target {
     return this.#systemId;
   }
 
-  public get createdOn(): number {
-    return this.#createdOn;
+  private constructor(properties: TargetProperties) {
+    this.#selectorId = properties.selectorId;
+    this.#systemId = properties.systemId;
   }
 
-  public get modifiedOn(): number {
-    return this.#modifiedOn;
-  }
+  public static create(properties: TargetProperties): Result<Target> {
+    if (!properties.selectorId) return Result.fail<Target>('Target must have selector id');
+    if (!properties.systemId) return Result.fail<Target>('Target must have system id');
 
-  private constructor(props: TargetProps) {
-    this.#subscriptionId = props.subscriptionId;
-    this.#selectorId = props.selectorId;
-    this.#systemId = props.systemId;
-    this.#createdOn = Date.now();
-    this.#modifiedOn = Date.now();
-  }
-
-  public static create(props: TargetProps): Result<Target | null> {
-    if (!props.subscriptionId) return Result.fail<null>('Target must have subscription id');
-    if (!props.selectorId) return Result.fail<null>('Target must have selector id');
-    if (!props.systemId) return Result.fail<null>('Target must have system id');
-
-    const target = new Target(props);
+    const target = new Target(properties);
     return Result.ok<Target>(target);
   }
 }

@@ -4,7 +4,7 @@ import {
   CreateTarget,
   CreateTargetRequestDto,
   CreateTargetResponseDto,
-} from '../../../domain/use-cases/create-target';
+} from '../../../domain/target/create-target';
 import { BaseController, CodeHttp } from '../../shared';
 
 export default class CreateTargetController extends BaseController {

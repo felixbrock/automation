@@ -4,7 +4,7 @@ import {
   CreateSubscription,
   CreateSubscriptionRequestDto,
   CreateSubscriptionResponseDto,
-} from '../../../domain/use-cases/create-subscription';
+} from '../../../domain/subscription/create-subscription';
 import { BaseController, CodeHttp } from '../../shared';
 
 export default class CreateSubscriptionController extends BaseController {
