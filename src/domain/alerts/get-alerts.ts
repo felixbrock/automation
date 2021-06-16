@@ -64,7 +64,7 @@ export class GetSubscriptionAlerts
 
       if (!subscription)
         return Result.fail<GetSubscriptionAlertsDto>(
-          `Subscription with id ${request.subscriptionId} does not exist.`
+          `Subscription with id ${request.subscriptionId} does not exist`
         );
 
       const getSubscriptionAlertsResponse: GetSubscriptionAlertsResponseDto =
@@ -147,7 +147,7 @@ export class GetSubscriptionAlerts
           relevantWarnings.forEach((warning) => {
             const warningMessage = `An error occurred in system ${systemName} on a different selector at ${new Date(
               warning.createdOn
-            ).toISOString()}. Be careful, this automation might be affected from system changes.`;
+            ).toISOString()}. Be careful, this automation might be affected from system changes`;
 
             subscriptionWarnings.push({
               message: warningMessage,

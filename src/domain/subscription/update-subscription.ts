@@ -41,7 +41,7 @@ export class UpdateSubscription
 
       if (!subscription)
         return Result.fail<SubscriptionDto>(
-          `Subscription with id ${request.id} does not exist.`
+          `Subscription with id ${request.id} does not exist`
         );
 
       if (request.targets) {

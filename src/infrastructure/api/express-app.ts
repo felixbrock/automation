@@ -28,7 +28,7 @@ export default class ExpressApp {
       console.log(
         `App listening on port: ${this.#config.port} in ${
           this.#config.mode
-        } mode.`
+        } mode`
       );
     });
 

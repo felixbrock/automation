@@ -29,7 +29,7 @@ export class ReadSubscription
         );
       if (!readSubscriptionResult)
         return Result.fail<null>(
-          `Subscription with id ${request.id} does not exist.`
+          `Subscription with id ${request.id} does not exist`
         );
 
       return Result.ok<SubscriptionDto>(
