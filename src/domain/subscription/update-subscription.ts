@@ -73,9 +73,16 @@ export class UpdateSubscription
   #buildSubscriptionDto = (subscription: Subscription): SubscriptionDto => ({
     id: subscription.id,
     automationName: subscription.automationName,
-    targets: subscription.targets,
+    targets: subscription.targets.map(
+      (target): TargetDto => this.#buildTargetDto(target)
+    ),
     modifiedOn: subscription.modifiedOn,
     alertsAccessedOn: subscription.alertsAccessedOn,
+  });
+
+  #buildTargetDto = (target: Target): TargetDto => ({
+    selectorId: target.selectorId,
+    systemId: target.systemId,
   });
 
   #modifySubscription = (

@@ -1,4 +1,7 @@
+import { Subscription } from '../entities';
 import IUseCase from '../services/use-case';
+import TargetDto from '../target/target-dto';
+import { Target } from '../value-types';
 import Result from '../value-types/transient-types';
 import ISubscriptionRepository from './i-subscription-repository';
 import SubscriptionDto from './subscription-dto';
@@ -21,22 +24,34 @@ export class ReadSubscription
   public async execute(
     request: ReadSubscriptionRequestDto
   ): Promise<ReadSubscriptionResponseDto> {
-  
     try {
-      const readSubscriptionResult: SubscriptionDto | null =
-        await this.#subscriptionRepository.findById(
-          request.id
-        );
-      if (!readSubscriptionResult)
+      const subscription: Subscription | null =
+        await this.#subscriptionRepository.findById(request.id);
+      if (!subscription)
         return Result.fail<null>(
           `Subscription with id ${request.id} does not exist`
         );
 
       return Result.ok<SubscriptionDto>(
-        readSubscriptionResult
+        this.#buildSubscriptionDto(subscription)
       );
     } catch (error) {
       return Result.fail<null>(error.message);
     }
   }
+
+  #buildSubscriptionDto = (subscription: Subscription): SubscriptionDto => ({
+    id: subscription.id,
+    automationName: subscription.automationName,
+    targets: subscription.targets.map(
+      (target): TargetDto => this.#buildTargetDto(target)
+    ),
+    modifiedOn: subscription.modifiedOn,
+    alertsAccessedOn: subscription.alertsAccessedOn,
+  });
+
+  #buildTargetDto = (target: Target): TargetDto => ({
+    selectorId: target.selectorId,
+    systemId: target.systemId,
+  });
 }

@@ -93,7 +93,7 @@ export class CreateTarget
         `No selector was found for id ${target.selectorId}`
       );
 
-    if (getSelectorResponse.value?.systemId !== target.systemId)
+    if (getSelectorResponse.value.systemId !== target.systemId)
       return Result.fail<null>(
         `Provided system id ${target.systemId} doesn't match the selector's system ${getSelectorResponse.value.systemId}`
       );
