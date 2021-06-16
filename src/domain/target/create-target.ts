@@ -57,14 +57,14 @@ export class CreateTarget
           `Couldn't read subscription ${request.subscriptionId}`
         );
 
-      const { targets } = readSubscriptionResult.value;
-      const targetToAdd = this.#buildTargetDto(target.value);
-      targets.push(targetToAdd);
+      const targetDtos = readSubscriptionResult.value.targets;
+      const targetDto = this.#buildTargetDto(target.value);
+      targetDtos.push(targetDto);
 
       const updateSubscriptionResult: Result<SubscriptionDto | null> =
         await this.#updateSubscription.execute({
           id: request.subscriptionId,
-          targets,
+          targets: targetDtos,
         });
 
       if (updateSubscriptionResult.error)
@@ -74,7 +74,7 @@ export class CreateTarget
           `Couldn't update subscription ${request.subscriptionId}`
         );
 
-      return Result.ok<TargetDto>(targetToAdd);
+      return Result.ok<TargetDto>(targetDto);
     } catch (error) {
       return Result.fail<TargetDto>(error.message);
     }
