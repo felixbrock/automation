@@ -1,4 +1,3 @@
-// TODO Violation of Dependency Rule
 import IUseCase from '../services/use-case';
 import { Subscription } from '../entities';
 import SubscriptionDto from './subscription-dto';
@@ -6,6 +5,7 @@ import ISubscriptionRepository from './i-subscription-repository';
 import { Target } from '../value-types';
 import Result from '../value-types/transient-types';
 import TargetDto from '../target/target-dto';
+import { GetSelector, GetSelectorResponseDto } from '../selector/get-selector';
 
 export interface UpdateSubscriptionRequestDto {
   id: string;
@@ -22,8 +22,14 @@ export class UpdateSubscription
 {
   #subscriptionRepository: ISubscriptionRepository;
 
-  public constructor(subscriptionRepository: ISubscriptionRepository) {
+  #getSelector: GetSelector;
+
+  public constructor(
+    subscriptionRepository: ISubscriptionRepository,
+    getSelector: GetSelector
+  ) {
     this.#subscriptionRepository = subscriptionRepository;
+    this.#getSelector = getSelector;
   }
 
   public async execute(
@@ -38,12 +44,26 @@ export class UpdateSubscription
           `Subscription with id ${request.id} does not exist.`
         );
 
-      this.#modifySubscription(subscription, request);
+      if (request.targets) {
+        const targetsValid = await this.#targetSelectorIdsValid(
+          request.targets
+        );
 
-      await this.#subscriptionRepository.update(subscription);
+        if (!targetsValid)
+          return Result.fail<SubscriptionDto>(
+            `One or more selectorIds and/or systemIds of the targets of subscription ${subscription.id} are invalid`
+          );
+      }
+
+      const modifiedSubscription = this.#modifySubscription(
+        subscription,
+        request
+      );
+
+      await this.#subscriptionRepository.update(modifiedSubscription);
 
       return Result.ok<SubscriptionDto>(
-        this.#buildSubscriptionDto(subscription)
+        this.#buildSubscriptionDto(modifiedSubscription)
       );
     } catch (error) {
       return Result.fail<SubscriptionDto>(error.message);
@@ -71,14 +91,39 @@ export class UpdateSubscription
       ? request.targets.map((target) => {
           const targetResult = Target.create(target);
           if (targetResult.value) return targetResult.value;
-          throw new Error(`Creation of subscription target ${target} failed`);
+          throw new Error(
+            `Creation of target ${target.selectorId} for subscription ${subscription.id} failed`
+          );
         })
       : subscription.targets;
 
-    subscriptionToModify.alertsAccessedOn = request.alertsAccessedOn || subscription.alertsAccessedOn;
+    subscriptionToModify.alertsAccessedOn =
+      request.alertsAccessedOn || subscription.alertsAccessedOn;
 
     subscriptionToModify.modifiedOn = Date.now();
 
     return subscriptionToModify;
+  };
+
+  #targetSelectorIdsValid = async (targets: TargetDto[]): Promise<boolean> => {
+    const isValidResults: boolean[] = await Promise.all(
+      targets.map(async (target) => {
+        try {
+          const getSelectorResponse: GetSelectorResponseDto =
+            await this.#getSelector.execute({ id: target.selectorId });
+
+          if (getSelectorResponse.error) return false;
+          if (!getSelectorResponse.value) return false;
+          if (target.systemId !== getSelectorResponse.value.systemId)
+            return false;
+
+          return true;
+        } catch (error) {
+          throw new Error(error);
+        }
+      })
+    );
+
+    return !isValidResults.includes(false);
   };
 }
