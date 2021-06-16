@@ -20,7 +20,6 @@ export class Subscription {
 
   #targets: Target[];
 
-  
   public get id(): string {
     return this.#id;
   }
@@ -40,7 +39,7 @@ export class Subscription {
   }
 
   public set modifiedOn(modifiedOn: number) {
-    if (!Subscription.timestampIsValid(modifiedOn))
+    if (!Subscription.timestampValid(modifiedOn))
       throw new Error('ModifiedOn value lies in the past');
 
     this.#modifiedOn = modifiedOn;
@@ -51,7 +50,7 @@ export class Subscription {
   }
 
   public set alertsAccessedOn(accessedOn: number) {
-    if (!Subscription.timestampIsValid(accessedOn))
+    if (!Subscription.timestampValid(accessedOn))
       throw new Error('AlertAccessedOn value lies in the past');
     this.#alertsAccessedOn = accessedOn;
   }
@@ -61,6 +60,11 @@ export class Subscription {
   }
 
   public set targets(targets: Target[]) {
+    if (this.#targetDuplicated(targets))
+      throw new Error(
+        'Provided targets to update contain duplicates (only one targert per selector id allowed)'
+      );
+
     this.#targets = targets;
   }
 
@@ -77,14 +81,16 @@ export class Subscription {
   ): Result<Subscription> {
     if (
       properties.modifiedOn &&
-      !Subscription.timestampIsValid(properties.modifiedOn)
+      !Subscription.timestampValid(properties.modifiedOn)
     )
       return Result.fail<Subscription>('ModifiedOn value lies in the past');
     if (
       properties.alertsAccessedOn &&
-      !Subscription.timestampIsValid(properties.alertsAccessedOn)
+      !Subscription.timestampValid(properties.alertsAccessedOn)
     )
-      return Result.fail<Subscription>('AlertAccessedOn value lies in the past');
+      return Result.fail<Subscription>(
+        'AlertAccessedOn value lies in the past'
+      );
     if (!properties.automationName)
       return Result.fail<Subscription>('Subscription must have automation id');
     if (!properties.id)
@@ -94,9 +100,19 @@ export class Subscription {
     return Result.ok<Subscription>(subscription);
   }
 
-  public static timestampIsValid = (timestamp: number): boolean => {
+  public static timestampValid = (timestamp: number): boolean => {
     const minute = 60 * 1000;
     if (timestamp && timestamp < Date.now() - minute) return false;
     return true;
+  };
+
+  #targetDuplicated = (targets: Target[]): boolean => {
+    const selectorIds: string[] = [];
+    const isDuplicatedResults = targets.map((target) => {
+      if (selectorIds.includes(target.selectorId)) return true;
+      selectorIds.push(target.selectorId);
+      return false;
+    });
+    return isDuplicatedResults.includes(true);
   };
 }

@@ -29,10 +29,6 @@ export class UpdateSubscription
   public async execute(
     request: UpdateSubscriptionRequestDto
   ): Promise<UpdateSubscriptionResponseDto> {
-    if (request.targets && this.#targetDuplicated(request.targets))
-      return Result.fail<SubscriptionDto>(
-        'Provided targets to update contain duplicates (only one targert per selector id allowed)'
-      );
     try {
       const subscription: Subscription | null =
         await this.#subscriptionRepository.findById(request.id);
@@ -53,20 +49,6 @@ export class UpdateSubscription
       return Result.fail<SubscriptionDto>(error.message);
     }
   }
-
-  #targetDuplicated = (targets: TargetDto[]): boolean => {
-    let duplicated = false;
-
-    const selectorIds: string[] = [];
-    targets.forEach((target) => {
-      if (selectorIds.includes(target.selectorId)) {
-        duplicated = true;
-      }
-      duplicated = false;
-      selectorIds.push(target.selectorId);
-    });
-    return duplicated;
-  };
 
   #buildSubscriptionDto = (subscription: Subscription): SubscriptionDto => ({
     id: subscription.id,
