@@ -32,6 +32,7 @@ export default class SubscriptionRepositoryImpl
       (subscriptionEntity: { id: string }) => subscriptionEntity.id === id
     );
 
+    if(!result) return null;
     return this.#toEntity(this.#buildProperties(result));
   };
 
