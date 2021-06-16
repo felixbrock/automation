@@ -2,7 +2,7 @@ import { Router } from 'express';
 import {
   CreateSubscriptionController,
   ReadSubscriptionController,
-  ReadSubscriptionAlertsController,
+  GetSubscriptionAlertsController,
   CreateTargetController,
 } from '../controllers';
 import app from '../../ioc-register';
@@ -24,8 +24,8 @@ const readSubscriptionController = new ReadSubscriptionController(
   subscriptionDomain.readSubscription
 );
 
-const readSubscriptionAlertsController = new ReadSubscriptionAlertsController(
-  subscriptionDomain.readSubscriptionAlerts
+const getSubscriptionAlertsController = new GetSubscriptionAlertsController(
+  subscriptionDomain.getSubscriptionAlerts
 );
 
 subscriptionRoutes.post('/', (req, res) =>
@@ -41,7 +41,7 @@ subscriptionRoutes.get('/:subscriptionId', (req, res) =>
 );
 
 subscriptionRoutes.get('/:subscriptionId/alerts', (req, res) =>
-  readSubscriptionAlertsController.execute(req, res)
+  getSubscriptionAlertsController.execute(req, res)
 );
 
 export default subscriptionRoutes;

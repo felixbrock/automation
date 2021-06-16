@@ -3,46 +3,46 @@ import { Request, Response } from 'express';
 
 import { BaseController, CodeHttp } from '../../shared';
 import {
-  ReadSubscriptionAlerts,
-  ReadSubscriptionAlertsRequestDto,
-  ReadSubscriptionAlertsResponseDto,
-} from '../../../domain/alerts/read-alerts';
+  GetSubscriptionAlerts,
+  GetSubscriptionAlertsRequestDto,
+  GetSubscriptionAlertsResponseDto,
+} from '../../../domain/alerts/get-alerts';
 
-export default class ReadSubscriptionAlertsController extends BaseController {
-  #readSubscriptionAlerts: ReadSubscriptionAlerts;
+export default class GetSubscriptionAlertsController extends BaseController {
+  #getSubscriptionAlerts: GetSubscriptionAlerts;
 
-  public constructor(readSubscriptionAlerts: ReadSubscriptionAlerts) {
+  public constructor(getSubscriptionAlerts: GetSubscriptionAlerts) {
     super();
-    this.#readSubscriptionAlerts = readSubscriptionAlerts;
+    this.#getSubscriptionAlerts = getSubscriptionAlerts;
   }
 
   #buildRequestDto = (
     httpRequest: Request
-  ): ReadSubscriptionAlertsRequestDto => ({
+  ): GetSubscriptionAlertsRequestDto => ({
     subscriptionId: httpRequest.params.subscriptionId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
-      const requestDto: ReadSubscriptionAlertsRequestDto =
+      const requestDto: GetSubscriptionAlertsRequestDto =
         this.#buildRequestDto(req);
-      const useCaseResult: ReadSubscriptionAlertsResponseDto =
-        await this.#readSubscriptionAlerts.execute(requestDto);
+      const useCaseResult: GetSubscriptionAlertsResponseDto =
+        await this.#getSubscriptionAlerts.execute(requestDto);
 
       if (useCaseResult.error) {
-        return ReadSubscriptionAlertsController.badRequest(
+        return GetSubscriptionAlertsController.badRequest(
           res,
           useCaseResult.error
         );
       }
 
-      return ReadSubscriptionAlertsController.ok(
+      return GetSubscriptionAlertsController.ok(
         res,
         useCaseResult.value,
         CodeHttp.OK
       );
     } catch (error) {
-      return ReadSubscriptionAlertsController.fail(res, error);
+      return GetSubscriptionAlertsController.fail(res, error);
     }
   }
 }

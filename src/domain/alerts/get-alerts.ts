@@ -12,27 +12,27 @@ import TargetDto from '../target/target-dto';
 import { UpdateSubscription } from '../subscription/update-subscription';
 import SubscriptionDto from '../subscription/subscription-dto';
 
-export interface ReadSubscriptionAlertsRequestDto {
+export interface GetSubscriptionAlertsRequestDto {
   subscriptionId: string;
 }
 
-export interface ReadSubscriptionAlertDto {
+export interface GetSubscriptionAlertDto {
   message: string;
 }
 
-export interface ReadSubscriptionAlertsDto {
-  alerts: ReadSubscriptionAlertDto[];
-  warnings: ReadSubscriptionAlertDto[];
+export interface GetSubscriptionAlertsDto {
+  alerts: GetSubscriptionAlertDto[];
+  warnings: GetSubscriptionAlertDto[];
 }
 
-export type ReadSubscriptionAlertsResponseDto =
-  Result<ReadSubscriptionAlertsDto | null>;
+export type GetSubscriptionAlertsResponseDto =
+  Result<GetSubscriptionAlertsDto | null>;
 
-export class ReadSubscriptionAlerts
+export class GetSubscriptionAlerts
   implements
     IUseCase<
-      ReadSubscriptionAlertsRequestDto,
-      ReadSubscriptionAlertsResponseDto
+      GetSubscriptionAlertsRequestDto,
+      GetSubscriptionAlertsResponseDto
     >
 {
   #subscriptionRepository: ISubscriptionRepository;
@@ -56,26 +56,26 @@ export class ReadSubscriptionAlerts
   }
 
   public async execute(
-    request: ReadSubscriptionAlertsRequestDto
-  ): Promise<ReadSubscriptionAlertsResponseDto> {
+    request: GetSubscriptionAlertsRequestDto
+  ): Promise<GetSubscriptionAlertsResponseDto> {
     try {
       const subscription: Subscription | null =
         await this.#subscriptionRepository.findById(request.subscriptionId);
 
       if (!subscription)
-        return Result.fail<ReadSubscriptionAlertsDto>(
+        return Result.fail<GetSubscriptionAlertsDto>(
           `Subscription with id ${request.subscriptionId} does not exist.`
         );
 
-      const readSubscriptionAlertsResponse: ReadSubscriptionAlertsResponseDto =
+      const getSubscriptionAlertsResponse: GetSubscriptionAlertsResponseDto =
         await this.readAlerts(
           subscription.targets,
           subscription.alertsAccessedOn
         );
 
-      if (readSubscriptionAlertsResponse.error)
-        return Result.fail<null>(readSubscriptionAlertsResponse.error);
-      if (!readSubscriptionAlertsResponse.value)
+      if (getSubscriptionAlertsResponse.error)
+        return Result.fail<null>(getSubscriptionAlertsResponse.error);
+      if (!getSubscriptionAlertsResponse.value)
         return Result.fail<null>('An error occurred while reading alerts');
 
       const updateSubscriptionResult: Result<SubscriptionDto | null> =
@@ -91,7 +91,7 @@ export class ReadSubscriptionAlerts
           `Couldn't update subscription ${request.subscriptionId}`
         );
 
-      return readSubscriptionAlertsResponse;
+      return getSubscriptionAlertsResponse;
     } catch (error) {
       return Result.fail<null>(error.message);
     }
@@ -100,9 +100,9 @@ export class ReadSubscriptionAlerts
   private async readAlerts(
     targets: TargetDto[],
     alertsAccessedOn: number
-  ): Promise<ReadSubscriptionAlertsResponseDto> {
-    const subscriptionAlerts: ReadSubscriptionAlertDto[] = [];
-    const subscriptionWarnings: ReadSubscriptionAlertDto[] = [];
+  ): Promise<GetSubscriptionAlertsResponseDto> {
+    const subscriptionAlerts: GetSubscriptionAlertDto[] = [];
+    const subscriptionWarnings: GetSubscriptionAlertDto[] = [];
 
     try {
       // TODO is foreach more appropriate at this point (rather than map)?
@@ -156,7 +156,7 @@ export class ReadSubscriptionAlerts
         })
       );
 
-      return Result.ok<ReadSubscriptionAlertsDto>({ alerts: subscriptionAlerts, warnings: subscriptionWarnings});
+      return Result.ok<GetSubscriptionAlertsDto>({ alerts: subscriptionAlerts, warnings: subscriptionWarnings});
     } catch (error) {
       return Result.fail<null>(error);
     }

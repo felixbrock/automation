@@ -4,7 +4,7 @@ import SubscriptionDomain from '../domain/subscription-domain';
 
 import { CreateSubscription } from '../domain/subscription/create-subscription';
 import { ReadSubscription } from '../domain/subscription/read-subscription';
-import { ReadSubscriptionAlerts } from '../domain/alerts/read-alerts';
+import { GetSubscriptionAlerts } from '../domain/alerts/get-alerts';
 import { CreateTarget } from '../domain/target/create-target';
 import { GetSelector } from '../domain/selector/get-selector';
 import { GetSystem } from '../domain/system/get-system';
@@ -23,7 +23,7 @@ iocRegister.register({
   createTarget: asClass(CreateTarget),
   readSubscription: asClass(ReadSubscription),
   updateSubscription: asClass(UpdateSubscription),
-  readSubscriptionAlerts: asClass(ReadSubscriptionAlerts),
+  getSubscriptionAlerts: asClass(GetSubscriptionAlerts),
 
   getSelector: asClass(GetSelector),
   getSystem: asClass(GetSystem),
