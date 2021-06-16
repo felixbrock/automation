@@ -5,7 +5,7 @@ import ISubscriptionRepository from './i-subscription-repository';
 import { Target } from '../value-types';
 import Result from '../value-types/transient-types';
 import TargetDto from '../target/target-dto';
-import { GetSelector, GetSelectorResponseDto } from '../selector/get-selector';
+import { GetSelector, GetSelectorResponseDto } from '../get-selector/get-selector';
 
 export interface UpdateSubscriptionRequestDto {
   id: string;

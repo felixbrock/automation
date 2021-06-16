@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { IGetSystemRepository, GetSystemDto } from '../../domain/system/get-system';
+import { IGetSystemRepository, GetSystemDto } from '../../domain/get-system/get-system';
 
 export default class GetSystemRepositoryImpl
   implements IGetSystemRepository

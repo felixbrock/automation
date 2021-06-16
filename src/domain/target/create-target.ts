@@ -1,7 +1,7 @@
 import IUseCase from '../services/use-case';
 import { Target, TargetProperties } from '../value-types';
 import { ReadSubscription } from '../subscription/read-subscription';
-import { GetSelector, GetSelectorResponseDto } from '../selector/get-selector';
+import { GetSelector, GetSelectorResponseDto } from '../get-selector/get-selector';
 import TargetDto from './target-dto';
 import SubscriptionDto from '../subscription/subscription-dto';
 import { UpdateSubscription } from '../subscription/update-subscription';

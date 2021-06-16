@@ -4,10 +4,10 @@ import SubscriptionDomain from '../domain/subscription-domain';
 
 import { CreateSubscription } from '../domain/subscription/create-subscription';
 import { ReadSubscription } from '../domain/subscription/read-subscription';
-import { GetSubscriptionAlerts } from '../domain/alerts/get-alerts';
+import { GetSubscriptionAlerts } from '../domain/get-alerts/get-alerts';
 import { CreateTarget } from '../domain/target/create-target';
-import { GetSelector } from '../domain/selector/get-selector';
-import { GetSystem } from '../domain/system/get-system';
+import { GetSelector } from '../domain/get-selector/get-selector';
+import { GetSystem } from '../domain/get-system/get-system';
 
 import GetSelectorRepository from './persistence/get-selector-repository';
 import GetSystemRepository from './persistence/get-system-repository';

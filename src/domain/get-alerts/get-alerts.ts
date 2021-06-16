@@ -4,8 +4,8 @@ import {
   Alert,
   GetSelector,
   GetSelectorResponseDto,
-} from '../selector/get-selector';
-import { GetSystem, GetSystemResponseDto, Warning } from '../system/get-system';
+} from '../get-selector/get-selector';
+import { GetSystem, GetSystemResponseDto, Warning } from '../get-system/get-system';
 import ISubscriptionRepository from '../subscription/i-subscription-repository';
 import { Subscription } from '../entities';
 import TargetDto from '../target/target-dto';

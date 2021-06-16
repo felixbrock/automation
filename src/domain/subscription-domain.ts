@@ -1,7 +1,7 @@
 import { CreateSubscription } from './subscription/create-subscription';
 import { CreateTarget } from './target/create-target';
 import { ReadSubscription } from './subscription/read-subscription';
-import { GetSubscriptionAlerts } from './alerts/get-alerts';
+import { GetSubscriptionAlerts } from './get-alerts/get-alerts';
 import { UpdateSubscription } from './subscription/update-subscription';
 
 export default class SubscriptionDomain {
