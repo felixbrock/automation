@@ -48,13 +48,13 @@ export class CreateTarget
     try {
       const validatedRequest = await this.validateRequest(target.value);
       if (validatedRequest.error)
-        return Result.fail<TargetDto>(validatedRequest.error);
+        throw new Error(validatedRequest.error);
 
       // TODO Potential fix? Subscription is read twice. Once in create-target and once in update subscription
       const subscription: Subscription | null =
         await this.#subscriptionRepository.findById(request.subscriptionId);
       if (!subscription)
-        return Result.fail<null>(
+        throw new Error(
           `Subscription with id ${request.subscriptionId} does not exist`
         );
 
@@ -69,9 +69,9 @@ export class CreateTarget
         });
 
       if (updateSubscriptionResult.error)
-        return Result.fail<null>(updateSubscriptionResult.error);
+        throw new Error(updateSubscriptionResult.error);
       if (!updateSubscriptionResult.value)
-        return Result.fail<null>(
+        throw new Error(
           `Couldn't update subscription ${request.subscriptionId}`
         );
 

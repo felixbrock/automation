@@ -28,7 +28,7 @@ export class ReadSubscription
       const subscription: Subscription | null =
         await this.#subscriptionRepository.findById(request.id);
       if (!subscription)
-        return Result.fail<null>(
+        throw new Error(
           `Subscription with id ${request.id} does not exist`
         );
 

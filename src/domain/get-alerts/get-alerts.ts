@@ -63,7 +63,7 @@ export class GetSubscriptionAlerts
         await this.#subscriptionRepository.findById(request.subscriptionId);
 
       if (!subscription)
-        return Result.fail<GetSubscriptionAlertsDto>(
+        throw new Error(
           `Subscription with id ${request.subscriptionId} does not exist`
         );
 
@@ -74,9 +74,9 @@ export class GetSubscriptionAlerts
         );
 
       if (getSubscriptionAlertsResponse.error)
-        return Result.fail<null>(getSubscriptionAlertsResponse.error);
+        throw new Error(getSubscriptionAlertsResponse.error);
       if (!getSubscriptionAlertsResponse.value)
-        return Result.fail<null>('An error occurred while reading alerts');
+        throw new Error('An error occurred while reading alerts');
 
       const updateSubscriptionResult: Result<SubscriptionDto | null> =
         await this.#updateSubscription.execute({
@@ -85,9 +85,9 @@ export class GetSubscriptionAlerts
         });
 
       if (updateSubscriptionResult.error)
-        return Result.fail<null>(updateSubscriptionResult.error);
+        throw new Error(updateSubscriptionResult.error);
       if (!updateSubscriptionResult.value)
-        return Result.fail<null>(
+        throw new Error(
           `Couldn't update subscription ${request.subscriptionId}`
         );
 

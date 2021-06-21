@@ -40,7 +40,7 @@ export class GetSystem
         await this.#getSystemRepository.getById(request.id);
 
       if (!getSystemResult)
-        return Result.fail<null>(
+        throw new Error(
           `No system found for id ${request.id}`
         );
 

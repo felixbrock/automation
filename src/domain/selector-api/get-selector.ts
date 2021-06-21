@@ -43,7 +43,7 @@ export class GetSelector
         );
 
       if (!getSelectorResponse)
-        return Result.fail<null>(
+        throw new Error(
           `No selector found for id ${request.id}`
         );
 

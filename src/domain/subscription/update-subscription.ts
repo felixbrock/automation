@@ -42,7 +42,7 @@ export class UpdateSubscription
         await this.#subscriptionRepository.findById(request.id);
 
       if (!subscription)
-        return Result.fail<SubscriptionDto>(
+        throw new Error(
           `Subscription with id ${request.id} does not exist`
         );
 
@@ -52,7 +52,7 @@ export class UpdateSubscription
         );
 
         if (!targetsValid)
-          return Result.fail<SubscriptionDto>(
+          throw new Error(
             `One or more selectorIds and/or systemIds of the targets of subscription ${subscription.id} are invalid`
           );
       }
