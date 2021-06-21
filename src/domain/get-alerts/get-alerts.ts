@@ -4,8 +4,8 @@ import {
   Alert,
   GetSelector,
   GetSelectorResponseDto,
-} from '../get-selector/get-selector';
-import { GetSystem, GetSystemResponseDto, Warning } from '../get-system/get-system';
+} from '../selector-api/get-selector';
+import { GetSystem, GetSystemResponseDto, Warning } from '../system-api/get-system';
 import ISubscriptionRepository from '../subscription/i-subscription-repository';
 import { Subscription } from '../entities';
 import TargetDto from '../target/target-dto';
@@ -158,7 +158,7 @@ export class GetSubscriptionAlerts
 
       return Result.ok<GetSubscriptionAlertsDto>({ alerts: subscriptionAlerts, warnings: subscriptionWarnings});
     } catch (error) {
-      return Result.fail<null>(error);
+      return Result.fail<null>(error.message);
     }
   }
 }

@@ -7,6 +7,7 @@ import {
 } from '../controllers';
 import app from '../../ioc-register';
 import SubscriptionDomain from '../../../domain/subscription-domain';
+import DeleteTargetController from '../controllers/delete-target-controller';
 
 const subscriptionRoutes = Router();
 
@@ -18,6 +19,10 @@ const createSubscriptionController = new CreateSubscriptionController(
 
 const createTargetController = new CreateTargetController(
   subscriptionDomain.createTarget
+);
+
+const deleteTargetController = new DeleteTargetController(
+  subscriptionDomain.deleteTarget
 );
 
 const readSubscriptionController = new ReadSubscriptionController(
@@ -34,6 +39,10 @@ subscriptionRoutes.post('/', (req, res) =>
 
 subscriptionRoutes.post(':subscriptionId/target', (req, res) =>
   createTargetController.execute(req, res)
+);
+
+subscriptionRoutes.delete(':subscriptionId/target', (req, res) =>
+  deleteTargetController.execute(req, res)
 );
 
 subscriptionRoutes.get('/:subscriptionId', (req, res) =>

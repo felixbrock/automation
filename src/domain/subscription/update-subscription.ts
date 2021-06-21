@@ -5,7 +5,9 @@ import ISubscriptionRepository from './i-subscription-repository';
 import { Target } from '../value-types';
 import Result from '../value-types/transient-types';
 import TargetDto from '../target/target-dto';
-import { GetSelector, GetSelectorResponseDto } from '../get-selector/get-selector';
+import { GetSelector, GetSelectorResponseDto } from '../selector-api/get-selector';
+
+// TODO - This would be a PATCH use-case since not all fields need to be necessarily updated
 
 export interface UpdateSubscriptionRequestDto {
   id: string;

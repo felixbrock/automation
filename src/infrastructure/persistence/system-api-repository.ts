@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { IGetSystemRepository, GetSystemDto } from '../../domain/get-system/get-system';
+import { IGetSystemRepository, GetSystemDto } from '../../domain/system-api/get-system';
 
 export default class GetSystemRepositoryImpl
   implements IGetSystemRepository
@@ -16,6 +16,7 @@ export default class GetSystemRepositoryImpl
       }
       return null;
     } catch (error) {
+      // TODO reject promise I guess
       return null;
     }
   };

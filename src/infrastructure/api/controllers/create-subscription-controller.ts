@@ -17,8 +17,6 @@ export default class CreateSubscriptionController extends BaseController {
 
   #buildRequestDto = (httpRequest: Request): CreateSubscriptionRequestDto => ({
     automationName: httpRequest.body.automationName,
-    systemId: httpRequest.body.systemId,
-    selectorId: httpRequest.body.selectorId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {

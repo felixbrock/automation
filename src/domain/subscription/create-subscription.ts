@@ -10,8 +10,6 @@ import TargetDto from '../target/target-dto';
 
 export interface CreateSubscriptionRequestDto {
   automationName: string;
-  systemId: string;
-  selectorId: string;
 }
 
 export type CreateSubscriptionResponseDto = Result<SubscriptionDto | null>;

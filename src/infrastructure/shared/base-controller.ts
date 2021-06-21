@@ -20,7 +20,7 @@ export abstract class BaseController {
   public async execute (req: Request, res: Response): Promise<void | Response> {
     try {
       await this.executeImpl(req, res);
-    } catch (err) {
+    } catch (error) {
       BaseController.fail(res, "An unexpected error occurred");
     }
   }

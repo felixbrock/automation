@@ -1,11 +1,15 @@
 import IUseCase from '../services/use-case';
 import { Target, TargetProperties } from '../value-types';
-import { ReadSubscription } from '../subscription/read-subscription';
-import { GetSelector, GetSelectorResponseDto } from '../get-selector/get-selector';
+import {
+  GetSelector,
+  GetSelectorResponseDto,
+} from '../selector-api/get-selector';
 import TargetDto from './target-dto';
 import SubscriptionDto from '../subscription/subscription-dto';
 import { UpdateSubscription } from '../subscription/update-subscription';
 import Result from '../value-types/transient-types';
+import { Subscription } from '../entities';
+import ISubscriptionRepository from '../subscription/i-subscription-repository';
 
 export interface CreateTargetRequestDto {
   subscriptionId: string;
@@ -18,18 +22,18 @@ export type CreateTargetResponseDto = Result<TargetDto | null>;
 export class CreateTarget
   implements IUseCase<CreateTargetRequestDto, CreateTargetResponseDto>
 {
-  #readSubscription: ReadSubscription;
+  #subscriptionRepository: ISubscriptionRepository;
 
   #updateSubscription: UpdateSubscription;
 
   #getSelector: GetSelector;
 
   public constructor(
-    readSubscription: ReadSubscription,
+    subscriptionRepository: ISubscriptionRepository,
     updateSubscription: UpdateSubscription,
     getSelector: GetSelector
   ) {
-    this.#readSubscription = readSubscription;
+    this.#subscriptionRepository = subscriptionRepository;
     this.#updateSubscription = updateSubscription;
     this.#getSelector = getSelector;
   }
@@ -47,19 +51,16 @@ export class CreateTarget
         return Result.fail<TargetDto>(validatedRequest.error);
 
       // TODO Potential fix? Subscription is read twice. Once in create-target and once in update subscription
-      const readSubscriptionResult: Result<SubscriptionDto | null> =
-        await this.#readSubscription.execute({ id: request.subscriptionId });
-
-      if (readSubscriptionResult.error)
-        return Result.fail<null>(readSubscriptionResult.error);
-      if (!readSubscriptionResult.value)
+      const subscription: Subscription | null =
+        await this.#subscriptionRepository.findById(request.subscriptionId);
+      if (!subscription)
         return Result.fail<null>(
-          `Couldn't read subscription ${request.subscriptionId}`
+          `Subscription with id ${request.subscriptionId} does not exist`
         );
 
-      const targetDtos = readSubscriptionResult.value.targets;
-      const targetDto = this.#buildTargetDto(target.value);
-      targetDtos.push(targetDto);
+      subscription.addTarget(target.value);
+
+      const targetDtos : TargetDto[] = subscription.targets.map((targetElement) => this.#buildTargetDto(targetElement));
 
       const updateSubscriptionResult: Result<SubscriptionDto | null> =
         await this.#updateSubscription.execute({
@@ -74,7 +75,7 @@ export class CreateTarget
           `Couldn't update subscription ${request.subscriptionId}`
         );
 
-      return Result.ok<TargetDto>(targetDto);
+      return Result.ok<TargetDto>(this.#buildTargetDto(target.value));
     } catch (error) {
       return Result.fail<TargetDto>(error.message);
     }

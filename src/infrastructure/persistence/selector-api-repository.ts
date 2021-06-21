@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { IGetSelectorRepository, GetSelectorDto } from '../../domain/get-selector/get-selector';
+import { IGetSelectorRepository, GetSelectorDto } from '../../domain/selector-api/get-selector';
 
 export default class GetSelectorRepositoryImpl
   implements IGetSelectorRepository

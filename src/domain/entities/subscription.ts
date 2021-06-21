@@ -115,4 +115,8 @@ export class Subscription {
     });
     return isDuplicatedResults.includes(true);
   };
+
+  public addTarget(target: Target): void {
+    this.#targets.push(target);
+  }
 }
