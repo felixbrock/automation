@@ -4,17 +4,20 @@ import { ReadSubscription } from './subscription/read-subscription';
 import { GetSubscriptionAlerts } from './get-alerts/get-alerts';
 import { UpdateSubscription } from './subscription/update-subscription';
 import { DeleteTarget } from './target/delete-target';
+import { DeleteSubscription } from './subscription/delete-subscription';
 
 export default class SubscriptionDomain {
   #createSubscription: CreateSubscription;
   
   #updateSubscription: UpdateSubscription;
 
+  #readSubscription: ReadSubscription;
+
+  #deleteSubscription: DeleteSubscription;
+
   #createTarget: CreateTarget;
 
   #deleteTarget: DeleteTarget;
-
-  #readSubscription: ReadSubscription;
 
   #getSubscriptionAlerts: GetSubscriptionAlerts;
 
@@ -24,6 +27,10 @@ export default class SubscriptionDomain {
 
   public get updateSubscription(): UpdateSubscription {
     return this.#updateSubscription;
+  }
+
+  public get deleteSubscription(): DeleteSubscription {
+    return this.#deleteSubscription;
   }
 
   public get createTarget(): CreateTarget {
@@ -45,16 +52,18 @@ export default class SubscriptionDomain {
   constructor(
     createSubscription: CreateSubscription,
     updateSubscription: UpdateSubscription,
+    readSubscription: ReadSubscription,
+    deleteSubscription: DeleteSubscription,
     createTarget: CreateTarget,
     deleteTarget: DeleteTarget,
-    readSubscription: ReadSubscription,
     getSubscriptionAlerts: GetSubscriptionAlerts
   ) {
     this.#createSubscription = createSubscription;
     this.#updateSubscription = updateSubscription;
+    this.#readSubscription = readSubscription;
+    this.#deleteSubscription = deleteSubscription;
     this.#createTarget = createTarget;
     this.#deleteTarget = deleteTarget;
-    this.#readSubscription = readSubscription;
     this.#getSubscriptionAlerts = getSubscriptionAlerts;
   }
 }

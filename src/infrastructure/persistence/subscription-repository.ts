@@ -87,6 +87,40 @@ export default class SubscriptionRepositoryImpl
   }
 
   // eslint-disable-next-line class-methods-use-this
+  public async delete(subscriptionId: string): Promise<Result<null>> {
+    const data: string = fs.readFileSync(
+      path.resolve(__dirname, '../../../db.json'),
+      'utf-8'
+    );
+    const db = JSON.parse(data);
+
+    try {
+      const subscriptions: SubscriptionPersistence[] = db.subscriptions.filter(
+        (subscriptionEntity: { id: string }) =>
+          subscriptionEntity.id !== subscriptionId
+      );
+
+      if (subscriptions.length === db.subscriptions.length)
+        throw new Error(
+          `Subscription with id ${subscriptionId} does not exist`
+        );
+
+      db.subscriptions = subscriptions;
+
+      fs.writeFileSync(
+        path.resolve(__dirname, '../../../db.json'),
+        JSON.stringify(db),
+        'utf-8'
+      );
+
+      return Result.ok<null>();
+    } catch (error) {
+      return Result.fail<null>(error.message);
+    }
+  }
+
+
+  // eslint-disable-next-line class-methods-use-this
   public async deleteTarget(
     subscriptionId: string,
     selectorId: string

@@ -14,6 +14,7 @@ import GetSystemRepository from './persistence/system-api-repository';
 import SubscriptionRepository from './persistence/subscription-repository';
 import { UpdateSubscription } from '../domain/subscription/update-subscription';
 import { DeleteTarget } from '../domain/target/delete-target';
+import { DeleteSubscription } from '../domain/subscription/delete-subscription';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -21,10 +22,13 @@ iocRegister.register({
   subscriptionDomain: asClass(SubscriptionDomain),
 
   createSubscription: asClass(CreateSubscription),
-  createTarget: asClass(CreateTarget),
-  deleteTarget: asClass(DeleteTarget),
   readSubscription: asClass(ReadSubscription),
   updateSubscription: asClass(UpdateSubscription),
+  deleteSubscription: asClass(DeleteSubscription),
+  
+  createTarget: asClass(CreateTarget),
+  deleteTarget: asClass(DeleteTarget),
+  
   getSubscriptionAlerts: asClass(GetSubscriptionAlerts),
 
   getSelector: asClass(GetSelector),
