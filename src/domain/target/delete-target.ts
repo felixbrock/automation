@@ -1,7 +1,5 @@
 import IUseCase from '../services/use-case';
-import { Target } from '../value-types';
 import { ReadSubscription } from '../subscription/read-subscription';
-import TargetDto from './target-dto';
 import SubscriptionDto from '../subscription/subscription-dto';
 import Result from '../value-types/transient-types';
 import ISubscriptionRepository from '../subscription/i-subscription-repository';
@@ -53,9 +51,4 @@ export class DeleteTarget
       return Result.fail<null>(error.message);
     }
   }
-
-  #buildTargetDto = (target: Target): TargetDto => ({
-    selectorId: target.selectorId,
-    systemId: target.systemId,
-  });
 }

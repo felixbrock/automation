@@ -6,7 +6,7 @@ import {
   GetSubscriptionAlerts,
   GetSubscriptionAlertsRequestDto,
   GetSubscriptionAlertsResponseDto,
-} from '../../../domain/get-alerts/get-alerts';
+} from '../../../domain/subscription/get-alerts';
 
 export default class GetSubscriptionAlertsController extends BaseController {
   #getSubscriptionAlerts: GetSubscriptionAlerts;

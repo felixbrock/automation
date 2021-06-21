@@ -1,10 +1,12 @@
 import { CreateSubscription } from './subscription/create-subscription';
 import { CreateTarget } from './target/create-target';
 import { ReadSubscription } from './subscription/read-subscription';
-import { GetSubscriptionAlerts } from './get-alerts/get-alerts';
+import { GetSubscriptionAlerts } from './subscription/get-alerts';
 import { UpdateSubscription } from './subscription/update-subscription';
 import { DeleteTarget } from './target/delete-target';
 import { DeleteSubscription } from './subscription/delete-subscription';
+import { ReadSubscriptions } from './subscription/read-subscriptions';
+import { DeleteTargets } from './target/delete-targets';
 
 export default class SubscriptionDomain {
   #createSubscription: CreateSubscription;
@@ -13,11 +15,15 @@ export default class SubscriptionDomain {
 
   #readSubscription: ReadSubscription;
 
+  #readSubscriptions: ReadSubscriptions;
+
   #deleteSubscription: DeleteSubscription;
 
   #createTarget: CreateTarget;
 
   #deleteTarget: DeleteTarget;
+
+  #deleteTargets: DeleteTargets;
 
   #getSubscriptionAlerts: GetSubscriptionAlerts;
 
@@ -27,6 +33,14 @@ export default class SubscriptionDomain {
 
   public get updateSubscription(): UpdateSubscription {
     return this.#updateSubscription;
+  }
+
+  public get readSubscription(): ReadSubscription {
+    return this.#readSubscription;
+  }
+
+  public get readSubscriptions(): ReadSubscriptions {
+    return this.#readSubscriptions;
   }
 
   public get deleteSubscription(): DeleteSubscription {
@@ -41,8 +55,8 @@ export default class SubscriptionDomain {
     return this.#deleteTarget;
   }
 
-  public get readSubscription(): ReadSubscription {
-    return this.#readSubscription;
+  public get deleteTargets(): DeleteTargets {
+    return this.#deleteTargets;
   }
 
   public get getSubscriptionAlerts(): GetSubscriptionAlerts {
@@ -53,17 +67,21 @@ export default class SubscriptionDomain {
     createSubscription: CreateSubscription,
     updateSubscription: UpdateSubscription,
     readSubscription: ReadSubscription,
+    readSubscriptions: ReadSubscriptions,
     deleteSubscription: DeleteSubscription,
     createTarget: CreateTarget,
     deleteTarget: DeleteTarget,
+    deleteTargets: DeleteTargets,
     getSubscriptionAlerts: GetSubscriptionAlerts
   ) {
     this.#createSubscription = createSubscription;
     this.#updateSubscription = updateSubscription;
     this.#readSubscription = readSubscription;
+    this.#readSubscriptions = readSubscriptions;
     this.#deleteSubscription = deleteSubscription;
     this.#createTarget = createTarget;
     this.#deleteTarget = deleteTarget;
+    this.#deleteTargets = deleteTargets;
     this.#getSubscriptionAlerts = getSubscriptionAlerts;
   }
 }

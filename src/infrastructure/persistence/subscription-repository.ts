@@ -22,7 +22,7 @@ interface SubscriptionPersistence {
 export default class SubscriptionRepositoryImpl
   implements ISubscriptionRepository
 {
-  public findById = async (id: string): Promise<Subscription | null> => {
+  public async findById(id: string): Promise<Subscription | null> {
     const data: string = fs.readFileSync(
       path.resolve(__dirname, '../../../db.json'),
       'utf-8'
@@ -35,7 +35,22 @@ export default class SubscriptionRepositoryImpl
 
     if (!result) return null;
     return this.#toEntity(this.#buildProperties(result));
-  };
+  }
+
+  public async all(): Promise<Subscription[] | null> {
+    const data: string = fs.readFileSync(
+      path.resolve(__dirname, '../../../db.json'),
+      'utf-8'
+    );
+    const db = JSON.parse(data);
+
+    const {subscriptions} = db;
+
+    if (!subscriptions || subscriptions.length === 0) return null;
+    return subscriptions.map((subscription : SubscriptionPersistence) =>
+      this.#toEntity(this.#buildProperties(subscription))
+    );
+  }
 
   public async save(subscription: Subscription): Promise<Result<null>> {
     const data: string = fs.readFileSync(
@@ -119,7 +134,6 @@ export default class SubscriptionRepositoryImpl
     }
   }
 
-
   // eslint-disable-next-line class-methods-use-this
   public async deleteTarget(
     subscriptionId: string,
@@ -178,8 +192,16 @@ export default class SubscriptionRepositoryImpl
 
   #toEntity = (
     subscriptionProperties: SubscriptionProperties
-  ): Subscription | null =>
-    Subscription.create(subscriptionProperties).value || null;
+  ): Subscription => {
+    const createSubscriptionResult: Result<Subscription> = Subscription.create(
+      subscriptionProperties
+    );
+
+    if(createSubscriptionResult.error) throw new Error(createSubscriptionResult.error);
+    if(!createSubscriptionResult.value) throw new Error('Subscription creation failed');
+
+    return createSubscriptionResult.value;
+  };
 
   #buildProperties = (
     subscription: SubscriptionPersistence

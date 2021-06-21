@@ -6,11 +6,11 @@ import {
   GetSelectorResponseDto,
 } from '../selector-api/get-selector';
 import { GetSystem, GetSystemResponseDto, Warning } from '../system-api/get-system';
-import ISubscriptionRepository from '../subscription/i-subscription-repository';
+import ISubscriptionRepository from './i-subscription-repository';
 import { Subscription } from '../entities';
 import TargetDto from '../target/target-dto';
-import { UpdateSubscription } from '../subscription/update-subscription';
-import SubscriptionDto from '../subscription/subscription-dto';
+import { UpdateSubscription } from './update-subscription';
+import SubscriptionDto from './subscription-dto';
 
 export interface GetSubscriptionAlertsRequestDto {
   subscriptionId: string;
@@ -105,7 +105,6 @@ export class GetSubscriptionAlerts
     const subscriptionWarnings: GetSubscriptionAlertDto[] = [];
 
     try {
-      // TODO is foreach more appropriate at this point (rather than map)?
       await Promise.all(
         targets.map(async (target) => {
           const getSelectorResponse: GetSelectorResponseDto =
