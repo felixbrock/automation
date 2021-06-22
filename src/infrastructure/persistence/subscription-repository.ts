@@ -102,7 +102,7 @@ export default class SubscriptionRepositoryImpl
   }
 
   // eslint-disable-next-line class-methods-use-this
-  public async delete(subscriptionId: string): Promise<Result<null>> {
+  public async delete(id: string): Promise<Result<null>> {
     const data: string = fs.readFileSync(
       path.resolve(__dirname, '../../../db.json'),
       'utf-8'
@@ -112,12 +112,12 @@ export default class SubscriptionRepositoryImpl
     try {
       const subscriptions: SubscriptionPersistence[] = db.subscriptions.filter(
         (subscriptionEntity: { id: string }) =>
-          subscriptionEntity.id !== subscriptionId
+          subscriptionEntity.id !== id
       );
 
       if (subscriptions.length === db.subscriptions.length)
         throw new Error(
-          `Subscription with id ${subscriptionId} does not exist`
+          `Subscription with id ${id} does not exist`
         );
 
       db.subscriptions = subscriptions;

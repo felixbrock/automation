@@ -9,7 +9,6 @@ import app from '../../ioc-register';
 import SubscriptionDomain from '../../../domain/subscription-domain';
 import DeleteTargetController from '../controllers/delete-target-controller';
 import DeleteSubscriptionController from '../controllers/delete-subscription-controller';
-import DeleteTargetsController from '../controllers/delete-targets-controller';
 
 const subscriptionRoutes = Router();
 
@@ -35,10 +34,6 @@ const deleteTargetController = new DeleteTargetController(
   subscriptionDomain.deleteTarget
 );
 
-const deleteTargetsController = new DeleteTargetsController(
-  subscriptionDomain.deleteTargets
-);
-
 const getSubscriptionAlertsController = new GetSubscriptionAlertsController(
   subscriptionDomain.getSubscriptionAlerts
 );
@@ -61,10 +56,6 @@ subscriptionRoutes.post('/:subscriptionId/target', (req, res) =>
 
 subscriptionRoutes.delete('/:subscriptionId/target', (req, res) =>
   deleteTargetController.execute(req, res)
-);
-
-subscriptionRoutes.delete('/subscriptions/targets', (req, res) =>
-  deleteTargetsController.execute(req, res)
 );
 
 subscriptionRoutes.get('/:subscriptionId/alerts', (req, res) =>

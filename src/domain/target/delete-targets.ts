@@ -2,8 +2,8 @@ import IUseCase from '../services/use-case';
 import TargetDto from './target-dto';
 import SubscriptionDto from '../subscription/subscription-dto';
 import Result from '../value-types/transient-types';
-import ISubscriptionRepository from '../subscription/i-subscription-repository';
 import { ReadSubscriptions } from '../subscription/read-subscriptions';
+import { DeleteTarget } from './delete-target';
 
 export interface DeleteTargetsRequestDto {
   selectorId: string;
@@ -14,15 +14,15 @@ export type DeleteTargetsResponseDto = Result<null>;
 export class DeleteTargets
   implements IUseCase<DeleteTargetsRequestDto, DeleteTargetsResponseDto>
 {
-  #subscriptionRepository: ISubscriptionRepository;
+  #deleteTarget: DeleteTarget;
 
   #readSubscriptions: ReadSubscriptions;
 
   public constructor(
-    subscriptionRepository: ISubscriptionRepository,
-    readSubscriptions: ReadSubscriptions
+    readSubscriptions: ReadSubscriptions,
+    deleteTarget: DeleteTarget
   ) {
-    this.#subscriptionRepository = subscriptionRepository;
+    this.#deleteTarget = deleteTarget;
     this.#readSubscriptions = readSubscriptions;
   }
 
@@ -30,7 +30,6 @@ export class DeleteTargets
     request: DeleteTargetsRequestDto
   ): Promise<DeleteTargetsResponseDto> {
     try {
-      // read Subscriptions
       const readSubscriptionsResult: Result<SubscriptionDto[] | null> =
         await this.#readSubscriptions.execute();
 
@@ -67,9 +66,9 @@ export class DeleteTargets
 
     if (!target) return Result.ok<null>();
 
-    return this.#subscriptionRepository.deleteTarget(
-      subscriptionDto.id,
-      selectorId
-    );
+    return this.#deleteTarget.execute({
+      subscriptionId: subscriptionDto.id,
+      selectorId,
+    });
   }
 }
