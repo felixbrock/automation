@@ -3,13 +3,24 @@ import IUseCase from '../services/use-case';
 import TargetDto from '../target/target-dto';
 import { Target } from '../value-types';
 import Result from '../value-types/transient-types';
-import ISubscriptionRepository from './i-subscription-repository';
+import {
+  ISubscriptionRepository,
+  SubscriptionQueryDto,
+} from './i-subscription-repository';
 import SubscriptionDto from './subscription-dto';
+
+export interface ReadSubscriptionsRequestDto {
+  automationName?: string;
+  target?: { selectorId?: string; systemId?: string };
+  modifiedOn?: number;
+  alertsAccessedOn?: number;
+}
 
 export type ReadSubscriptionsResponseDto = Result<SubscriptionDto[] | null>;
 
 export class ReadSubscriptions
-  implements IUseCase<undefined, ReadSubscriptionsResponseDto>
+  implements
+    IUseCase<ReadSubscriptionsRequestDto, ReadSubscriptionsResponseDto>
 {
   #subscriptionRepository: ISubscriptionRepository;
 
@@ -17,11 +28,15 @@ export class ReadSubscriptions
     this.#subscriptionRepository = subscriptionRepository;
   }
 
-  public async execute(): Promise<ReadSubscriptionsResponseDto> {
+  public async execute(
+    request: ReadSubscriptionsRequestDto
+  ): Promise<ReadSubscriptionsResponseDto> {
     try {
       const subscriptions: Subscription[] | null =
-        await this.#subscriptionRepository.all();
-      if (!subscriptions) throw new Error(`Subscriptions do not exist`);
+        await this.#subscriptionRepository.findBy(
+          this.#buildSubscriptionQueryDto(request)
+        );
+      if (!subscriptions) throw new Error(`Queried subscriptions do not exist`);
 
       return Result.ok<SubscriptionDto[]>(
         subscriptions.map((subscription) =>
@@ -46,5 +61,17 @@ export class ReadSubscriptions
   #buildTargetDto = (target: Target): TargetDto => ({
     selectorId: target.selectorId,
     systemId: target.systemId,
+  });
+
+  #buildSubscriptionQueryDto = (
+    request: ReadSubscriptionsRequestDto
+  ): SubscriptionQueryDto => ({
+    automationName: request.automationName,
+    target: {
+      selectorId: request.target?.selectorId,
+      systemId: request.target?.systemId,
+    },
+    modifiedOn: request.modifiedOn,
+    alertsAccessedOn: request.alertsAccessedOn,
   });
 }

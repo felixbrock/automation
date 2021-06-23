@@ -1,7 +1,7 @@
 import IUseCase from '../services/use-case';
 import { Subscription } from '../entities';
 import SubscriptionDto from './subscription-dto';
-import ISubscriptionRepository from './i-subscription-repository';
+import {ISubscriptionRepository} from './i-subscription-repository';
 import { Target } from '../value-types';
 import Result from '../value-types/transient-types';
 import TargetDto from '../target/target-dto';
@@ -39,7 +39,7 @@ export class UpdateSubscription
   ): Promise<UpdateSubscriptionResponseDto> {
     try {
       const subscription: Subscription | null =
-        await this.#subscriptionRepository.findById(request.id);
+        await this.#subscriptionRepository.findOne(request.id);
 
       if (!subscription)
         throw new Error(

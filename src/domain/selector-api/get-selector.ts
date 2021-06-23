@@ -21,7 +21,7 @@ export interface GetSelectorDto {
 export type GetSelectorResponseDto = Result<GetSelectorDto | null>;
 
 export interface IGetSelectorRepository {
-  getById(selectorId: string): Promise<GetSelectorDto | null>;
+  getOne(selectorId: string): Promise<GetSelectorDto | null>;
 }
 
 export class GetSelector
@@ -38,7 +38,7 @@ export class GetSelector
   ): Promise<GetSelectorResponseDto> {
     try {
       const getSelectorResponse: GetSelectorDto | null =
-        await this.#getSelectorRepository.getById(
+        await this.#getSelectorRepository.getOne(
           request.id
         );
 

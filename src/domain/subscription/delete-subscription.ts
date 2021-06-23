@@ -1,6 +1,6 @@
 import IUseCase from '../services/use-case';
 import Result from '../value-types/transient-types';
-import ISubscriptionRepository from './i-subscription-repository';
+import {ISubscriptionRepository} from './i-subscription-repository';
 import { ReadSubscription } from './read-subscription';
 import SubscriptionDto from './subscription-dto';
 

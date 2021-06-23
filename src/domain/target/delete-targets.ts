@@ -31,7 +31,7 @@ export class DeleteTargets
   ): Promise<DeleteTargetsResponseDto> {
     try {
       const readSubscriptionsResult: Result<SubscriptionDto[] | null> =
-        await this.#readSubscriptions.execute();
+        await this.#readSubscriptions.execute({});
 
       if (readSubscriptionsResult.error)
         throw new Error(readSubscriptionsResult.error);

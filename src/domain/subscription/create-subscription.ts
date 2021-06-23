@@ -4,7 +4,7 @@ import IUseCase from '../services/use-case';
 import { Id, Target } from '../value-types';
 import { Subscription, SubscriptionProperties } from '../entities';
 import SubscriptionDto from './subscription-dto';
-import ISubscriptionRepository from './i-subscription-repository';
+import {ISubscriptionRepository} from './i-subscription-repository';
 import Result from '../value-types/transient-types';
 import TargetDto from '../target/target-dto';
 

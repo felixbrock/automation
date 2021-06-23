@@ -9,7 +9,7 @@ import SubscriptionDto from '../subscription/subscription-dto';
 import { UpdateSubscription } from '../subscription/update-subscription';
 import Result from '../value-types/transient-types';
 import { Subscription } from '../entities';
-import ISubscriptionRepository from '../subscription/i-subscription-repository';
+import {ISubscriptionRepository} from '../subscription/i-subscription-repository';
 
 export interface CreateTargetRequestDto {
   subscriptionId: string;
@@ -52,7 +52,7 @@ export class CreateTarget
 
       // TODO Potential fix? Subscription is read twice. Once in create-target and once in update subscription
       const subscription: Subscription | null =
-        await this.#subscriptionRepository.findById(request.subscriptionId);
+        await this.#subscriptionRepository.findOne(request.subscriptionId);
       if (!subscription)
         throw new Error(
           `Subscription with id ${request.subscriptionId} does not exist`

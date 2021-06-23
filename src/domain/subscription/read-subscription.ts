@@ -3,7 +3,7 @@ import IUseCase from '../services/use-case';
 import TargetDto from '../target/target-dto';
 import { Target } from '../value-types';
 import Result from '../value-types/transient-types';
-import ISubscriptionRepository from './i-subscription-repository';
+import {ISubscriptionRepository} from './i-subscription-repository';
 import SubscriptionDto from './subscription-dto';
 
 export interface ReadSubscriptionRequestDto {
@@ -26,7 +26,7 @@ export class ReadSubscription
   ): Promise<ReadSubscriptionResponseDto> {
     try {
       const subscription: Subscription | null =
-        await this.#subscriptionRepository.findById(request.id);
+        await this.#subscriptionRepository.findOne(request.id);
       if (!subscription)
         throw new Error(
           `Subscription with id ${request.id} does not exist`

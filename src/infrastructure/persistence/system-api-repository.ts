@@ -5,7 +5,7 @@ export default class GetSystemRepositoryImpl
   implements IGetSystemRepository
 {
   // TODO Should return a selector object and not a DTO!! When to use a Dto?
-  public getById = async (id: string): Promise<GetSystemDto | null> => {
+  public getOne = async (id: string): Promise<GetSystemDto | null> => {
     try {
       const response = await fetch(
         `http://localhost:3002/api/v1/system/${id}`

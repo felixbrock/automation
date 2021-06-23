@@ -1,7 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { Subscription, SubscriptionProperties } from '../../domain/entities';
-import ISubscriptionRepository from '../../domain/subscription/i-subscription-repository';
+import {
+  ISubscriptionRepository,
+  SubscriptionQueryDto,
+  TargetQueryDto,
+} from '../../domain/subscription/i-subscription-repository';
 import { Target } from '../../domain/value-types';
 import Result from '../../domain/value-types/transient-types';
 
@@ -22,7 +26,7 @@ interface SubscriptionPersistence {
 export default class SubscriptionRepositoryImpl
   implements ISubscriptionRepository
 {
-  public async findById(id: string): Promise<Subscription | null> {
+  public async findOne(id: string): Promise<Subscription | null> {
     const data: string = fs.readFileSync(
       path.resolve(__dirname, '../../../db.json'),
       'utf-8'
@@ -37,17 +41,59 @@ export default class SubscriptionRepositoryImpl
     return this.#toEntity(this.#buildProperties(result));
   }
 
-  public async all(): Promise<Subscription[] | null> {
+  public async findBy(
+    subscriptionQueryDto: SubscriptionQueryDto
+  ): Promise<Subscription[]> {
+    if (!Object.keys(subscriptionQueryDto).length) return this.all();
+
     const data: string = fs.readFileSync(
       path.resolve(__dirname, '../../../db.json'),
       'utf-8'
     );
     const db = JSON.parse(data);
 
-    const {subscriptions} = db;
+    const subscriptions: SubscriptionPersistence[] = db.subscriptions.filter(
+      (subscriptionEntity: SubscriptionPersistence) => this.findByCallback(subscriptionEntity, subscriptionQueryDto)
+    );
 
-    if (!subscriptions || subscriptions.length === 0) return null;
-    return subscriptions.map((subscription : SubscriptionPersistence) =>
+    if (!subscriptions || !!subscriptions.length) return [];
+    return subscriptions.map((subscription: SubscriptionPersistence) =>
+      this.#toEntity(this.#buildProperties(subscription))
+    );
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  private findByCallback(subscriptionEntity: SubscriptionPersistence, subscriptionQueryDto: SubscriptionQueryDto) : boolean{
+    const automationNameMatch = subscriptionQueryDto.automationName ? subscriptionEntity.automationName === subscriptionQueryDto.automationName : true;
+    const alertsAccessedOnMatch = subscriptionQueryDto.alertsAccessedOn ? subscriptionEntity.alertsAccessedOn === subscriptionQueryDto.alertsAccessedOn : true;
+    const modifiedOnMatch = subscriptionQueryDto.modifiedOn ? subscriptionEntity.modifiedOn === subscriptionQueryDto.modifiedOn : true;
+
+    let targetMatch : boolean;
+    if(subscriptionQueryDto.target === true){
+      const queryTarget : TargetQueryDto = subscriptionQueryDto.target;
+      const result : TargetPersistence | undefined = subscriptionEntity.targets.find((target : TargetPersistence) => {
+        const targetSelectorMatch = queryTarget.selectorId ? target.selectorId === queryTarget.selectorId : true;
+        const targetSystemMatch = queryTarget.systemId ? target.systemId === queryTarget.systemId: true;
+        return targetSelectorMatch && targetSystemMatch;
+      });
+      targetMatch = !!result;
+    }
+    else targetMatch = true;
+    
+    return automationNameMatch && alertsAccessedOnMatch && modifiedOnMatch && targetMatch;
+  }
+
+  public async all(): Promise<Subscription[]> {
+    const data: string = fs.readFileSync(
+      path.resolve(__dirname, '../../../db.json'),
+      'utf-8'
+    );
+    const db = JSON.parse(data);
+
+    const { subscriptions } = db;
+
+    if (!subscriptions || !!subscriptions.length) return [];
+    return subscriptions.map((subscription: SubscriptionPersistence) =>
       this.#toEntity(this.#buildProperties(subscription))
     );
   }
@@ -111,14 +157,11 @@ export default class SubscriptionRepositoryImpl
 
     try {
       const subscriptions: SubscriptionPersistence[] = db.subscriptions.filter(
-        (subscriptionEntity: { id: string }) =>
-          subscriptionEntity.id !== id
+        (subscriptionEntity: { id: string }) => subscriptionEntity.id !== id
       );
 
       if (subscriptions.length === db.subscriptions.length)
-        throw new Error(
-          `Subscription with id ${id} does not exist`
-        );
+        throw new Error(`Subscription with id ${id} does not exist`);
 
       db.subscriptions = subscriptions;
 
@@ -197,8 +240,10 @@ export default class SubscriptionRepositoryImpl
       subscriptionProperties
     );
 
-    if(createSubscriptionResult.error) throw new Error(createSubscriptionResult.error);
-    if(!createSubscriptionResult.value) throw new Error('Subscription creation failed');
+    if (createSubscriptionResult.error)
+      throw new Error(createSubscriptionResult.error);
+    if (!createSubscriptionResult.value)
+      throw new Error('Subscription creation failed');
 
     return createSubscriptionResult.value;
   };

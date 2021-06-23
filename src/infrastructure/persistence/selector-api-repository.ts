@@ -5,7 +5,7 @@ export default class GetSelectorRepositoryImpl
   implements IGetSelectorRepository
 {
   // TODO Should return a selector object and not a DTO!! When to use a Dto?
-  public getById = async (
+  public getOne = async (
     id: string
   ): Promise<GetSelectorDto | null> => {
     try {

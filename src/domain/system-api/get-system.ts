@@ -20,7 +20,7 @@ export interface GetSystemDto {
 export type GetSystemResponseDto = Result<GetSystemDto | null>;
 
 export interface IGetSystemRepository {
-  getById(systemId: string): Promise<GetSystemDto | null>;
+  getOne(systemId: string): Promise<GetSystemDto | null>;
 }
 
 export class GetSystem
@@ -37,7 +37,7 @@ export class GetSystem
   ): Promise<GetSystemResponseDto> {
     try {
       const getSystemResult: GetSystemDto | null =
-        await this.#getSystemRepository.getById(request.id);
+        await this.#getSystemRepository.getOne(request.id);
 
       if (!getSystemResult)
         throw new Error(

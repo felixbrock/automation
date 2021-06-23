@@ -6,7 +6,7 @@ import {
   GetSelectorResponseDto,
 } from '../selector-api/get-selector';
 import { GetSystem, GetSystemResponseDto, Warning } from '../system-api/get-system';
-import ISubscriptionRepository from './i-subscription-repository';
+import {ISubscriptionRepository} from './i-subscription-repository';
 import { Subscription } from '../entities';
 import TargetDto from '../target/target-dto';
 import { UpdateSubscription } from './update-subscription';
@@ -60,7 +60,7 @@ export class GetSubscriptionAlerts
   ): Promise<GetSubscriptionAlertsResponseDto> {
     try {
       const subscription: Subscription | null =
-        await this.#subscriptionRepository.findById(request.subscriptionId);
+        await this.#subscriptionRepository.findOne(request.subscriptionId);
 
       if (!subscription)
         throw new Error(
