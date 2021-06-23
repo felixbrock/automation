@@ -67,10 +67,7 @@ export class ReadSubscriptions
     request: ReadSubscriptionsRequestDto
   ): SubscriptionQueryDto => ({
     automationName: request.automationName,
-    target: {
-      selectorId: request.target?.selectorId,
-      systemId: request.target?.systemId,
-    },
+    target: request.target,
     modifiedOn: request.modifiedOn,
     alertsAccessedOn: request.alertsAccessedOn,
   });

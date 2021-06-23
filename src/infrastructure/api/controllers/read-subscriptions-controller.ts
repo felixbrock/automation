@@ -39,22 +39,26 @@ export default class ReadSubscriptionsController extends BaseController {
         'Request query parameter are supposed to be in string format'
       );
 
-    return Result.ok<ReadSubscriptionsRequestDto>({
-      automationName:
-        typeof automationName === 'string' ? automationName : undefined,
-      target: {
-        selectorId:
-          typeof targetSelectorId === 'string' ? targetSelectorId : undefined,
-        systemId:
-          typeof targetSystemId === 'string' ? targetSystemId : undefined,
-      },
-      alertsAccessedOn:
-        alertsAccessedOn === 'string'
-          ? parseInt(alertsAccessedOn, 10)
-          : undefined,
-      modifiedOn:
-        typeof modifiedOn === 'string' ? parseInt(modifiedOn, 10) : undefined,
-    });
+    try {
+      return Result.ok<ReadSubscriptionsRequestDto>({
+        automationName:
+          typeof automationName === 'string' ? automationName : undefined,
+        target: {
+          selectorId:
+            typeof targetSelectorId === 'string' ? targetSelectorId : undefined,
+          systemId:
+            typeof targetSystemId === 'string' ? targetSystemId : undefined,
+        },
+        alertsAccessedOn:
+          alertsAccessedOn === 'string'
+            ? parseInt(alertsAccessedOn, 10)
+            : undefined,
+        modifiedOn:
+          typeof modifiedOn === 'string' ? parseInt(modifiedOn, 10) : undefined,
+      });
+    } catch (error) {
+      return Result.fail<ReadSubscriptionsRequestDto>(error.message);
+    }
   };
 
   #queryParametersValid = (parameters: unknown[]): boolean => {
@@ -66,12 +70,19 @@ export default class ReadSubscriptionsController extends BaseController {
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
-      const buildDtoResult: Result<ReadSubscriptionsRequestDto> = this.#buildRequestDto(req);
+      const buildDtoResult: Result<ReadSubscriptionsRequestDto> =
+        this.#buildRequestDto(req);
 
-      if(buildDtoResult.error) return ReadSubscriptionsController.badRequest(res, buildDtoResult.error);
-      if(!buildDtoResult.value) return ReadSubscriptionsController.badRequest(res, 'Invalid request query paramerters');
-      
-
+      if (buildDtoResult.error)
+        return ReadSubscriptionsController.badRequest(
+          res,
+          buildDtoResult.error
+        );
+      if (!buildDtoResult.value)
+        return ReadSubscriptionsController.badRequest(
+          res,
+          'Invalid request query paramerters'
+        );
 
       const useCaseResult: ReadSubscriptionsResponseDto =
         await this.#readSubscriptions.execute(buildDtoResult.value);
