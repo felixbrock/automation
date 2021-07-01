@@ -65,10 +65,16 @@ export class ReadSubscriptions
 
   #buildSubscriptionQueryDto = (
     request: ReadSubscriptionsRequestDto
-  ): SubscriptionQueryDto => ({
-    automationName: request.automationName,
-    target: request.target,
-    modifiedOn: request.modifiedOn,
-    alertsAccessedOn: request.alertsAccessedOn,
-  });
+  ): SubscriptionQueryDto => 
+  {
+
+    const queryDto : SubscriptionQueryDto = {};
+
+    if(request.automationName) queryDto.automationName = request.automationName;
+    if(request.target && (request.target.selectorId || request.target.systemId)) queryDto.target = request.target;
+    if(request.modifiedOn) queryDto.modifiedOn = request.modifiedOn;
+    if(request.alertsAccessedOn) queryDto.alertsAccessedOn = request.alertsAccessedOn;
+    
+    return queryDto;
+  };
 }
