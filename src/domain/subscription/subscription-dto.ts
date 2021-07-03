@@ -1,10 +1,18 @@
-import TargetDto from "../target/target-dto";
+import { Subscription } from "../entities";
+import {TargetDto, buildTargetDto } from "../target/target-dto";
 
-export default interface SubscriptionDto {
+export interface SubscriptionDto {
   id: string;
   automationName: string;
   targets: TargetDto[];
   modifiedOn: number;
-  alertsAccessedOn: number;
-  // eslint-disable-next-line semi
-}
+};
+
+export const buildSubscriptionDto = (subscription: Subscription): SubscriptionDto => ({
+  id: subscription.id,
+  automationName: subscription.automationName,
+  targets: subscription.targets.map(
+    (target): TargetDto => buildTargetDto(target)
+  ),
+  modifiedOn: subscription.modifiedOn,
+});

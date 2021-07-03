@@ -19,8 +19,6 @@ interface SubscriptionPersistence {
   automationName: string;
   targets: TargetPersistence[];
   modifiedOn: number;
-  alertsAccessedOn: number;
-  // eslint-disable-next-line semi
 }
 
 export default class SubscriptionRepositoryImpl
@@ -53,7 +51,8 @@ export default class SubscriptionRepositoryImpl
     const db = JSON.parse(data);
 
     const subscriptions: SubscriptionPersistence[] = db.subscriptions.filter(
-      (subscriptionEntity: SubscriptionPersistence) => this.findByCallback(subscriptionEntity, subscriptionQueryDto)
+      (subscriptionEntity: SubscriptionPersistence) =>
+        this.findByCallback(subscriptionEntity, subscriptionQueryDto)
     );
 
     if (!subscriptions || !!subscriptions.length) return [];
@@ -63,24 +62,39 @@ export default class SubscriptionRepositoryImpl
   }
 
   // eslint-disable-next-line class-methods-use-this
-  private findByCallback(subscriptionEntity: SubscriptionPersistence, subscriptionQueryDto: SubscriptionQueryDto) : boolean{
-    const automationNameMatch = subscriptionQueryDto.automationName ? subscriptionEntity.automationName === subscriptionQueryDto.automationName : true;
-    const alertsAccessedOnMatch = subscriptionQueryDto.alertsAccessedOn ? subscriptionEntity.alertsAccessedOn === subscriptionQueryDto.alertsAccessedOn : true;
-    const modifiedOnMatch = subscriptionQueryDto.modifiedOn ? subscriptionEntity.modifiedOn === subscriptionQueryDto.modifiedOn : true;
+  private findByCallback(
+    subscriptionEntity: SubscriptionPersistence,
+    subscriptionQueryDto: SubscriptionQueryDto
+  ): boolean {
+    const automationNameMatch = subscriptionQueryDto.automationName
+      ? subscriptionEntity.automationName ===
+        subscriptionQueryDto.automationName
+      : true;
+    const modifiedOnMatch = subscriptionQueryDto.modifiedOn
+      ? subscriptionEntity.modifiedOn === subscriptionQueryDto.modifiedOn
+      : true;
 
-    let targetMatch : boolean;
-    if(subscriptionQueryDto.target === true){
-      const queryTarget : TargetQueryDto = subscriptionQueryDto.target;
-      const result : TargetPersistence | undefined = subscriptionEntity.targets.find((target : TargetPersistence) => {
-        const targetSelectorMatch = queryTarget.selectorId ? target.selectorId === queryTarget.selectorId : true;
-        const targetSystemMatch = queryTarget.systemId ? target.systemId === queryTarget.systemId: true;
-        return targetSelectorMatch && targetSystemMatch;
-      });
+    let targetMatch: boolean;
+    if (subscriptionQueryDto.target === true) {
+      const queryTarget: TargetQueryDto = subscriptionQueryDto.target;
+      const result: TargetPersistence | undefined =
+        subscriptionEntity.targets.find((target: TargetPersistence) => {
+          const targetSelectorMatch = queryTarget.selectorId
+            ? target.selectorId === queryTarget.selectorId
+            : true;
+          const targetSystemMatch = queryTarget.systemId
+            ? target.systemId === queryTarget.systemId
+            : true;
+          return targetSelectorMatch && targetSystemMatch;
+        });
       targetMatch = !!result;
-    }
-    else targetMatch = true;
-    
-    return automationNameMatch && alertsAccessedOnMatch && modifiedOnMatch && targetMatch;
+    } else targetMatch = true;
+
+    return (
+      automationNameMatch &&
+      modifiedOnMatch &&
+      targetMatch
+    );
   }
 
   public async all(): Promise<Subscription[]> {
@@ -254,7 +268,6 @@ export default class SubscriptionRepositoryImpl
     id: subscription.id,
     automationName: subscription.automationName,
     modifiedOn: subscription.modifiedOn,
-    alertsAccessedOn: subscription.alertsAccessedOn,
     targets: subscription.targets.map((target) => {
       const targetResult = Target.create(target);
       if (targetResult.value) return targetResult.value;
@@ -268,7 +281,6 @@ export default class SubscriptionRepositoryImpl
     id: subscription.id,
     automationName: subscription.automationName,
     modifiedOn: subscription.modifiedOn,
-    alertsAccessedOn: subscription.alertsAccessedOn,
     targets: subscription.targets.map(
       (target): TargetPersistence => ({
         selectorId: target.selectorId,

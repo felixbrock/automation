@@ -1,6 +1,6 @@
 import IUseCase from '../services/use-case';
-import TargetDto from './target-dto';
-import SubscriptionDto from '../subscription/subscription-dto';
+import { TargetDto } from './target-dto';
+import { SubscriptionDto } from '../subscription/subscription-dto';
 import Result from '../value-types/transient-types';
 import { ReadSubscriptions } from '../subscription/read-subscriptions';
 import { DeleteTarget } from './delete-target';

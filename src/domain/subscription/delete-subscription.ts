@@ -1,8 +1,8 @@
 import IUseCase from '../services/use-case';
 import Result from '../value-types/transient-types';
-import {ISubscriptionRepository} from './i-subscription-repository';
+import { ISubscriptionRepository } from './i-subscription-repository';
 import { ReadSubscription } from './read-subscription';
-import SubscriptionDto from './subscription-dto';
+import { SubscriptionDto } from './subscription-dto';
 
 export interface DeleteSubscriptionRequestDto {
   subscriptionId: string;
@@ -11,7 +11,8 @@ export interface DeleteSubscriptionRequestDto {
 export type DeleteSubscriptionResponseDto = Result<null>;
 
 export class DeleteSubscription
-  implements IUseCase<DeleteSubscriptionRequestDto, DeleteSubscriptionResponseDto>
+  implements
+    IUseCase<DeleteSubscriptionRequestDto, DeleteSubscriptionResponseDto>
 {
   #subscriptionRepository: ISubscriptionRepository;
 
@@ -38,11 +39,10 @@ export class DeleteSubscription
         throw new Error(`Couldn't read subscription ${request.subscriptionId}`);
 
       const deleteSubscriptionResult: Result<null> =
-        await this.#subscriptionRepository.delete(
-          request.subscriptionId
-        );
+        await this.#subscriptionRepository.delete(request.subscriptionId);
 
-      if (deleteSubscriptionResult.error) throw new Error(deleteSubscriptionResult.error);
+      if (deleteSubscriptionResult.error)
+        throw new Error(deleteSubscriptionResult.error);
 
       return Result.ok<null>();
     } catch (error) {

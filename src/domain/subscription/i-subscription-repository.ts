@@ -5,12 +5,12 @@ export interface SubscriptionQueryDto {
   automationName?: string;
   target?: TargetQueryDto;
   modifiedOn?: number;
-  alertsAccessedOn?: number;
 }
 
 export interface TargetQueryDto {
   selectorId?: string;
   systemId?: string;
+  alertsAccessedOn?: number;
 }
 
 export interface ISubscriptionRepository {

@@ -5,7 +5,6 @@ export interface SubscriptionProperties {
   id: string;
   automationName: string;
   modifiedOn?: number;
-  alertsAccessedOn?: number;
   targets?: Target[];
 }
 
@@ -15,8 +14,6 @@ export class Subscription {
   #automationName: string;
 
   #modifiedOn: number;
-
-  #alertsAccessedOn: number;
 
   #targets: Target[];
 
@@ -45,16 +42,6 @@ export class Subscription {
     this.#modifiedOn = modifiedOn;
   }
 
-  public get alertsAccessedOn(): number {
-    return this.#alertsAccessedOn;
-  }
-
-  public set alertsAccessedOn(accessedOn: number) {
-    if (!Subscription.timestampValid(accessedOn))
-      throw new Error('AlertAccessedOn value lies in the past');
-    this.#alertsAccessedOn = accessedOn;
-  }
-
   public get targets(): Target[] {
     return this.#targets;
   }
@@ -72,7 +59,6 @@ export class Subscription {
     this.#id = properties.id;
     this.#automationName = properties.automationName;
     this.#modifiedOn = properties.modifiedOn || Date.now();
-    this.#alertsAccessedOn = properties.alertsAccessedOn || Date.now();
     this.#targets = properties.targets || [];
   }
 
@@ -84,13 +70,6 @@ export class Subscription {
       !Subscription.timestampValid(properties.modifiedOn)
     )
       return Result.fail<Subscription>('ModifiedOn value lies in the past');
-    if (
-      properties.alertsAccessedOn &&
-      !Subscription.timestampValid(properties.alertsAccessedOn)
-    )
-      return Result.fail<Subscription>(
-        'AlertAccessedOn value lies in the past'
-      );
     if (!properties.automationName)
       return Result.fail<Subscription>('Subscription must have automation id');
     if (!properties.id)

@@ -1,5 +1,13 @@
-export default interface TargetDto {
+import { Target } from "../value-types";
+
+export interface TargetDto {
   selectorId: string;
   systemId: string;
-  // eslint-disable-next-line semi
-}
+  alertsAccessedOn: number;
+};
+
+export const buildTargetDto = (target: Target): TargetDto => ({
+  selectorId: target.selectorId,
+  systemId: target.systemId,
+  alertsAccessedOn: target.alertsAccessedOn
+});

@@ -1,11 +1,14 @@
 import IUseCase from '../services/use-case';
 import { Subscription } from '../entities';
-import SubscriptionDto from './subscription-dto';
-import {ISubscriptionRepository} from './i-subscription-repository';
+import { SubscriptionDto, buildSubscriptionDto } from './subscription-dto';
+import { ISubscriptionRepository } from './i-subscription-repository';
 import { Target } from '../value-types';
 import Result from '../value-types/transient-types';
-import TargetDto from '../target/target-dto';
-import { GetSelector, GetSelectorResponseDto } from '../selector-api/get-selector';
+import { TargetDto } from '../target/target-dto';
+import {
+  GetSelector,
+  GetSelectorResponseDto,
+} from '../selector-api/get-selector';
 
 // TODO - This would be a PATCH use-case since not all fields need to be necessarily updated
 
@@ -42,9 +45,7 @@ export class UpdateSubscription
         await this.#subscriptionRepository.findOne(request.id);
 
       if (!subscription)
-        throw new Error(
-          `Subscription with id ${request.id} does not exist`
-        );
+        throw new Error(`Subscription with id ${request.id} does not exist`);
 
       if (request.targets) {
         const targetsValid = await this.#targetSelectorIdsValid(
@@ -65,27 +66,12 @@ export class UpdateSubscription
       await this.#subscriptionRepository.update(modifiedSubscription);
 
       return Result.ok<SubscriptionDto>(
-        this.#buildSubscriptionDto(modifiedSubscription)
+        buildSubscriptionDto(modifiedSubscription)
       );
     } catch (error) {
       return Result.fail<SubscriptionDto>(error.message);
     }
   }
-
-  #buildSubscriptionDto = (subscription: Subscription): SubscriptionDto => ({
-    id: subscription.id,
-    automationName: subscription.automationName,
-    targets: subscription.targets.map(
-      (target): TargetDto => this.#buildTargetDto(target)
-    ),
-    modifiedOn: subscription.modifiedOn,
-    alertsAccessedOn: subscription.alertsAccessedOn,
-  });
-
-  #buildTargetDto = (target: Target): TargetDto => ({
-    selectorId: target.selectorId,
-    systemId: target.systemId,
-  });
 
   #modifySubscription = (
     subscription: Subscription,
@@ -105,9 +91,6 @@ export class UpdateSubscription
           );
         })
       : subscription.targets;
-
-    subscriptionToModify.alertsAccessedOn =
-      request.alertsAccessedOn || subscription.alertsAccessedOn;
 
     subscriptionToModify.modifiedOn = Date.now();
 

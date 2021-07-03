@@ -4,12 +4,12 @@ import {
   GetSelector,
   GetSelectorResponseDto,
 } from '../selector-api/get-selector';
-import TargetDto from './target-dto';
-import SubscriptionDto from '../subscription/subscription-dto';
+import { buildTargetDto, TargetDto } from './target-dto';
+import { SubscriptionDto } from '../subscription/subscription-dto';
 import { UpdateSubscription } from '../subscription/update-subscription';
 import Result from '../value-types/transient-types';
 import { Subscription } from '../entities';
-import {ISubscriptionRepository} from '../subscription/i-subscription-repository';
+import { ISubscriptionRepository } from '../subscription/i-subscription-repository';
 
 export interface CreateTargetRequestDto {
   subscriptionId: string;
@@ -47,8 +47,7 @@ export class CreateTarget
 
     try {
       const validatedRequest = await this.validateRequest(target.value);
-      if (validatedRequest.error)
-        throw new Error(validatedRequest.error);
+      if (validatedRequest.error) throw new Error(validatedRequest.error);
 
       // TODO Potential fix? Subscription is read twice. Once in create-target and once in update subscription
       const subscription: Subscription | null =
@@ -60,7 +59,9 @@ export class CreateTarget
 
       subscription.addTarget(target.value);
 
-      const targetDtos : TargetDto[] = subscription.targets.map((targetElement) => this.#buildTargetDto(targetElement));
+      const targetDtos: TargetDto[] = subscription.targets.map(
+        (targetElement) => buildTargetDto(targetElement)
+      );
 
       const updateSubscriptionResult: Result<SubscriptionDto | null> =
         await this.#updateSubscription.execute({
@@ -75,7 +76,7 @@ export class CreateTarget
           `Couldn't update subscription ${request.subscriptionId}`
         );
 
-      return Result.ok<TargetDto>(this.#buildTargetDto(target.value));
+      return Result.ok<TargetDto>(buildTargetDto(target.value));
     } catch (error) {
       return Result.fail<TargetDto>(error.message);
     }
@@ -101,11 +102,6 @@ export class CreateTarget
 
     return Result.ok<null>(null);
   }
-
-  #buildTargetDto = (target: Target): TargetDto => ({
-    selectorId: target.selectorId,
-    systemId: target.systemId,
-  });
 
   #createTarget = (request: CreateTargetRequestDto): Result<Target | null> => {
     const targetProperties: TargetProperties = {

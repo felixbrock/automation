@@ -1,12 +1,11 @@
 // TODO Violation of Dependency Rule
 import { v4 as uuidv4 } from 'uuid';
 import IUseCase from '../services/use-case';
-import { Id, Target } from '../value-types';
+import { Id } from '../value-types';
 import { Subscription, SubscriptionProperties } from '../entities';
-import SubscriptionDto from './subscription-dto';
+import {buildSubscriptionDto, SubscriptionDto} from './subscription-dto';
 import {ISubscriptionRepository} from './i-subscription-repository';
 import Result from '../value-types/transient-types';
-import TargetDto from '../target/target-dto';
 
 export interface CreateSubscriptionRequestDto {
   automationName: string;
@@ -36,27 +35,12 @@ export class CreateSubscription
       await this.#subscriptionRepository.save(subscription.value);
 
       return Result.ok<SubscriptionDto>(
-        this.#buildSubscriptionDto(subscription.value)
+        buildSubscriptionDto(subscription.value)
       );
     } catch (error) {
       return Result.fail<SubscriptionDto>(error.message);
     }
   }
-
-  #buildSubscriptionDto = (subscription: Subscription): SubscriptionDto => ({
-    id: subscription.id,
-    automationName: subscription.automationName,
-    targets: subscription.targets.map(
-      (target): TargetDto => this.#buildTargetDto(target)
-    ),
-    modifiedOn: subscription.modifiedOn,
-    alertsAccessedOn: subscription.alertsAccessedOn,
-  });
-
-  #buildTargetDto = (target: Target): TargetDto => ({
-    selectorId: target.selectorId,
-    systemId: target.systemId,
-  });
 
   #createSubscription = (
     request: CreateSubscriptionRequestDto

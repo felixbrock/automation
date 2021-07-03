@@ -5,12 +5,17 @@ import {
   GetSelector,
   GetSelectorResponseDto,
 } from '../selector-api/get-selector';
-import { GetSystem, GetSystemResponseDto, Warning } from '../system-api/get-system';
-import {ISubscriptionRepository} from './i-subscription-repository';
+import {
+  GetSystem,
+  GetSystemDto,
+  GetSystemResponseDto,
+  Warning,
+} from '../system-api/get-system';
+import { ISubscriptionRepository } from './i-subscription-repository';
 import { Subscription } from '../entities';
-import TargetDto from '../target/target-dto';
+import { TargetDto } from '../target/target-dto';
 import { UpdateSubscription } from './update-subscription';
-import SubscriptionDto from './subscription-dto';
+import { SubscriptionDto } from './subscription-dto';
 
 export interface GetSubscriptionAlertsRequestDto {
   subscriptionId: string;
@@ -30,10 +35,7 @@ export type GetSubscriptionAlertsResponseDto =
 
 export class GetSubscriptionAlerts
   implements
-    IUseCase<
-      GetSubscriptionAlertsRequestDto,
-      GetSubscriptionAlertsResponseDto
-    >
+    IUseCase<GetSubscriptionAlertsRequestDto, GetSubscriptionAlertsResponseDto>
 {
   #subscriptionRepository: ISubscriptionRepository;
 
@@ -68,10 +70,7 @@ export class GetSubscriptionAlerts
         );
 
       const getSubscriptionAlertsResponse: GetSubscriptionAlertsResponseDto =
-        await this.readAlerts(
-          subscription.targets,
-          subscription.alertsAccessedOn
-        );
+        await this.readSubscriptionAlerts(subscription.targets);
 
       if (getSubscriptionAlertsResponse.error)
         throw new Error(getSubscriptionAlertsResponse.error);
@@ -97,67 +96,82 @@ export class GetSubscriptionAlerts
     }
   }
 
-  private async readAlerts(
-    targets: TargetDto[],
-    alertsAccessedOn: number
+  private async readSubscriptionAlerts(
+    targets: TargetDto[]
   ): Promise<GetSubscriptionAlertsResponseDto> {
-    const subscriptionAlerts: GetSubscriptionAlertDto[] = [];
-    const subscriptionWarnings: GetSubscriptionAlertDto[] = [];
-
     try {
+      const warnings: GetSubscriptionAlertDto[] = [];
+      let alerts: GetSubscriptionAlertDto[] = [];
+
       await Promise.all(
         targets.map(async (target) => {
-          const getSelectorResponse: GetSelectorResponseDto =
-            await this.#getSelector.execute({ id: target.selectorId });
-
-          if (getSelectorResponse.error) return;
-          if (!getSelectorResponse.value) return;
-
           const getSystemResponse: GetSystemResponseDto =
             await this.#getSystem.execute({ id: target.systemId });
 
           if (getSystemResponse.error) return;
           if (!getSystemResponse.value) return;
 
-          const { alerts } = getSelectorResponse.value;
-          const { warnings } = getSystemResponse.value;
-
-          const selectorContent = getSelectorResponse.value.content;
-          const systemName = getSystemResponse.value.name;
-
-          const relevantAlerts: Alert[] = alerts.filter(
-            (alert) => alert.createdOn >= alertsAccessedOn
+          // TODO Enable return of Warnings when covering warnings
+          // warnings = await this.#readTargetWarnings(target, getSystemResponse.value);
+          alerts = await this.#readTargetAlerts(
+            target,
+            getSystemResponse.value.name
           );
-          relevantAlerts.forEach((alert) => {
-            const alertMessage = `An error occurred on selector ${selectorContent} in system ${systemName} at ${new Date(
-              alert.createdOn
-            ).toISOString()}`;
-
-            subscriptionAlerts.push({
-              message: alertMessage,
-            });
-          });
-
-          if (relevantAlerts.length > 0) return;
-
-          const relevantWarnings: Warning[] = warnings.filter(
-            (warning) => warning.createdOn >= alertsAccessedOn
-          );
-          relevantWarnings.forEach((warning) => {
-            const warningMessage = `An error occurred in system ${systemName} on a different selector at ${new Date(
-              warning.createdOn
-            ).toISOString()}. Be careful, this automation might be affected from system changes`;
-
-            subscriptionWarnings.push({
-              message: warningMessage,
-            });
-          });
         })
       );
 
-      return Result.ok<GetSubscriptionAlertsDto>({ alerts: subscriptionAlerts, warnings: subscriptionWarnings});
+      return Result.ok<GetSubscriptionAlertsDto>({
+        alerts,
+        warnings,
+      });
     } catch (error) {
       return Result.fail<null>(error.message);
     }
   }
+
+  #readTargetWarnings = async (
+    target: TargetDto,
+    system: GetSystemDto
+  ): Promise<GetSubscriptionAlertDto[]> => {
+    const relevantWarnings: Warning[] = system.warnings.filter(
+      (warning) => warning.createdOn >= target.alertsAccessedOn
+    );
+
+    const subscriptionWarnings = relevantWarnings.map((warning) => ({
+      message: `An error occurred in system ${
+        system.name
+      } on a different selector at ${new Date(
+        warning.createdOn
+      ).toISOString()}. Be careful, this automation might be affected from system changes`,
+    }));
+
+    return subscriptionWarnings;
+  };
+
+  #readTargetAlerts = async (
+    target: TargetDto,
+    systemName: string
+  ): Promise<GetSubscriptionAlertDto[]> => {
+    const getSelectorResponse: GetSelectorResponseDto =
+      await this.#getSelector.execute({ id: target.selectorId });
+
+    if (getSelectorResponse.error) return [];
+    if (!getSelectorResponse.value) return [];
+
+    const { alerts } = getSelectorResponse.value;
+
+    const selectorContent = getSelectorResponse.value.content;
+
+    const relevantAlerts: Alert[] = alerts.filter(
+      (alert) => alert.createdOn >= target.alertsAccessedOn
+    );
+
+    const subscriptionAlerts = relevantAlerts.map((alert) => ({
+      message: `An error occurred on selector ${selectorContent} in system ${systemName} at ${new Date(
+        alert.createdOn
+      ).toISOString()}`,
+    }));
+
+    return subscriptionAlerts;
+  };
 }
