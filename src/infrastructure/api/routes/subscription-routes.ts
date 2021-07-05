@@ -1,10 +1,8 @@
 import { Router } from 'express';
-import {
-  CreateSubscriptionController,
-  ReadSubscriptionController,
-  GetSubscriptionAlertsController,
-  CreateTargetController,
-} from '../controllers';
+import CreateSubscriptionController from '../controllers/create-subscription-controller';
+import ReadSubscriptionController from '../controllers/read-subscription-controller';
+import GetSubscriptionAlertsController from '../controllers/read-subscription-alerts-controller';
+import CreateTargetController from '../controllers/create-target-controller';
 import app from '../../ioc-register';
 import SubscriptionDomain from '../../../domain/subscription-domain';
 import DeleteTargetController from '../controllers/delete-target-controller';

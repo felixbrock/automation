@@ -5,7 +5,7 @@ import {
   ReadSubscriptionRequestDto,
   ReadSubscriptionResponseDto,
 } from '../../../domain/subscription/read-subscription';
-import { BaseController, CodeHttp } from '../../shared';
+import { BaseController, CodeHttp } from '../../shared/base-controller';
 
 export default class ReadSubscriptionController extends BaseController {
   #readSubscription: ReadSubscription;

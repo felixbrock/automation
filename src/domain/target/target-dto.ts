@@ -1,4 +1,4 @@
-import { Target } from "../value-types";
+import { Target } from "../value-types/target";
 
 export interface TargetDto {
   selectorId: string;

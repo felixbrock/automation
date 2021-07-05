@@ -1,4 +1,4 @@
-import Result from '../value-types/transient-types';
+import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import {
   Alert,
@@ -12,7 +12,7 @@ import {
   Warning,
 } from '../system-api/get-system';
 import { ISubscriptionRepository } from './i-subscription-repository';
-import { Subscription } from '../entities';
+import { Subscription } from '../entities/subscription';
 import { TargetDto } from '../target/target-dto';
 import { UpdateSubscription } from './update-subscription';
 import { SubscriptionDto } from './subscription-dto';

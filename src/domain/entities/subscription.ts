@@ -1,4 +1,4 @@
-import Result from '../value-types/transient-types';
+import Result from '../value-types/transient-types/result';
 import { Target } from '../value-types/target';
 
 export interface SubscriptionProperties {

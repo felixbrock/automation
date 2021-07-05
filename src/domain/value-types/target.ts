@@ -1,4 +1,4 @@
-import Result from "./transient-types";
+import Result from "./transient-types/result";
 
 export interface TargetProperties {
   systemId: string;

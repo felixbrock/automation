@@ -1,9 +1,9 @@
 import IUseCase from '../services/use-case';
-import { Subscription } from '../entities';
+import { Subscription } from '../entities/subscription';
 import { SubscriptionDto, buildSubscriptionDto } from './subscription-dto';
 import { ISubscriptionRepository } from './i-subscription-repository';
-import { Target } from '../value-types';
-import Result from '../value-types/transient-types';
+import { Target } from '../value-types/target';
+import Result from '../value-types/transient-types/result';
 import { TargetDto } from '../target/target-dto';
 import {
   GetSelector,

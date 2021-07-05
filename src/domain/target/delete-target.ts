@@ -1,7 +1,7 @@
 import IUseCase from '../services/use-case';
 import { ReadSubscription } from '../subscription/read-subscription';
 import {SubscriptionDto} from '../subscription/subscription-dto';
-import Result from '../value-types/transient-types';
+import Result from '../value-types/transient-types/result';
 import {ISubscriptionRepository} from '../subscription/i-subscription-repository';
 
 export interface DeleteTargetRequestDto {

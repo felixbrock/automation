@@ -1,5 +1,5 @@
 import IUseCase from '../services/use-case';
-import { Target, TargetProperties } from '../value-types';
+import { Target, TargetProperties } from '../value-types/target';
 import {
   GetSelector,
   GetSelectorResponseDto,
@@ -7,8 +7,8 @@ import {
 import { buildTargetDto, TargetDto } from './target-dto';
 import { SubscriptionDto } from '../subscription/subscription-dto';
 import { UpdateSubscription } from '../subscription/update-subscription';
-import Result from '../value-types/transient-types';
-import { Subscription } from '../entities';
+import Result from '../value-types/transient-types/result';
+import { Subscription } from '../entities/subscription';
 import { ISubscriptionRepository } from '../subscription/i-subscription-repository';
 
 export interface CreateTargetRequestDto {

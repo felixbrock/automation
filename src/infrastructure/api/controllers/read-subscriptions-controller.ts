@@ -5,8 +5,8 @@ import {
   ReadSubscriptionsRequestDto,
   ReadSubscriptionsResponseDto,
 } from '../../../domain/subscription/read-subscriptions';
-import Result from '../../../domain/value-types/transient-types';
-import { BaseController, CodeHttp } from '../../shared';
+import Result from '../../../domain/value-types/transient-types/result';
+import { BaseController, CodeHttp } from '../../shared/base-controller';
 
 export default class ReadSubscriptionsController extends BaseController {
   #readSubscriptions: ReadSubscriptions;

@@ -5,7 +5,7 @@ import {
   DeleteSubscriptionRequestDto,
   DeleteSubscriptionResponseDto,
 } from '../../../domain/subscription/delete-subscription';
-import { BaseController, CodeHttp } from '../../shared';
+import { BaseController, CodeHttp } from '../../shared/base-controller';
 
 export default class DeleteSubscriptionController extends BaseController {
   #deleteSubscription: DeleteSubscription;

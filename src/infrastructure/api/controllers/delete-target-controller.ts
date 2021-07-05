@@ -5,8 +5,8 @@ import {
   DeleteTargetRequestDto,
   DeleteTargetResponseDto,
 } from '../../../domain/target/delete-target';
-import Result from '../../../domain/value-types/transient-types';
-import { BaseController, CodeHttp } from '../../shared';
+import Result from '../../../domain/value-types/transient-types/result';
+import { BaseController, CodeHttp } from '../../shared/base-controller';
 
 export default class DeleteTargetController extends BaseController {
   #deleteTarget: DeleteTarget;

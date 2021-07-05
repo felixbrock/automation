@@ -1,4 +1,4 @@
-import { Subscription } from "../entities";
+import { Subscription } from "../entities/subscription";
 import {TargetDto, buildTargetDto } from "../target/target-dto";
 
 export interface SubscriptionDto {

@@ -1,7 +1,7 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
 
-import { BaseController, CodeHttp } from '../../shared';
+import { BaseController, CodeHttp } from '../../shared/base-controller';
 import {
   GetSubscriptionAlerts,
   GetSubscriptionAlertsRequestDto,

@@ -1,6 +1,6 @@
-import { Subscription } from '../entities';
+import { Subscription } from '../entities/subscription';
 import IUseCase from '../services/use-case';
-import Result from '../value-types/transient-types';
+import Result from '../value-types/transient-types/result';
 import {
   ISubscriptionRepository,
   SubscriptionQueryDto,

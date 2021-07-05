@@ -1,5 +1,5 @@
-import { Subscription } from '../entities';
-import Result from '../value-types/transient-types';
+import { Subscription } from '../entities/subscription';
+import Result from '../value-types/transient-types/result';
 
 export interface SubscriptionQueryDto {
   automationName?: string;

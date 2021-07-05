@@ -1,11 +1,11 @@
 // TODO Violation of Dependency Rule
 import { v4 as uuidv4 } from 'uuid';
 import IUseCase from '../services/use-case';
-import { Id } from '../value-types';
-import { Subscription, SubscriptionProperties } from '../entities';
+import Id from '../value-types/id';
+import { Subscription, SubscriptionProperties } from '../entities/subscription';
 import {buildSubscriptionDto, SubscriptionDto} from './subscription-dto';
 import {ISubscriptionRepository} from './i-subscription-repository';
-import Result from '../value-types/transient-types';
+import Result from '../value-types/transient-types/result';
 
 export interface CreateSubscriptionRequestDto {
   automationName: string;

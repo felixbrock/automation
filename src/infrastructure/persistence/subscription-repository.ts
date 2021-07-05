@@ -1,13 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { Subscription, SubscriptionProperties } from '../../domain/entities';
+import { Subscription, SubscriptionProperties } from '../../domain/entities/subscription';
 import {
   ISubscriptionRepository,
   SubscriptionQueryDto,
   TargetQueryDto,
 } from '../../domain/subscription/i-subscription-repository';
-import { Target } from '../../domain/value-types';
-import Result from '../../domain/value-types/transient-types';
+import { Target } from '../../domain/value-types/target';
+import Result from '../../domain/value-types/transient-types/result';
 
 interface TargetPersistence {
   selectorId: string;

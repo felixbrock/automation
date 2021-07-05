@@ -5,7 +5,7 @@ import {
   CreateTargetRequestDto,
   CreateTargetResponseDto,
 } from '../../../domain/target/create-target';
-import { BaseController, CodeHttp } from '../../shared';
+import { BaseController, CodeHttp } from '../../shared/base-controller';
 
 export default class CreateTargetController extends BaseController {
   #createTarget: CreateTarget;
