@@ -15,7 +15,6 @@ import {
 export interface UpdateSubscriptionRequestDto {
   id: string;
   automationName?: string;
-  alertsAccessedOn?: number;
   targets?: TargetDto[];
 }
 

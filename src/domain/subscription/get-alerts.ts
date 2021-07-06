@@ -13,9 +13,10 @@ import {
 } from '../system-api/get-system';
 import { ISubscriptionRepository } from './i-subscription-repository';
 import { Subscription } from '../entities/subscription';
-import { TargetDto } from '../target/target-dto';
+import { buildTargetDto, TargetDto } from '../target/target-dto';
 import { UpdateSubscription } from './update-subscription';
 import { SubscriptionDto } from './subscription-dto';
+import { Target } from '../value-types/target';
 
 export interface GetSubscriptionAlertsRequestDto {
   subscriptionId: string;
@@ -70,25 +71,12 @@ export class GetSubscriptionAlerts
         );
 
       const getSubscriptionAlertsResponse: GetSubscriptionAlertsResponseDto =
-        await this.readSubscriptionAlerts(subscription.targets);
+        await this.readSubscriptionAlerts(subscription);
 
       if (getSubscriptionAlertsResponse.error)
         throw new Error(getSubscriptionAlertsResponse.error);
       if (!getSubscriptionAlertsResponse.value)
         throw new Error('An error occurred while reading alerts');
-
-      const updateSubscriptionResult: Result<SubscriptionDto | null> =
-        await this.#updateSubscription.execute({
-          id: request.subscriptionId,
-          alertsAccessedOn: Date.now(),
-        });
-
-      if (updateSubscriptionResult.error)
-        throw new Error(updateSubscriptionResult.error);
-      if (!updateSubscriptionResult.value)
-        throw new Error(
-          `Couldn't update subscription ${request.subscriptionId}`
-        );
 
       return getSubscriptionAlertsResponse;
     } catch (error) {
@@ -96,15 +84,34 @@ export class GetSubscriptionAlerts
     }
   }
 
+  #update = async (subscription: Subscription): Promise<Result<null>> => {
+    const targetDtos: TargetDto[] = subscription.targets.map((targetElement) =>
+      buildTargetDto(targetElement)
+    );
+
+    const updateSubscriptionResult: Result<SubscriptionDto | null> =
+      await this.#updateSubscription.execute({
+        id: subscription.id,
+        targets: targetDtos,
+      });
+
+    if (updateSubscriptionResult.error)
+      return Result.fail(updateSubscriptionResult.error);
+    if (!updateSubscriptionResult.value)
+      return Result.fail(`Couldn't update subscription ${subscription.id}`);
+
+    return Result.ok();
+  };
+
   private async readSubscriptionAlerts(
-    targets: TargetDto[]
+    subscription: Subscription
   ): Promise<GetSubscriptionAlertsResponseDto> {
     try {
       const warnings: GetSubscriptionAlertDto[] = [];
       let alerts: GetSubscriptionAlertDto[] = [];
 
       await Promise.all(
-        targets.map(async (target) => {
+        subscription.targets.map(async (target) => {
           const getSystemResponse: GetSystemResponseDto =
             await this.#getSystem.execute({ id: target.systemId });
 
@@ -117,8 +124,16 @@ export class GetSubscriptionAlerts
             target,
             getSystemResponse.value.name
           );
+
+          const updateTargetResult = subscription.updateTarget(target);
+
+          if (updateTargetResult.error) throw new Error(updateTargetResult.error);
         })
       );
+
+      const updateSubscriptionResult = await this.#update(subscription);
+
+      if (updateSubscriptionResult.error) throw new Error(updateSubscriptionResult.error);
 
       return Result.ok<GetSubscriptionAlertsDto>({
         alerts,
@@ -130,7 +145,7 @@ export class GetSubscriptionAlerts
   }
 
   #readTargetWarnings = async (
-    target: TargetDto,
+    target: Target,
     system: GetSystemDto
   ): Promise<GetSubscriptionAlertDto[]> => {
     const relevantWarnings: Warning[] = system.warnings.filter(
@@ -149,7 +164,7 @@ export class GetSubscriptionAlerts
   };
 
   #readTargetAlerts = async (
-    target: TargetDto,
+    target: Target,
     systemName: string
   ): Promise<GetSubscriptionAlertDto[]> => {
     const getSelectorResponse: GetSelectorResponseDto =

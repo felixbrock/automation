@@ -57,7 +57,7 @@ export class CreateTarget
           `Subscription with id ${request.subscriptionId} does not exist`
         );
 
-      subscription.addTarget(target.value);
+      subscription.targets.push(target.value);
 
       const targetDtos: TargetDto[] = subscription.targets.map(
         (targetElement) => buildTargetDto(targetElement)

@@ -17,11 +17,13 @@ export default class CreateSubscriptionController extends BaseController {
 
   #buildRequestDto = (httpRequest: Request): CreateSubscriptionRequestDto => ({
     automationName: httpRequest.body.automationName,
+    accountId: httpRequest.body.accountId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
-      const requestDto: CreateSubscriptionRequestDto = this.#buildRequestDto(req);
+      const requestDto: CreateSubscriptionRequestDto =
+        this.#buildRequestDto(req);
       const useCaseResult: CreateSubscriptionResponseDto =
         await this.#createSubscription.execute(requestDto);
 

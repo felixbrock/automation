@@ -9,6 +9,7 @@ import Result from '../value-types/transient-types/result';
 
 export interface CreateSubscriptionRequestDto {
   automationName: string;
+  accountId: string;
 }
 
 export type CreateSubscriptionResponseDto = Result<SubscriptionDto | null>;
@@ -48,6 +49,7 @@ export class CreateSubscription
     const subscriptionProperties: SubscriptionProperties = {
       id: Id.next(uuidv4).id,
       automationName: request.automationName,
+      accountId: request.accountId,
     };
 
     return Subscription.create(subscriptionProperties);

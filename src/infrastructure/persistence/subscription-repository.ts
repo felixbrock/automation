@@ -17,6 +17,7 @@ interface TargetPersistence {
 interface SubscriptionPersistence {
   id: string;
   automationName: string;
+  accountId: string;
   targets: TargetPersistence[];
   modifiedOn: number;
 }
@@ -267,6 +268,7 @@ export default class SubscriptionRepositoryImpl
   ): SubscriptionProperties => ({
     id: subscription.id,
     automationName: subscription.automationName,
+    accountId: subscription.accountId,
     modifiedOn: subscription.modifiedOn,
     targets: subscription.targets.map((target) => {
       const targetResult = Target.create(target);
@@ -280,6 +282,7 @@ export default class SubscriptionRepositoryImpl
   #toPersistence = (subscription: Subscription): SubscriptionPersistence => ({
     id: subscription.id,
     automationName: subscription.automationName,
+    accountId: subscription.accountId,
     modifiedOn: subscription.modifiedOn,
     targets: subscription.targets.map(
       (target): TargetPersistence => ({

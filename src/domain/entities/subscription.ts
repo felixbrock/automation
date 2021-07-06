@@ -4,6 +4,7 @@ import { Target } from '../value-types/target';
 export interface SubscriptionProperties {
   id: string;
   automationName: string;
+  accountId: string;
   modifiedOn?: number;
   targets?: Target[];
 }
@@ -12,6 +13,8 @@ export class Subscription {
   #id: string;
 
   #automationName: string;
+
+  #accountId: string;
 
   #modifiedOn: number;
 
@@ -29,6 +32,10 @@ export class Subscription {
     if (!name) throw new Error('Automation name cannot be null');
 
     this.#automationName = name;
+  }
+
+  public get accountId(): string {
+    return this.#accountId;
   }
 
   public get modifiedOn(): number {
@@ -58,6 +65,7 @@ export class Subscription {
   private constructor(properties: SubscriptionProperties) {
     this.#id = properties.id;
     this.#automationName = properties.automationName;
+    this.#accountId = properties.accountId;
     this.#modifiedOn = properties.modifiedOn || Date.now();
     this.#targets = properties.targets || [];
   }
@@ -65,15 +73,17 @@ export class Subscription {
   public static create(
     properties: SubscriptionProperties
   ): Result<Subscription> {
+    if (!properties.automationName)
+      return Result.fail<Subscription>('Subscription must have automation id');
+    if (!properties.accountId)
+      return Result.fail<Subscription>('Subscription must have account id');
+    if (!properties.id)
+      return Result.fail<Subscription>('Subscription must have id');
     if (
       properties.modifiedOn &&
       !Subscription.timestampValid(properties.modifiedOn)
     )
       return Result.fail<Subscription>('ModifiedOn value lies in the past');
-    if (!properties.automationName)
-      return Result.fail<Subscription>('Subscription must have automation id');
-    if (!properties.id)
-      return Result.fail<Subscription>('Subscription must have id');
 
     const subscription = new Subscription(properties);
     return Result.ok<Subscription>(subscription);
@@ -95,7 +105,26 @@ export class Subscription {
     return isDuplicatedResults.includes(true);
   };
 
-  public addTarget(target: Target): void {
-    this.#targets.push(target);
-  }
+  updateTarget = (target: Target): Result<null> => {
+    let targetReplaced = false;
+
+    const targets = this.#targets.map((targetElement) => {
+      if (targetElement.selectorId === target.selectorId) {
+        targetReplaced = true;
+        return target;
+      }
+      return targetElement;
+    });
+
+    if (targetReplaced)
+      return Result.fail(
+        `Target with selector id ${
+          target.selectorId
+        } does not exist in subscription ${this.#id}`
+      );
+
+    this.#targets = targets;
+
+    return Result.ok();
+  };
 }
