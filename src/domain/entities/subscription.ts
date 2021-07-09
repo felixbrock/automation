@@ -43,9 +43,6 @@ export class Subscription {
   }
 
   public set modifiedOn(modifiedOn: number) {
-    if (!Subscription.timestampValid(modifiedOn))
-      throw new Error('ModifiedOn value lies in the past');
-
     this.#modifiedOn = modifiedOn;
   }
 
@@ -79,21 +76,10 @@ export class Subscription {
       return Result.fail<Subscription>('Subscription must have account id');
     if (!properties.id)
       return Result.fail<Subscription>('Subscription must have id');
-    if (
-      properties.modifiedOn &&
-      !Subscription.timestampValid(properties.modifiedOn)
-    )
-      return Result.fail<Subscription>('ModifiedOn value lies in the past');
 
     const subscription = new Subscription(properties);
     return Result.ok<Subscription>(subscription);
   }
-
-  public static timestampValid = (timestamp: number): boolean => {
-    const minute = 60 * 1000;
-    if (timestamp && timestamp < Date.now() - minute) return false;
-    return true;
-  };
 
   #targetDuplicated = (targets: Target[]): boolean => {
     const selectorIds: string[] = [];

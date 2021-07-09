@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { Subscription, SubscriptionProperties } from '../../domain/entities/subscription';
+import {
+  Subscription,
+  SubscriptionProperties,
+} from '../../domain/entities/subscription';
 import {
   ISubscriptionRepository,
   SubscriptionQueryDto,
@@ -12,6 +15,7 @@ import Result from '../../domain/value-types/transient-types/result';
 interface TargetPersistence {
   selectorId: string;
   systemId: string;
+  alertsAccessedOn: number;
 }
 
 interface SubscriptionPersistence {
@@ -56,7 +60,7 @@ export default class SubscriptionRepositoryImpl
         this.findByCallback(subscriptionEntity, subscriptionQueryDto)
     );
 
-    if (!subscriptions || !!subscriptions.length) return [];
+    if (!subscriptions || !subscriptions.length) return [];
     return subscriptions.map((subscription: SubscriptionPersistence) =>
       this.#toEntity(this.#buildProperties(subscription))
     );
@@ -71,12 +75,18 @@ export default class SubscriptionRepositoryImpl
       ? subscriptionEntity.automationName ===
         subscriptionQueryDto.automationName
       : true;
-    const modifiedOnMatch = subscriptionQueryDto.modifiedOn
-      ? subscriptionEntity.modifiedOn === subscriptionQueryDto.modifiedOn
+    const accountIdMatch = subscriptionQueryDto.accountId
+      ? subscriptionEntity.accountId === subscriptionQueryDto.accountId
+      : true;
+    const modifiedOnStartMatch = subscriptionQueryDto.modifiedOnStart
+      ? subscriptionEntity.modifiedOn >= subscriptionQueryDto.modifiedOnStart
+      : true;
+    const modifiedOnEndMatch = subscriptionQueryDto.modifiedOnEnd
+      ? subscriptionEntity.modifiedOn <= subscriptionQueryDto.modifiedOnEnd
       : true;
 
     let targetMatch: boolean;
-    if (subscriptionQueryDto.target === true) {
+    if (subscriptionQueryDto.target) {
       const queryTarget: TargetQueryDto = subscriptionQueryDto.target;
       const result: TargetPersistence | undefined =
         subscriptionEntity.targets.find((target: TargetPersistence) => {
@@ -86,15 +96,24 @@ export default class SubscriptionRepositoryImpl
           const targetSystemMatch = queryTarget.systemId
             ? target.systemId === queryTarget.systemId
             : true;
-          return targetSelectorMatch && targetSystemMatch;
+          const alertsAccessedOnStartMatch = queryTarget.alertsAccessedOnStart
+            ? target.alertsAccessedOn >= queryTarget.alertsAccessedOnStart
+            : true;
+          const alertsAccessedOnEndMatch = queryTarget.alertsAccessedOnEnd
+            ? target.alertsAccessedOn <= queryTarget.alertsAccessedOnEnd
+            : true;
+          return (
+            targetSelectorMatch &&
+            targetSystemMatch &&
+            alertsAccessedOnStartMatch &&
+            alertsAccessedOnEndMatch
+          );
         });
       targetMatch = !!result;
     } else targetMatch = true;
 
     return (
-      automationNameMatch &&
-      modifiedOnMatch &&
-      targetMatch
+      automationNameMatch && accountIdMatch && modifiedOnStartMatch && modifiedOnEndMatch && targetMatch
     );
   }
 
@@ -107,7 +126,7 @@ export default class SubscriptionRepositoryImpl
 
     const { subscriptions } = db;
 
-    if (!subscriptions || !!subscriptions.length) return [];
+    if (!subscriptions || !subscriptions.length) return [];
     return subscriptions.map((subscription: SubscriptionPersistence) =>
       this.#toEntity(this.#buildProperties(subscription))
     );
@@ -274,7 +293,7 @@ export default class SubscriptionRepositoryImpl
       const targetResult = Target.create(target);
       if (targetResult.value) return targetResult.value;
       throw new Error(
-        targetResult.error || `Creation of subscription target ${target} failed`
+        targetResult.error || `Creation of subscription target failed`
       );
     }),
   });
@@ -288,6 +307,7 @@ export default class SubscriptionRepositoryImpl
       (target): TargetPersistence => ({
         selectorId: target.selectorId,
         systemId: target.systemId,
+        alertsAccessedOn: target.alertsAccessedOn,
       })
     ),
   });

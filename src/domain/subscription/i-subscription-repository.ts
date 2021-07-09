@@ -3,21 +3,22 @@ import Result from '../value-types/transient-types/result';
 
 export interface SubscriptionQueryDto {
   automationName?: string;
+  accountId?: string;
   target?: TargetQueryDto;
-  modifiedOn?: number;
+  modifiedOnStart?: number;
+  modifiedOnEnd?: number;
 }
 
 export interface TargetQueryDto {
   selectorId?: string;
   systemId?: string;
-  alertsAccessedOn?: number;
+  alertsAccessedOnStart?: number;
+  alertsAccessedOnEnd?: number;
 }
 
 export interface ISubscriptionRepository {
   findOne(id: string): Promise<Subscription | null>;
-  findBy(
-    subscriptionQueryDto: SubscriptionQueryDto
-  ): Promise<Subscription[]>;
+  findBy(subscriptionQueryDto: SubscriptionQueryDto): Promise<Subscription[]>;
   all(): Promise<Subscription[] | null>;
   update(subscription: Subscription): Promise<Result<null>>;
   save(subscription: Subscription): Promise<Result<null>>;
@@ -27,5 +28,4 @@ export interface ISubscriptionRepository {
     subscriptionId: string,
     selectorId: string
   ): Promise<Result<null>>;
-  // eslint-disable-next-line semi
 }
