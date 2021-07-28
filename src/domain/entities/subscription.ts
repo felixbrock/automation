@@ -102,7 +102,7 @@ export class Subscription {
       return targetElement;
     });
 
-    if (targetReplaced)
+    if (!targetReplaced)
       return Result.fail(
         `Target with selector id ${
           target.selectorId

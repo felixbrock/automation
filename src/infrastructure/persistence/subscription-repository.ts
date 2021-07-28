@@ -211,11 +211,10 @@ export default class SubscriptionRepositoryImpl
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  public async deleteTarget(
+  public deleteTarget = async (
     subscriptionId: string,
     selectorId: string
-  ): Promise<Result<null>> {
+  ): Promise<Result<null>> => {
     const data: string = fs.readFileSync(
       path.resolve(__dirname, '../../../db.json'),
       'utf-8'
