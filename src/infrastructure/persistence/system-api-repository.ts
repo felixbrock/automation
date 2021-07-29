@@ -1,22 +1,22 @@
-import fetch from 'node-fetch';
-import { IGetSystemRepository, GetSystemDto } from '../../domain/system-api/get-system';
+import axios from 'axios';
+import { IGetSystemRepository, SystemDto } from '../../domain/system-api/get-system';
+
+const apiRoot = 'http://localhost:3002/api/v1';
 
 export default class GetSystemRepositoryImpl
   implements IGetSystemRepository
 {
   // TODO Should return a selector object and not a DTO!! When to use a Dto?
-  public getOne = async (id: string): Promise<GetSystemDto | null> => {
+
+  public getOne = async (
+    systemId: string
+  ): Promise<SystemDto | null> => {
     try {
-      const response = await fetch(
-        `http://localhost:3002/api/v1/system/${id}`
-      );
-      if (response.ok) {
-        const jsonResponse = await response.json();
-        return jsonResponse;
-      }
-      return null;
+      const response = await axios.get(`${apiRoot}/system/${systemId}`);
+      const jsonResponse = await response.data;
+      if (response.status === 200) return jsonResponse;
+      throw new Error(jsonResponse);
     } catch (error) {
-      // TODO reject promise I guess
       return null;
     }
   };

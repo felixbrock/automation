@@ -6,7 +6,7 @@ export interface GetSelectorRequestDto {
   id: string;
 }
 
-export interface Alert {
+export interface AlertDto {
   createdOn: number;
 }
 
@@ -14,7 +14,7 @@ export interface GetSelectorDto {
   id: string;
   content: string;
   systemId: string;
-  alerts: Alert[];
+  alerts: AlertDto[];
   modifiedOn: number;
 }
 

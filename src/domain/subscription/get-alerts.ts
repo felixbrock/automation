@@ -1,15 +1,15 @@
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 import {
-  Alert,
+  AlertDto,
   GetSelector,
   GetSelectorResponseDto,
 } from '../selector-api/get-selector';
 import {
   GetSystem,
-  GetSystemDto,
+  SystemDto,
   GetSystemResponseDto,
-  Warning,
+  WarningDto,
 } from '../system-api/get-system';
 import { ISubscriptionRepository } from './i-subscription-repository';
 import { Subscription } from '../entities/subscription';
@@ -146,9 +146,9 @@ export class GetSubscriptionAlerts
 
   #readTargetWarnings = async (
     target: Target,
-    system: GetSystemDto
+    system: SystemDto
   ): Promise<GetSubscriptionAlertDto[]> => {
-    const relevantWarnings: Warning[] = system.warnings.filter(
+    const relevantWarnings: WarningDto[] = system.warnings.filter(
       (warning) => warning.createdOn >= target.alertsAccessedOn
     );
 
@@ -177,7 +177,7 @@ export class GetSubscriptionAlerts
 
     const selectorContent = getSelectorResponse.value.content;
 
-    const relevantAlerts: Alert[] = alerts.filter(
+    const relevantAlerts: AlertDto[] = alerts.filter(
       (alert) => alert.createdOn >= target.alertsAccessedOn
     );
 

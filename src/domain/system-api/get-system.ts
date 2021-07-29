@@ -6,21 +6,21 @@ export interface GetSystemRequestDto {
   id: string;
 }
 
-export interface Warning {
+export interface WarningDto {
   createdOn: number;
 }
 
-export interface GetSystemDto {
+export interface SystemDto {
   id: string;
   name: string;
-  warnings: Warning[];
+  warnings: WarningDto[];
   modifiedOn: number;
 }
 
-export type GetSystemResponseDto = Result<GetSystemDto | null>;
+export type GetSystemResponseDto = Result<SystemDto | null>;
 
 export interface IGetSystemRepository {
-  getOne(systemId: string): Promise<GetSystemDto | null>;
+  getOne(systemId: string): Promise<SystemDto | null>;
 }
 
 export class GetSystem
@@ -36,7 +36,7 @@ export class GetSystem
     request: GetSystemRequestDto
   ): Promise<GetSystemResponseDto> {
     try {
-      const getSystemResult: GetSystemDto | null =
+      const getSystemResult: SystemDto | null =
         await this.#getSystemRepository.getOne(request.id);
 
       if (!getSystemResult)
@@ -44,9 +44,9 @@ export class GetSystem
           `No system found for id ${request.id}`
         );
 
-      return Result.ok<GetSystemDto>(getSystemResult);
+      return Result.ok<SystemDto>(getSystemResult);
     } catch (error) {
-      return Result.fail<GetSystemDto>(error.message);
+      return Result.fail<SystemDto>(error.message);
     }
   }
 }

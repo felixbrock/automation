@@ -47,6 +47,8 @@ export class UpdateSubscription
         throw new Error(`Subscription with id ${request.id} does not exist`);
 
       if (request.targets) {
+        console.log(request.targets);
+        
         const targetsValid = await this.#targetSelectorIdsValid(
           request.targets
         );
