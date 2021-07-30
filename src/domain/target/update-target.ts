@@ -88,6 +88,8 @@ export class UpdateTarget
     targetToModify.alertsAccessedOnByUser =
       request.alertsAccessedOnByUser || target.alertsAccessedOnByUser;
 
+    targetToModify.modifiedOn = Date.now();
+
     return targetToModify;
   };
 }

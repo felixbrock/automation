@@ -32,6 +32,10 @@ export class Target {
   }
 
   public set alertsAccessedOn(accessedOn: number) {
+    if(accessedOn < this.#alertsAccessedOn) throw new Error(
+      'New alertsAccessedOn value cannot be smaller than old value'
+    );
+
     this.#alertsAccessedOn = accessedOn;
   }
 
@@ -40,6 +44,10 @@ export class Target {
   }
 
   public set alertsAccessedOnByUser(accessedOn: number) {
+    if(accessedOn < this.#alertsAccessedOnByUser) throw new Error(
+      'New alertsAccessedOnByUser value cannot be smaller than old value'
+    );
+
     this.#alertsAccessedOnByUser = accessedOn;
   }
 
