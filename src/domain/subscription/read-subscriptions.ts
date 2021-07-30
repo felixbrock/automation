@@ -15,6 +15,8 @@ export interface ReadSubscriptionsRequestDto {
     systemId?: string;
     alertsAccessedOnStart?: number;
     alertsAccessedOnEnd?: number;
+    alertsAccessedOnByUserStart?: number;
+    alertsAccessedOnByUserEnd?: number;
   };
   modifiedOnStart?: number;
   modifiedOnEnd?: number;
@@ -63,7 +65,9 @@ export class ReadSubscriptions
       (request.target.selectorId ||
         request.target.systemId ||
         request.target.alertsAccessedOnStart ||
-        request.target.alertsAccessedOnEnd)
+        request.target.alertsAccessedOnEnd ||
+        request.target.alertsAccessedOnByUserStart ||
+        request.target.alertsAccessedOnByUserEnd)
     )
       queryDto.target = request.target;
     if (request.modifiedOnStart)

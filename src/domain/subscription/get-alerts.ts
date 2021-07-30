@@ -109,14 +109,17 @@ export class GetSubscriptionAlerts
     try {
       const warnings: GetSubscriptionAlertDto[] = [];
       let alerts: GetSubscriptionAlertDto[] = [];
+      const targets: Target[] = [];
 
       await Promise.all(
         subscription.targets.map(async (target) => {
           const getSystemResponse: GetSystemResponseDto =
             await this.#getSystem.execute({ id: target.systemId });
 
-          if (getSystemResponse.error) return;
-          if (!getSystemResponse.value) return;
+          if (getSystemResponse.error || !getSystemResponse.value) {
+            targets.push(target);
+            return;
+          }
 
           // TODO Enable return of Warnings when covering warnings
           // warnings = await this.#readTargetWarnings(target, getSystemResponse.value);
@@ -125,15 +128,18 @@ export class GetSubscriptionAlerts
             getSystemResponse.value.name
           );
 
-          const updateTargetResult = subscription.updateTarget(target);
-
-          if (updateTargetResult.error) throw new Error(updateTargetResult.error);
+          const targetToModify = target;
+          targetToModify.alertsAccessedOn = Date.now();
+          targets.push(targetToModify);
         })
       );
 
+      const subscriptionToModify = subscription;
+      subscriptionToModify.targets = targets;
       const updateSubscriptionResult = await this.#update(subscription);
 
-      if (updateSubscriptionResult.error) throw new Error(updateSubscriptionResult.error);
+      if (updateSubscriptionResult.error)
+        throw new Error(updateSubscriptionResult.error);
 
       return Result.ok<GetSubscriptionAlertsDto>({
         alerts,

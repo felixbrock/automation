@@ -14,6 +14,8 @@ export interface TargetQueryDto {
   systemId?: string;
   alertsAccessedOnStart?: number;
   alertsAccessedOnEnd?: number;
+  alertsAccessedOnByUserStart?: number;
+  alertsAccessedOnByUserEnd?: number;
 }
 
 export interface ISubscriptionRepository {

@@ -26,6 +26,8 @@ export default class ReadSubscriptionsController extends BaseController {
       targetSystemId,
       targetAlertsAccessedOnStart,
       targetAlertsAccessedOnEnd,
+      targetAlertsAccessedOnByUserStart,
+      targetAlertsAccessedOnByUserEnd,
       modifiedOnStart,
       modifiedOnEnd,
       timezoneOffset,
@@ -38,6 +40,8 @@ export default class ReadSubscriptionsController extends BaseController {
       targetSystemId,
       targetAlertsAccessedOnStart,
       targetAlertsAccessedOnEnd,
+      targetAlertsAccessedOnByUserStart,
+      targetAlertsAccessedOnByUserEnd,
       modifiedOnStart,
       modifiedOnEnd,
       timezoneOffset,
@@ -65,15 +69,23 @@ export default class ReadSubscriptionsController extends BaseController {
             typeof targetAlertsAccessedOnEnd === 'string'
               ? this.#buildDate(targetAlertsAccessedOnEnd)
               : undefined,
+          alertsAccessedOnByUserStart:
+            typeof targetAlertsAccessedOnByUserStart === 'string'
+              ? this.#buildDate(targetAlertsAccessedOnByUserStart)
+              : undefined,
+          alertsAccessedOnByUserEnd:
+            typeof targetAlertsAccessedOnByUserEnd === 'string'
+              ? this.#buildDate(targetAlertsAccessedOnByUserEnd)
+              : undefined,
         },
         modifiedOnStart:
-        typeof modifiedOnStart === 'string'
-          ? this.#buildDate(modifiedOnStart)
-          : undefined,
-      modifiedOnEnd:
-        typeof modifiedOnEnd === 'string'
-          ? this.#buildDate(modifiedOnEnd)
-          : undefined,
+          typeof modifiedOnStart === 'string'
+            ? this.#buildDate(modifiedOnStart)
+            : undefined,
+        modifiedOnEnd:
+          typeof modifiedOnEnd === 'string'
+            ? this.#buildDate(modifiedOnEnd)
+            : undefined,
       });
     } catch (error) {
       return Result.fail<ReadSubscriptionsRequestDto>(error.message);
@@ -91,10 +103,15 @@ export default class ReadSubscriptionsController extends BaseController {
     const date = timestamp.match(/[^T]*/s);
     const time = timestamp.match(/(?<=T)[^Z]*/s);
 
-    if ((!date || !date[0] || date[0].length !== 8) || (!time || !time[0] || time[0].length !== 6))
-      throw new Error(
-        `${timestamp} not in format YYYYMMDD"T"HHMMSS"Z"`
-      );
+    if (
+      !date ||
+      !date[0] ||
+      date[0].length !== 8 ||
+      !time ||
+      !time[0] ||
+      time[0].length !== 6
+    )
+      throw new Error(`${timestamp} not in format YYYYMMDD"T"HHMMSS"Z"`);
 
     const year = date[0].slice(0, 4);
     const month = date[0].slice(4, 6);

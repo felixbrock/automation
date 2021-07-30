@@ -38,6 +38,12 @@ export class Subscription {
     return this.#accountId;
   }
 
+  public set accountId(id: string) {
+    if (!id) throw new Error('AccountId cannot be null');
+
+    this.#accountId = id;
+  }
+
   public get modifiedOn(): number {
     return this.#modifiedOn;
   }
@@ -89,28 +95,5 @@ export class Subscription {
       return false;
     });
     return isDuplicatedResults.includes(true);
-  };
-
-  updateTarget = (target: Target): Result<null> => {
-    let targetReplaced = false;
-
-    const targets = this.#targets.map((targetElement) => {
-      if (targetElement.selectorId === target.selectorId) {
-        targetReplaced = true;
-        return target;
-      }
-      return targetElement;
-    });
-
-    if (!targetReplaced)
-      return Result.fail(
-        `Target with selector id ${
-          target.selectorId
-        } does not exist in subscription ${this.#id}`
-      );
-
-    this.#targets = targets;
-
-    return Result.ok();
   };
 }

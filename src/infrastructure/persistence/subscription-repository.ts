@@ -16,6 +16,7 @@ interface TargetPersistence {
   selectorId: string;
   systemId: string;
   alertsAccessedOn: number;
+  alertsAccessedOnByUser: number;
 }
 
 interface SubscriptionPersistence {
@@ -102,18 +103,34 @@ export default class SubscriptionRepositoryImpl
           const alertsAccessedOnEndMatch = queryTarget.alertsAccessedOnEnd
             ? target.alertsAccessedOn <= queryTarget.alertsAccessedOnEnd
             : true;
+          const alertsAccessedOnByUserStartMatch =
+            queryTarget.alertsAccessedOnByUserStart
+              ? target.alertsAccessedOnByUser >=
+                queryTarget.alertsAccessedOnByUserStart
+              : true;
+          const alertsAccessedOnByUserEndMatch =
+            queryTarget.alertsAccessedOnByUserEnd
+              ? target.alertsAccessedOnByUser <=
+                queryTarget.alertsAccessedOnByUserEnd
+              : true;
           return (
             targetSelectorMatch &&
             targetSystemMatch &&
             alertsAccessedOnStartMatch &&
-            alertsAccessedOnEndMatch
+            alertsAccessedOnEndMatch &&
+            alertsAccessedOnByUserStartMatch &&
+            alertsAccessedOnByUserEndMatch
           );
         });
       targetMatch = !!result;
     } else targetMatch = true;
 
     return (
-      automationNameMatch && accountIdMatch && modifiedOnStartMatch && modifiedOnEndMatch && targetMatch
+      automationNameMatch &&
+      accountIdMatch &&
+      modifiedOnStartMatch &&
+      modifiedOnEndMatch &&
+      targetMatch
     );
   }
 
@@ -264,7 +281,7 @@ export default class SubscriptionRepositoryImpl
     } catch (error) {
       return Result.fail<null>(error.message);
     }
-  }
+  };
 
   #toEntity = (
     subscriptionProperties: SubscriptionProperties
@@ -307,6 +324,7 @@ export default class SubscriptionRepositoryImpl
         selectorId: target.selectorId,
         systemId: target.systemId,
         alertsAccessedOn: target.alertsAccessedOn,
+        alertsAccessedOnByUser: target.alertsAccessedOnByUser,
       })
     ),
   });

@@ -7,6 +7,7 @@ import app from '../../ioc-register';
 import SubscriptionDomain from '../../../domain/subscription-domain';
 import DeleteTargetController from '../controllers/delete-target-controller';
 import DeleteSubscriptionController from '../controllers/delete-subscription-controller';
+import UpdateTargetController from '../controllers/update-target-controller';
 
 const subscriptionRoutes = Router();
 
@@ -26,6 +27,10 @@ const deleteSubscriptionController = new DeleteSubscriptionController(
 
 const createTargetController = new CreateTargetController(
   subscriptionDomain.createTarget
+);
+
+const updateTargetController = new UpdateTargetController(
+  subscriptionDomain.updateTarget
 );
 
 const deleteTargetController = new DeleteTargetController(
@@ -50,6 +55,10 @@ subscriptionRoutes.delete('/:subscriptionId', (req, res) =>
 
 subscriptionRoutes.post('/:subscriptionId/target', (req, res) =>
   createTargetController.execute(req, res)
+);
+
+subscriptionRoutes.patch('/:subscriptionId/target', (req, res) =>
+  updateTargetController.execute(req, res)
 );
 
 subscriptionRoutes.delete('/:subscriptionId/target', (req, res) =>

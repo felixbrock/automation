@@ -4,10 +4,12 @@ export interface TargetDto {
   selectorId: string;
   systemId: string;
   alertsAccessedOn: number;
+  alertsAccessedOnByUser: number;
 };
 
 export const buildTargetDto = (target: Target): TargetDto => ({
   selectorId: target.selectorId,
   systemId: target.systemId,
-  alertsAccessedOn: target.alertsAccessedOn
+  alertsAccessedOn: target.alertsAccessedOn,
+  alertsAccessedOnByUser: target.alertsAccessedOnByUser
 });
