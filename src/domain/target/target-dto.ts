@@ -5,11 +5,13 @@ export interface TargetDto {
   systemId: string;
   alertsAccessedOn: number;
   alertsAccessedOnByUser: number;
+  modifiedOn: number;
 };
 
 export const buildTargetDto = (target: Target): TargetDto => ({
   selectorId: target.selectorId,
   systemId: target.systemId,
   alertsAccessedOn: target.alertsAccessedOn,
-  alertsAccessedOnByUser: target.alertsAccessedOnByUser
+  alertsAccessedOnByUser: target.alertsAccessedOnByUser,
+  modifiedOn: target.modifiedOn
 });
