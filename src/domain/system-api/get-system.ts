@@ -8,6 +8,7 @@ export interface GetSystemRequestDto {
 
 export interface WarningDto {
   createdOn: number;
+  selectorId: string;
 }
 
 export interface SystemDto {

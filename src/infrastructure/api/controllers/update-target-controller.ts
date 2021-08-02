@@ -38,7 +38,7 @@ export default class UpdateTargetController extends BaseController {
       return UpdateTargetController.ok(
         res,
         useCaseResult.value,
-        CodeHttp.CREATED
+        CodeHttp.OK
       );
     } catch (error) {
       return UpdateTargetController.fail(res, error);
