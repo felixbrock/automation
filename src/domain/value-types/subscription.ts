@@ -1,6 +1,6 @@
 import Result from "./transient-types/result";
 
-export interface TargetProperties {
+export interface SubscriptionProperties {
   systemId: string;
   selectorId: string;
   alertsAccessedOn?: number;
@@ -8,7 +8,7 @@ export interface TargetProperties {
   modifiedOn?: number;
 }
 
-export class Target {
+export class Subscription {
   #selectorId: string;
   
   #systemId: string;
@@ -59,7 +59,7 @@ export class Target {
     this.#modifiedOn = modifiedOn;
   }
 
-  private constructor(properties: TargetProperties) {
+  private constructor(properties: SubscriptionProperties) {
     this.#selectorId = properties.selectorId;
     this.#systemId = properties.systemId;
     this.#alertsAccessedOn = properties.alertsAccessedOn || Date.now();
@@ -67,11 +67,11 @@ export class Target {
     this.#modifiedOn = properties.modifiedOn || Date.now();
   }
 
-  public static create(properties: TargetProperties): Result<Target> {
-    if (!properties.selectorId) return Result.fail<Target>('Target must have selector id');
-    if (!properties.systemId) return Result.fail<Target>('Target must have system id');
+  public static create(properties: SubscriptionProperties): Result<Subscription> {
+    if (!properties.selectorId) return Result.fail<Subscription>('Subscription must have selector id');
+    if (!properties.systemId) return Result.fail<Subscription>('Subscription must have system id');
 
-    const target = new Target(properties);
-    return Result.ok<Target>(target);
+    const subscription = new Subscription(properties);
+    return Result.ok<Subscription>(subscription);
   }
 }

@@ -1,11 +1,11 @@
 import { InjectionMode, asClass, createContainer } from 'awilix';
 
-import SubscriptionDomain from '../domain/subscription-domain';
+import AutomationDomain from '../domain/automation-domain';
 
+import { CreateAutomation } from '../domain/automation/create-automation';
+import { ReadAutomation } from '../domain/automation/read-automation';
+import { GetAutomationAlerts } from '../domain/automation/get-alerts';
 import { CreateSubscription } from '../domain/subscription/create-subscription';
-import { ReadSubscription } from '../domain/subscription/read-subscription';
-import { GetSubscriptionAlerts } from '../domain/subscription/get-alerts';
-import { CreateTarget } from '../domain/target/create-target';
 import { GetSelector } from '../domain/selector-api/get-selector';
 import { GetSystem } from '../domain/system-api/get-system';
 import { GetAccount } from '../domain/account-api/get-account';
@@ -13,47 +13,47 @@ import { GetAccount } from '../domain/account-api/get-account';
 import GetSelectorRepository from './persistence/selector-api-repository';
 import GetSystemRepository from './persistence/system-api-repository';
 import GetAccountRepository from './persistence/account-api-repository';
-import SubscriptionRepository from './persistence/subscription-repository';
-import { UpdateSubscription } from '../domain/subscription/update-subscription';
-import { DeleteTarget } from '../domain/target/delete-target';
+import AutomationRepository from './persistence/automation-repository';
+import { UpdateAutomation } from '../domain/automation/update-automation';
 import { DeleteSubscription } from '../domain/subscription/delete-subscription';
-import { DeleteTargets } from '../domain/target/delete-targets';
-import { ReadSubscriptions } from '../domain/subscription/read-subscriptions';
-import { UpdateTarget } from '../domain/target/update-target';
+import { DeleteAutomation } from '../domain/automation/delete-automation';
+import { DeleteSubscriptions } from '../domain/subscription/delete-subscriptions';
+import { ReadAutomations } from '../domain/automation/read-automations';
+import { UpdateSubscription } from '../domain/subscription/update-subscription';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
 iocRegister.register({
-  subscriptionDomain: asClass(SubscriptionDomain),
+  automationDomain: asClass(AutomationDomain),
 
+  createAutomation: asClass(CreateAutomation),
+  readAutomation: asClass(ReadAutomation),
+  readAutomations: asClass(ReadAutomations),
+  updateAutomation: asClass(UpdateAutomation),
+  deleteAutomation: asClass(DeleteAutomation),
+  
   createSubscription: asClass(CreateSubscription),
-  readSubscription: asClass(ReadSubscription),
-  readSubscriptions: asClass(ReadSubscriptions),
   updateSubscription: asClass(UpdateSubscription),
   deleteSubscription: asClass(DeleteSubscription),
+  deleteSubscriptions: asClass(DeleteSubscriptions),
   
-  createTarget: asClass(CreateTarget),
-  updateTarget: asClass(UpdateTarget),
-  deleteTarget: asClass(DeleteTarget),
-  deleteTargets: asClass(DeleteTargets),
-  
-  getSubscriptionAlerts: asClass(GetSubscriptionAlerts),
+  getAutomationAlerts: asClass(GetAutomationAlerts),
 
   getSelector: asClass(GetSelector),
   getSystem: asClass(GetSystem),
   getAccount: asClass(GetAccount),
 
-  subscriptionRepository: asClass(SubscriptionRepository),
+  automationRepository: asClass(AutomationRepository),
 
   getSelectorRepository: asClass(GetSelectorRepository),
   getSystemRepository: asClass(GetSystemRepository),
   getAccountRepository: asClass(GetAccountRepository),
 });
 
-const subscriptionMain =
-  iocRegister.resolve<SubscriptionDomain>('subscriptionDomain');
+const automationMain =
+  iocRegister.resolve<AutomationDomain>('automationDomain');
 
 export default {
-  subscriptionMain,
+  automationMain,
   container: iocRegister,
 };

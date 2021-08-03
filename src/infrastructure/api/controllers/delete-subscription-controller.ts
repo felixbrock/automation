@@ -5,6 +5,7 @@ import {
   DeleteSubscriptionRequestDto,
   DeleteSubscriptionResponseDto,
 } from '../../../domain/subscription/delete-subscription';
+import Result from '../../../domain/value-types/transient-types/result';
 import { BaseController, CodeHttp } from '../../shared/base-controller';
 
 export default class DeleteSubscriptionController extends BaseController {
@@ -15,17 +16,29 @@ export default class DeleteSubscriptionController extends BaseController {
     this.#deleteSubscription = deleteSubscription;
   }
 
-  #buildRequestDto = (httpRequest: Request): DeleteSubscriptionRequestDto => ({
-    subscriptionId: httpRequest.params.subscriptionId,
-  });
+  #buildRequestDto = (
+    httpRequest: Request
+  ): Result<DeleteSubscriptionRequestDto> => {
+    const { selectorId } = httpRequest.query;
+    if (typeof selectorId === 'string')
+      return Result.ok<DeleteSubscriptionRequestDto>({
+        automationId: httpRequest.params.automationId,
+        selectorId,
+      });
+    return Result.fail<DeleteSubscriptionRequestDto>(
+      'request query parameter automationId is supposed to be in string format'
+    );
+  };
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
-      const requestDto: DeleteSubscriptionRequestDto =
-        this.#buildRequestDto(req);
+      const buildDtoResult: Result<DeleteSubscriptionRequestDto> = this.#buildRequestDto(req);
+
+      if(buildDtoResult.error) return DeleteSubscriptionController.badRequest(res, buildDtoResult.error);
+      if(!buildDtoResult.value) return DeleteSubscriptionController.badRequest(res, 'Invalid request query paramerters');
 
       const useCaseResult: DeleteSubscriptionResponseDto =
-        await this.#deleteSubscription.execute(requestDto);
+        await this.#deleteSubscription.execute(buildDtoResult.value);
 
       if (useCaseResult.error) {
         return DeleteSubscriptionController.badRequest(

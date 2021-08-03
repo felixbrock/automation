@@ -1,55 +1,112 @@
-// TODO Violation of Dependency Rule
-import { v4 as uuidv4 } from 'uuid';
 import IUseCase from '../services/use-case';
-import Id from '../value-types/id';
-import { Subscription, SubscriptionProperties } from '../entities/subscription';
-import {buildSubscriptionDto, SubscriptionDto} from './subscription-dto';
-import {ISubscriptionRepository} from './i-subscription-repository';
+import { Subscription, SubscriptionProperties } from '../value-types/subscription';
+import {
+  GetSelector,
+  GetSelectorResponseDto,
+} from '../selector-api/get-selector';
+import { buildSubscriptionDto, SubscriptionDto } from './subscription-dto';
+import { AutomationDto } from '../automation/automation';
+import { UpdateAutomation } from '../automation/update-automation';
 import Result from '../value-types/transient-types/result';
+import { Automation } from '../entities/automation';
+import { IAutomationRepository } from '../automation/i-automation-repository';
 
 export interface CreateSubscriptionRequestDto {
-  automationName: string;
-  accountId: string;
+  automationId: string;
+  systemId: string;
+  selectorId: string;
 }
 
 export type CreateSubscriptionResponseDto = Result<SubscriptionDto | null>;
 
 export class CreateSubscription
-  implements
-    IUseCase<CreateSubscriptionRequestDto, CreateSubscriptionResponseDto>
+  implements IUseCase<CreateSubscriptionRequestDto, CreateSubscriptionResponseDto>
 {
-  #subscriptionRepository: ISubscriptionRepository;
+  #automationRepository: IAutomationRepository;
 
-  public constructor(subscriptionRepository: ISubscriptionRepository) {
-    this.#subscriptionRepository = subscriptionRepository;
+  #updateAutomation: UpdateAutomation;
+
+  #getSelector: GetSelector;
+
+  public constructor(
+    automationRepository: IAutomationRepository,
+    updateAutomation: UpdateAutomation,
+    getSelector: GetSelector
+  ) {
+    this.#automationRepository = automationRepository;
+    this.#updateAutomation = updateAutomation;
+    this.#getSelector = getSelector;
   }
 
   public async execute(
     request: CreateSubscriptionRequestDto
   ): Promise<CreateSubscriptionResponseDto> {
-    const subscription: Result<Subscription | null> =
-      this.#createSubscription(request);
+    // TODO Is this correct to also provide the automation id? Probably not.
+    const subscription: Result<Subscription | null> = this.#createSubscription(request);
     if (!subscription.value) return subscription;
 
     try {
-      // TODO Install error handling
-      await this.#subscriptionRepository.save(subscription.value);
+      const validatedRequest = await this.validateRequest(subscription.value);
+      if (validatedRequest.error) throw new Error(validatedRequest.error);
 
-      return Result.ok<SubscriptionDto>(
-        buildSubscriptionDto(subscription.value)
+      // TODO Potential fix? Automation is read twice. Once in create-subscription and once in update automation
+      const automation: Automation | null =
+        await this.#automationRepository.findOne(request.automationId);
+      if (!automation)
+        throw new Error(
+          `Automation with id ${request.automationId} does not exist`
+        );
+
+      automation.subscriptions.push(subscription.value);
+
+      const subscriptionDtos: SubscriptionDto[] = automation.subscriptions.map(
+        (subscriptionElement) => buildSubscriptionDto(subscriptionElement)
       );
+
+      const updateAutomationResult: Result<AutomationDto | null> =
+        await this.#updateAutomation.execute({
+          id: request.automationId,
+          subscriptions: subscriptionDtos,
+        });
+
+      if (updateAutomationResult.error)
+        throw new Error(updateAutomationResult.error);
+      if (!updateAutomationResult.value)
+        throw new Error(
+          `Couldn't update automation ${request.automationId}`
+        );
+
+      return Result.ok<SubscriptionDto>(buildSubscriptionDto(subscription.value));
     } catch (error) {
       return Result.fail<SubscriptionDto>(error.message);
     }
   }
 
-  #createSubscription = (
-    request: CreateSubscriptionRequestDto
-  ): Result<Subscription | null> => {
+  private async validateRequest(subscription: Subscription): Promise<Result<null>> {
+    const getSelectorResponse: GetSelectorResponseDto =
+      await this.#getSelector.execute({
+        id: subscription.selectorId,
+      });
+
+    if (getSelectorResponse.error)
+      return Result.fail<null>(getSelectorResponse.error);
+    if (!getSelectorResponse.value)
+      return Result.fail<null>(
+        `No selector was found for id ${subscription.selectorId}`
+      );
+
+    if (getSelectorResponse.value.systemId !== subscription.systemId)
+      return Result.fail<null>(
+        `Provided system id ${subscription.systemId} doesn't match the selector's system ${getSelectorResponse.value.systemId}`
+      );
+
+    return Result.ok<null>(null);
+  }
+
+  #createSubscription = (request: CreateSubscriptionRequestDto): Result<Subscription | null> => {
     const subscriptionProperties: SubscriptionProperties = {
-      id: Id.next(uuidv4).id,
-      automationName: request.automationName,
-      accountId: request.accountId,
+      selectorId: request.selectorId,
+      systemId: request.systemId,
     };
 
     return Subscription.create(subscriptionProperties);

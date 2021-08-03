@@ -1,18 +1,18 @@
 import IUseCase from '../services/use-case';
-import { ReadAutomation } from '../automation/read-automation';
-import {AutomationDto} from '../automation/automation';
 import Result from '../value-types/transient-types/result';
-import {IAutomationRepository} from '../automation/i-automation-repository';
+import { IAutomationRepository } from './i-automation-repository';
+import { ReadAutomation } from './read-automation';
+import { AutomationDto } from './automation';
 
-export interface DeleteSubscriptionRequestDto {
+export interface DeleteAutomationRequestDto {
   automationId: string;
-  selectorId: string;
 }
 
-export type DeleteSubscriptionResponseDto = Result<null>;
+export type DeleteAutomationResponseDto = Result<null>;
 
-export class DeleteSubscription
-  implements IUseCase<DeleteSubscriptionRequestDto, DeleteSubscriptionResponseDto>
+export class DeleteAutomation
+  implements
+    IUseCase<DeleteAutomationRequestDto, DeleteAutomationResponseDto>
 {
   #automationRepository: IAutomationRepository;
 
@@ -27,8 +27,8 @@ export class DeleteSubscription
   }
 
   public async execute(
-    request: DeleteSubscriptionRequestDto
-  ): Promise<DeleteSubscriptionResponseDto> {
+    request: DeleteAutomationRequestDto
+  ): Promise<DeleteAutomationResponseDto> {
     try {
       const readAutomationResult: Result<AutomationDto | null> =
         await this.#readAutomation.execute({ id: request.automationId });
@@ -38,13 +38,11 @@ export class DeleteSubscription
       if (!readAutomationResult.value)
         throw new Error(`Couldn't read automation ${request.automationId}`);
 
-      const deleteSubscriptionResult: Result<null> =
-        await this.#automationRepository.deleteSubscription(
-          request.automationId,
-          request.selectorId
-        );
+      const deleteAutomationResult: Result<null> =
+        await this.#automationRepository.delete(request.automationId);
 
-      if (deleteSubscriptionResult.error) throw new Error(deleteSubscriptionResult.error);
+      if (deleteAutomationResult.error)
+        throw new Error(deleteAutomationResult.error);
 
       return Result.ok<null>();
     } catch (error) {

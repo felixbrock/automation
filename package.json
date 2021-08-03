@@ -1,5 +1,5 @@
 {
-  "name": "subscription",
+  "name": "automation",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/felix-brockmeier/subscription.git"
+    "url": "git+https://github.com/felix-brockmeier/automation.git"
   },
   "author": "",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/felix-brockmeier/subscription/issues"
+    "url": "https://github.com/felix-brockmeier/automation/issues"
   },
-  "homepage": "https://github.com/felix-brockmeier/subscription#readme",
+  "homepage": "https://github.com/felix-brockmeier/automation#readme",
   "devDependencies": {
     "@tsconfig/node14": "^1.0.0",
     "@types/cors": "^2.8.11",

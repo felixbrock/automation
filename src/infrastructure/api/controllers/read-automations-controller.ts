@@ -1,33 +1,33 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
 import {
-  ReadSubscriptions,
-  ReadSubscriptionsRequestDto,
-  ReadSubscriptionsResponseDto,
-} from '../../../domain/subscription/read-subscriptions';
+  ReadAutomations,
+  ReadAutomationsRequestDto,
+  ReadAutomationsResponseDto,
+} from '../../../domain/automation/read-automations';
 import Result from '../../../domain/value-types/transient-types/result';
 import { BaseController, CodeHttp } from '../../shared/base-controller';
 
-export default class ReadSubscriptionsController extends BaseController {
-  #readSubscriptions: ReadSubscriptions;
+export default class ReadAutomationsController extends BaseController {
+  #readAutomations: ReadAutomations;
 
-  public constructor(readSubscriptions: ReadSubscriptions) {
+  public constructor(readAutomations: ReadAutomations) {
     super();
-    this.#readSubscriptions = readSubscriptions;
+    this.#readAutomations = readAutomations;
   }
 
   #buildRequestDto = (
     httpRequest: Request
-  ): Result<ReadSubscriptionsRequestDto> => {
+  ): Result<ReadAutomationsRequestDto> => {
     const {
       automationName,
       accountId,
-      targetSelectorId,
-      targetSystemId,
-      targetAlertsAccessedOnStart,
-      targetAlertsAccessedOnEnd,
-      targetAlertsAccessedOnByUserStart,
-      targetAlertsAccessedOnByUserEnd,
+      subscriptionSelectorId,
+      subscriptionSystemId,
+      subscriptionAlertsAccessedOnStart,
+      subscriptionAlertsAccessedOnEnd,
+      subscriptionAlertsAccessedOnByUserStart,
+      subscriptionAlertsAccessedOnByUserEnd,
       modifiedOnStart,
       modifiedOnEnd,
       timezoneOffset,
@@ -36,12 +36,12 @@ export default class ReadSubscriptionsController extends BaseController {
     const requestValid = this.#queryParametersValid([
       automationName,
       accountId,
-      targetSelectorId,
-      targetSystemId,
-      targetAlertsAccessedOnStart,
-      targetAlertsAccessedOnEnd,
-      targetAlertsAccessedOnByUserStart,
-      targetAlertsAccessedOnByUserEnd,
+      subscriptionSelectorId,
+      subscriptionSystemId,
+      subscriptionAlertsAccessedOnStart,
+      subscriptionAlertsAccessedOnEnd,
+      subscriptionAlertsAccessedOnByUserStart,
+      subscriptionAlertsAccessedOnByUserEnd,
       modifiedOnStart,
       modifiedOnEnd,
       timezoneOffset,
@@ -52,30 +52,30 @@ export default class ReadSubscriptionsController extends BaseController {
       );
 
     try {
-      return Result.ok<ReadSubscriptionsRequestDto>({
+      return Result.ok<ReadAutomationsRequestDto>({
         automationName:
           typeof automationName === 'string' ? automationName : undefined,
         accountId: typeof accountId === 'string' ? accountId : undefined,
-        target: {
+        subscription: {
           selectorId:
-            typeof targetSelectorId === 'string' ? targetSelectorId : undefined,
+            typeof subscriptionSelectorId === 'string' ? subscriptionSelectorId : undefined,
           systemId:
-            typeof targetSystemId === 'string' ? targetSystemId : undefined,
+            typeof subscriptionSystemId === 'string' ? subscriptionSystemId : undefined,
           alertsAccessedOnStart:
-            typeof targetAlertsAccessedOnStart === 'string'
-              ? this.#buildDate(targetAlertsAccessedOnStart)
+            typeof subscriptionAlertsAccessedOnStart === 'string'
+              ? this.#buildDate(subscriptionAlertsAccessedOnStart)
               : undefined,
           alertsAccessedOnEnd:
-            typeof targetAlertsAccessedOnEnd === 'string'
-              ? this.#buildDate(targetAlertsAccessedOnEnd)
+            typeof subscriptionAlertsAccessedOnEnd === 'string'
+              ? this.#buildDate(subscriptionAlertsAccessedOnEnd)
               : undefined,
           alertsAccessedOnByUserStart:
-            typeof targetAlertsAccessedOnByUserStart === 'string'
-              ? this.#buildDate(targetAlertsAccessedOnByUserStart)
+            typeof subscriptionAlertsAccessedOnByUserStart === 'string'
+              ? this.#buildDate(subscriptionAlertsAccessedOnByUserStart)
               : undefined,
           alertsAccessedOnByUserEnd:
-            typeof targetAlertsAccessedOnByUserEnd === 'string'
-              ? this.#buildDate(targetAlertsAccessedOnByUserEnd)
+            typeof subscriptionAlertsAccessedOnByUserEnd === 'string'
+              ? this.#buildDate(subscriptionAlertsAccessedOnByUserEnd)
               : undefined,
         },
         modifiedOnStart:
@@ -88,7 +88,7 @@ export default class ReadSubscriptionsController extends BaseController {
             : undefined,
       });
     } catch (error) {
-      return Result.fail<ReadSubscriptionsRequestDto>(error.message);
+      return Result.fail<ReadAutomationsRequestDto>(error.message);
     }
   };
 
@@ -126,34 +126,34 @@ export default class ReadSubscriptionsController extends BaseController {
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
-      const buildDtoResult: Result<ReadSubscriptionsRequestDto> =
+      const buildDtoResult: Result<ReadAutomationsRequestDto> =
         this.#buildRequestDto(req);
 
       if (buildDtoResult.error)
-        return ReadSubscriptionsController.badRequest(
+        return ReadAutomationsController.badRequest(
           res,
           buildDtoResult.error
         );
       if (!buildDtoResult.value)
-        return ReadSubscriptionsController.badRequest(
+        return ReadAutomationsController.badRequest(
           res,
           'Invalid request query paramerters'
         );
 
-      const useCaseResult: ReadSubscriptionsResponseDto =
-        await this.#readSubscriptions.execute(buildDtoResult.value);
+      const useCaseResult: ReadAutomationsResponseDto =
+        await this.#readAutomations.execute(buildDtoResult.value);
 
       if (useCaseResult.error) {
-        return ReadSubscriptionsController.badRequest(res, useCaseResult.error);
+        return ReadAutomationsController.badRequest(res, useCaseResult.error);
       }
 
-      return ReadSubscriptionsController.ok(
+      return ReadAutomationsController.ok(
         res,
         useCaseResult.value,
         CodeHttp.OK
       );
     } catch (error) {
-      return ReadSubscriptionsController.fail(res, error);
+      return ReadAutomationsController.fail(res, error);
     }
   }
 }

@@ -1,20 +1,17 @@
-import { Subscription } from "../entities/subscription";
-import {TargetDto, buildTargetDto } from "../target/target-dto";
+import { Subscription } from "../value-types/subscription";
 
 export interface SubscriptionDto {
-  id: string;
-  automationName: string;
-  accountId: string;
-  targets: TargetDto[];
+  selectorId: string;
+  systemId: string;
+  alertsAccessedOn: number;
+  alertsAccessedOnByUser: number;
   modifiedOn: number;
 };
 
 export const buildSubscriptionDto = (subscription: Subscription): SubscriptionDto => ({
-  id: subscription.id,
-  automationName: subscription.automationName,
-  accountId: subscription.accountId,
-  targets: subscription.targets.map(
-    (target): TargetDto => buildTargetDto(target)
-  ),
-  modifiedOn: subscription.modifiedOn,
+  selectorId: subscription.selectorId,
+  systemId: subscription.systemId,
+  alertsAccessedOn: subscription.alertsAccessedOn,
+  alertsAccessedOnByUser: subscription.alertsAccessedOnByUser,
+  modifiedOn: subscription.modifiedOn
 });
