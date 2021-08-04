@@ -7,7 +7,7 @@ import app from '../../ioc-register';
 import AutomationDomain from '../../../domain/automation-domain';
 import DeleteSubscriptionController from '../controllers/delete-subscription-controller';
 import DeleteAutomationController from '../controllers/delete-automation-controller';
-import UpdateSubscriptionController from '../controllers/update-subscription-controller';
+import UpdateSubscriptionsController from '../controllers/update-subscriptions-controller';
 
 const automationRoutes = Router();
 
@@ -29,8 +29,8 @@ const createSubscriptionController = new CreateSubscriptionController(
   automationDomain.createSubscription
 );
 
-const updateSubscriptionController = new UpdateSubscriptionController(
-  automationDomain.updateSubscription
+const updateSubscriptionsController = new UpdateSubscriptionsController(
+  automationDomain.updateSubscriptions
 );
 
 const deleteSubscriptionController = new DeleteSubscriptionController(
@@ -57,8 +57,8 @@ automationRoutes.post('/:automationId/subscription', (req, res) =>
   createSubscriptionController.execute(req, res)
 );
 
-automationRoutes.patch('/:automationId/subscription', (req, res) =>
-  updateSubscriptionController.execute(req, res)
+automationRoutes.patch('/:automationId/subscriptions', (req, res) =>
+  updateSubscriptionsController.execute(req, res)
 );
 
 automationRoutes.delete('/:automationId/subscription', (req, res) =>

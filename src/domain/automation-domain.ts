@@ -7,7 +7,7 @@ import { DeleteSubscription } from './subscription/delete-subscription';
 import { DeleteAutomation } from './automation/delete-automation';
 import { ReadAutomations } from './automation/read-automations';
 import { DeleteSubscriptions } from './subscription/delete-subscriptions';
-import { UpdateSubscription } from './subscription/update-subscription';
+import { UpdateSubscriptions } from './subscription/update-subscriptions';
 
 export default class AutomationDomain {
   #createAutomation: CreateAutomation;
@@ -22,7 +22,7 @@ export default class AutomationDomain {
 
   #createSubscription: CreateSubscription;
 
-  #updateSubscription: UpdateSubscription;
+  #updateSubscriptions: UpdateSubscriptions;
 
   #deleteSubscription: DeleteSubscription;
 
@@ -54,8 +54,8 @@ export default class AutomationDomain {
     return this.#createSubscription;
   }
 
-  public get updateSubscription(): UpdateSubscription{
-    return this.#updateSubscription;
+  public get updateSubscriptions(): UpdateSubscriptions{
+    return this.#updateSubscriptions;
   }
 
   public get deleteSubscription(): DeleteSubscription {
@@ -77,7 +77,7 @@ export default class AutomationDomain {
     readAutomations: ReadAutomations,
     deleteAutomation: DeleteAutomation,
     createSubscription: CreateSubscription,
-    updateSubscription: UpdateSubscription,
+    updateSubscriptions: UpdateSubscriptions,
     deleteSubscription: DeleteSubscription,
     deleteSubscriptions: DeleteSubscriptions,
     getAutomationAlerts: GetAutomationAlerts
@@ -88,7 +88,7 @@ export default class AutomationDomain {
     this.#readAutomations = readAutomations;
     this.#deleteAutomation = deleteAutomation;
     this.#createSubscription = createSubscription;
-    this.#updateSubscription = updateSubscription;
+    this.#updateSubscriptions = updateSubscriptions;
     this.#deleteSubscription = deleteSubscription;
     this.#deleteSubscriptions = deleteSubscriptions;
     this.#getAutomationAlerts = getAutomationAlerts;

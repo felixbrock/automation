@@ -25,7 +25,7 @@ export default class DeleteSubscriptionsController extends BaseController {
         selectorId,
       });
     return Result.fail<DeleteSubscriptionsRequestDto>(
-      'request query parameter automationId is supposed to be in string format'
+      'request query parameter selectorId is supposed to be in string format'
     );
   };
 

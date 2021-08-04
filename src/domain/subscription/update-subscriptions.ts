@@ -7,17 +7,21 @@ import Result from '../value-types/transient-types/result';
 import { Automation } from '../entities/automation';
 import { IAutomationRepository } from '../automation/i-automation-repository';
 
-export interface UpdateSubscriptionRequestDto {
-  automationId: string;
+export interface UpdateSubscriptionDto {
   selectorId: string;
   alertsAccessedOn?: number;
   alertsAccessedOnByUser?: number;
 }
 
-export type UpdateSubscriptionResponseDto = Result<SubscriptionDto | null>;
+export interface UpdateSubscriptionsRequestDto {
+  automationId: string;
+  subscriptions: UpdateSubscriptionDto[] 
+}
 
-export class UpdateSubscription
-  implements IUseCase<UpdateSubscriptionRequestDto, UpdateSubscriptionResponseDto>
+export type UpdateSubscriptionsResponseDto = Result<SubscriptionDto[]>;
+
+export class UpdateSubscriptions
+  implements IUseCase<UpdateSubscriptionsRequestDto, UpdateSubscriptionsResponseDto>
 {
   #automationRepository: IAutomationRepository;
 
@@ -33,8 +37,8 @@ export class UpdateSubscription
 
   // TODO Potential fix? Automation is read twice. Once in update-subscription and once in update automation
   public async execute(
-    request: UpdateSubscriptionRequestDto
-  ): Promise<UpdateSubscriptionResponseDto> {
+    request: UpdateSubscriptionsRequestDto
+  ): Promise<UpdateSubscriptionsResponseDto> {
     try {
       const automation: Automation | null =
         await this.#automationRepository.findOne(request.automationId);
@@ -44,19 +48,27 @@ export class UpdateSubscription
           `Automation with id ${request.automationId} does not exist`
         );
 
-      const subscription: Subscription | undefined = automation.subscriptions.find(
-        (element) => element.selectorId === request.selectorId
-      );
+      const modifiedSubscriptions: Subscription[] = [];
 
-      if (!subscription)
-        throw new Error(
-          `Subscription subscribing to  ${request.selectorId} does not exist`
+      request.subscriptions.forEach((requestElement) => {
+
+        const subscription: Subscription | undefined = automation.subscriptions.find(
+          (element) => element.selectorId === requestElement.selectorId
         );
+  
+        if (!subscription)
+          throw new Error(
+            `Subscription subscribing to  ${requestElement.selectorId} does not exist`
+          );
+  
+        modifiedSubscriptions.push(this.#modifySubscription(subscription, requestElement));
 
-      const modifiedSubscription = this.#modifySubscription(subscription, request);
+      });
 
       const subscriptionDtos: SubscriptionDto[] = automation.subscriptions.map((element) => {
-        if (element.selectorId === modifiedSubscription.selectorId)
+        const modifiedSubscription = modifiedSubscriptions.find((modifiedElement) => modifiedElement.selectorId === element.selectorId);
+
+        if (modifiedSubscription)
           return buildSubscriptionDto(modifiedSubscription);
         return buildSubscriptionDto(element);
       });
@@ -72,15 +84,15 @@ export class UpdateSubscription
       if (!updateAutomationResult.value)
         throw new Error(
           `Couldn't update automation ${request.automationId}`
-        );
+        );    
 
-      return Result.ok<SubscriptionDto>(buildSubscriptionDto(modifiedSubscription));
+      return Result.ok<SubscriptionDto[]>(modifiedSubscriptions.map((element) => buildSubscriptionDto(element)));
     } catch (error) {
-      return Result.fail<SubscriptionDto>(error.message);
+      return Result.fail<SubscriptionDto[]>(error.message);
     }
   }
 
-  #modifySubscription = (subscription: Subscription, request: UpdateSubscriptionRequestDto): Subscription => {
+  #modifySubscription = (subscription: Subscription, request: UpdateSubscriptionDto): Subscription => {
     const subscriptionToModify = subscription;
 
     subscriptionToModify.alertsAccessedOn =

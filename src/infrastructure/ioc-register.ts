@@ -19,7 +19,7 @@ import { DeleteSubscription } from '../domain/subscription/delete-subscription';
 import { DeleteAutomation } from '../domain/automation/delete-automation';
 import { DeleteSubscriptions } from '../domain/subscription/delete-subscriptions';
 import { ReadAutomations } from '../domain/automation/read-automations';
-import { UpdateSubscription } from '../domain/subscription/update-subscription';
+import { UpdateSubscriptions } from '../domain/subscription/update-subscriptions';
 
 const iocRegister = createContainer({ injectionMode: InjectionMode.CLASSIC });
 
@@ -33,7 +33,7 @@ iocRegister.register({
   deleteAutomation: asClass(DeleteAutomation),
   
   createSubscription: asClass(CreateSubscription),
-  updateSubscription: asClass(UpdateSubscription),
+  updateSubscriptions: asClass(UpdateSubscriptions),
   deleteSubscription: asClass(DeleteSubscription),
   deleteSubscriptions: asClass(DeleteSubscriptions),
   
