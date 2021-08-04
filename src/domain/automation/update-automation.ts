@@ -15,7 +15,7 @@ import { GetAccount, GetAccountResponseDto } from '../account-api/get-account';
 
 export interface UpdateAutomationRequestDto {
   id: string;
-  automationName?: string;
+  name?: string;
   accountId?: string;
   subscriptions?: SubscriptionDto[];
 }
@@ -93,8 +93,8 @@ export class UpdateAutomation
   ): Automation => {
     const automationToModify = automation;
 
-    automationToModify.automationName =
-      request.automationName || automation.automationName;
+    automationToModify.name =
+      request.name || automation.name;
 
     automationToModify.accountId =
       request.accountId || automation.accountId;

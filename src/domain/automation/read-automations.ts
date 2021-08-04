@@ -8,7 +8,7 @@ import {
 import { buildAutomationDto, AutomationDto } from './automation';
 
 export interface ReadAutomationsRequestDto {
-  automationName?: string;
+  name?: string;
   accountId?: string;
   subscription?: {
     selectorId?: string;
@@ -57,8 +57,8 @@ export class ReadAutomations
   ): AutomationQueryDto => {
     const queryDto: AutomationQueryDto = {};
 
-    if (request.automationName)
-      queryDto.automationName = request.automationName;
+    if (request.name)
+      queryDto.name = request.name;
     if (request.accountId) queryDto.accountId = request.accountId;
     if (
       request.subscription &&

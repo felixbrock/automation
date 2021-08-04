@@ -21,7 +21,7 @@ interface SubscriptionPersistence {
 
 interface AutomationPersistence {
   id: string;
-  automationName: string;
+  name: string;
   accountId: string;
   subscriptions: SubscriptionPersistence[];
   modifiedOn: number;
@@ -72,9 +72,9 @@ export default class AutomationRepositoryImpl
     automationEntity: AutomationPersistence,
     automationQueryDto: AutomationQueryDto
   ): boolean {
-    const automationNameMatch = automationQueryDto.automationName
-      ? automationEntity.automationName ===
-        automationQueryDto.automationName
+    const nameMatch = automationQueryDto.name
+      ? automationEntity.name ===
+        automationQueryDto.name
       : true;
     const accountIdMatch = automationQueryDto.accountId
       ? automationEntity.accountId === automationQueryDto.accountId
@@ -126,7 +126,7 @@ export default class AutomationRepositoryImpl
     } else subscriptionMatch = true;
 
     return (
-      automationNameMatch &&
+      nameMatch &&
       accountIdMatch &&
       modifiedOnStartMatch &&
       modifiedOnEndMatch &&
@@ -302,7 +302,7 @@ export default class AutomationRepositoryImpl
     automation: AutomationPersistence
   ): AutomationProperties => ({
     id: automation.id,
-    automationName: automation.automationName,
+    name: automation.name,
     accountId: automation.accountId,
     modifiedOn: automation.modifiedOn,
     subscriptions: automation.subscriptions.map((subscription) => {
@@ -316,7 +316,7 @@ export default class AutomationRepositoryImpl
 
   #toPersistence = (automation: Automation): AutomationPersistence => ({
     id: automation.id,
-    automationName: automation.automationName,
+    name: automation.name,
     accountId: automation.accountId,
     modifiedOn: automation.modifiedOn,
     subscriptions: automation.subscriptions.map(

@@ -3,7 +3,7 @@ import { Subscription } from '../value-types/subscription';
 
 export interface AutomationProperties {
   id: string;
-  automationName: string;
+  name: string;
   accountId: string;
   modifiedOn?: number;
   subscriptions?: Subscription[];
@@ -12,7 +12,7 @@ export interface AutomationProperties {
 export class Automation {
   #id: string;
 
-  #automationName: string;
+  #name: string;
 
   #accountId: string;
 
@@ -24,14 +24,14 @@ export class Automation {
     return this.#id;
   }
 
-  public get automationName(): string {
-    return this.#automationName;
+  public get name(): string {
+    return this.#name;
   }
 
-  public set automationName(name: string) {
+  public set name(name: string) {
     if (!name) throw new Error('Automation name cannot be null');
 
-    this.#automationName = name;
+    this.#name = name;
   }
 
   public get accountId(): string {
@@ -67,7 +67,7 @@ export class Automation {
 
   private constructor(properties: AutomationProperties) {
     this.#id = properties.id;
-    this.#automationName = properties.automationName;
+    this.#name = properties.name;
     this.#accountId = properties.accountId;
     this.#modifiedOn = properties.modifiedOn || Date.now();
     this.#subscriptions = properties.subscriptions || [];
@@ -76,7 +76,7 @@ export class Automation {
   public static create(
     properties: AutomationProperties
   ): Result<Automation> {
-    if (!properties.automationName)
+    if (!properties.name)
       return Result.fail<Automation>('Automation must have automation id');
     if (!properties.accountId)
       return Result.fail<Automation>('Automation must have account id');

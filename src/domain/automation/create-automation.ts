@@ -8,7 +8,7 @@ import {IAutomationRepository} from './i-automation-repository';
 import Result from '../value-types/transient-types/result';
 
 export interface CreateAutomationRequestDto {
-  automationName: string;
+  name: string;
   accountId: string;
 }
 
@@ -48,7 +48,7 @@ export class CreateAutomation
   ): Result<Automation | null> => {
     const automationProperties: AutomationProperties = {
       id: Id.next(uuidv4).id,
-      automationName: request.automationName,
+      name: request.name,
       accountId: request.accountId,
     };
 

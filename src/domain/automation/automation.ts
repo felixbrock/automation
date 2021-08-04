@@ -3,7 +3,7 @@ import {SubscriptionDto, buildSubscriptionDto } from "../subscription/subscripti
 
 export interface AutomationDto {
   id: string;
-  automationName: string;
+  name: string;
   accountId: string;
   subscriptions: SubscriptionDto[];
   modifiedOn: number;
@@ -11,7 +11,7 @@ export interface AutomationDto {
 
 export const buildAutomationDto = (automation: Automation): AutomationDto => ({
   id: automation.id,
-  automationName: automation.automationName,
+  name: automation.name,
   accountId: automation.accountId,
   subscriptions: automation.subscriptions.map(
     (subscription): SubscriptionDto => buildSubscriptionDto(subscription)

@@ -20,7 +20,7 @@ export default class ReadAutomationsController extends BaseController {
     httpRequest: Request
   ): Result<ReadAutomationsRequestDto> => {
     const {
-      automationName,
+      name,
       accountId,
       subscriptionSelectorId,
       subscriptionSystemId,
@@ -34,7 +34,7 @@ export default class ReadAutomationsController extends BaseController {
     } = httpRequest.query;
 
     const requestValid = this.#queryParametersValid([
-      automationName,
+      name,
       accountId,
       subscriptionSelectorId,
       subscriptionSystemId,
@@ -53,8 +53,8 @@ export default class ReadAutomationsController extends BaseController {
 
     try {
       return Result.ok<ReadAutomationsRequestDto>({
-        automationName:
-          typeof automationName === 'string' ? automationName : undefined,
+        name:
+          typeof name === 'string' ? name : undefined,
         accountId: typeof accountId === 'string' ? accountId : undefined,
         subscription: {
           selectorId:

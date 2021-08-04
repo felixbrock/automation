@@ -2,7 +2,7 @@ import { Automation } from '../entities/automation';
 import Result from '../value-types/transient-types/result';
 
 export interface AutomationQueryDto {
-  automationName?: string;
+  name?: string;
   accountId?: string;
   subscription?: SubscriptionQueryDto;
   modifiedOnStart?: number;
