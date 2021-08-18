@@ -4,7 +4,7 @@ import {
   GetAccountDto as AccountDto,
 } from '../../domain/account-api/get-account';
 
-const apiRoot = 'http://localhost:3000/api/v1';
+const apiRoot = 'http://localhost:8081/api/v1';
 
 export default class GetAccountRepositoryImpl
   implements IGetAccountRepository

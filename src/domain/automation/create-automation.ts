@@ -1,7 +1,6 @@
 // TODO Violation of Dependency Rule
-import { v4 as uuidv4 } from 'uuid';
+import { ObjectId } from 'mongodb';
 import IUseCase from '../services/use-case';
-import Id from '../value-types/id';
 import { Automation, AutomationProperties } from '../entities/automation';
 import { buildAutomationDto, AutomationDto } from './automation';
 import { IAutomationRepository } from './i-automation-repository';
@@ -46,7 +45,7 @@ export class CreateAutomation
       if (!automation.value) return automation;
 
       // TODO Install error handling
-      await this.#automationRepository.save(automation.value);
+      await this.#automationRepository.insertOne(automation.value);
 
       return Result.ok<AutomationDto>(buildAutomationDto(automation.value));
     } catch (error) {
@@ -58,7 +57,7 @@ export class CreateAutomation
     request: CreateAutomationRequestDto
   ): Result<Automation | null> => {
     const automationProperties: AutomationProperties = {
-      id: Id.next(uuidv4).id,
+      id: new ObjectId().toHexString(),
       name: request.name,
       accountId: request.accountId,
     };
@@ -67,10 +66,10 @@ export class CreateAutomation
   };
 
   #accountIdValid = async (accountId: string): Promise<boolean> => {
-    try {
+    try {      
       const getAccountResponse: GetAccountResponseDto =
         await this.#getAccount.execute({ id: accountId });
-
+      
       if (getAccountResponse.error) return false;
       if (!getAccountResponse.value) return false;
 

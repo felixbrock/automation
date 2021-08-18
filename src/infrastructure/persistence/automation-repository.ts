@@ -1,5 +1,11 @@
-import fs from 'fs';
-import path from 'path';
+import {
+  DeleteResult,
+  Document,
+  FindCursor,
+  InsertOneResult,
+  ObjectId,
+  UpdateResult,
+} from 'mongodb';
 import {
   Automation,
   AutomationProperties,
@@ -7,275 +13,147 @@ import {
 import {
   IAutomationRepository,
   AutomationQueryDto,
-  SubscriptionQueryDto,
+  AutomationUpdateDto,
 } from '../../domain/automation/i-automation-repository';
 import { Subscription } from '../../domain/value-types/subscription';
 import Result from '../../domain/value-types/transient-types/result';
+import { close, connect, createClient } from './db/mongo-db';
 
 interface SubscriptionPersistence {
   selectorId: string;
   systemId: string;
   alertsAccessedOn: number;
   alertsAccessedOnByUser: number;
+  modifiedOn: number;
 }
 
 interface AutomationPersistence {
-  id: string;
+  _id: string;
   name: string;
   accountId: string;
   subscriptions: SubscriptionPersistence[];
   modifiedOn: number;
 }
 
-export default class AutomationRepositoryImpl
-  implements IAutomationRepository
-{
-  public async findOne(id: string): Promise<Automation | null> {
-    const data: string = fs.readFileSync(
-      path.resolve(__dirname, '../../../db.json'),
-      'utf-8'
-    );
-    const db = JSON.parse(data);
+const collectionName = 'automations';
 
-    const result: AutomationPersistence = db.automations.find(
-      (automationEntity: { id: string }) => automationEntity.id === id
-    );
+export default class AutomationRepositoryImpl implements IAutomationRepository {
+  public findOne = async (id: string): Promise<Automation | null> => {
+    const client = createClient();
+    const db = await connect(client);
+    const result: any = await db
+      .collection(collectionName)
+      .findOne({ _id: new ObjectId(id) });
+
+    close(client);
 
     if (!result) return null;
-    return this.#toEntity(this.#buildProperties(result));
-  }
 
-  public async findBy(
+    return this.#toEntity(this.#buildProperties(result));
+  };
+
+  public findBy = async (
     automationQueryDto: AutomationQueryDto
-  ): Promise<Automation[]> {
+  ): Promise<Automation[]> => {
     if (!Object.keys(automationQueryDto).length) return this.all();
 
-    const data: string = fs.readFileSync(
-      path.resolve(__dirname, '../../../db.json'),
-      'utf-8'
+    const client = createClient();
+    const db = await connect(client);
+    const result: FindCursor = await db
+      .collection(collectionName)
+      .find(this.#buildFilter(automationQueryDto));
+    const results = await result.toArray();
+
+    close(client);
+
+    if (!results || !results.length) return [];
+
+    return results.map((element: any) =>
+      this.#toEntity(this.#buildProperties(element))
     );
-    const db = JSON.parse(data);
+  };
 
-    const automations: AutomationPersistence[] = db.automations.filter(
-      (automationEntity: AutomationPersistence) =>
-        this.findByCallback(automationEntity, automationQueryDto)
+  #buildFilter = (automationQueryDto: AutomationQueryDto): any => {
+    const filter: { [key: string]: any } = {};
+
+    if (automationQueryDto.name) filter.name = automationQueryDto.name;
+    if (automationQueryDto.accountId)
+      filter.accountId = automationQueryDto.accountId;
+
+    const modifiedOnFilter: { [key: string]: number } = {};
+    if (automationQueryDto.modifiedOnStart)
+      modifiedOnFilter.$gte = automationQueryDto.modifiedOnStart;
+    if (automationQueryDto.modifiedOnEnd)
+      modifiedOnFilter.$lte = automationQueryDto.modifiedOnEnd;
+    if (Object.keys(modifiedOnFilter).length)
+      filter.modifiedOn = modifiedOnFilter;
+
+    if (
+      !automationQueryDto.subscription ||
+      !Object.keys(automationQueryDto.subscription).length
+    )
+      return filter;
+
+    if (automationQueryDto.subscription.selectorId)
+      filter['subscriptions.selectorId'] =
+        automationQueryDto.subscription.selectorId;
+    if (automationQueryDto.subscription.systemId)
+      filter['subscriptions.systemId'] =
+        automationQueryDto.subscription.systemId;
+
+    const subscriptionAlertsAccessedOnFilter: { [key: string]: number } = {};
+    if (automationQueryDto.subscription.alertsAccessedOnStart)
+      subscriptionAlertsAccessedOnFilter.$gte =
+        automationQueryDto.subscription.alertsAccessedOnStart;
+    if (automationQueryDto.subscription.alertsAccessedOnEnd)
+      subscriptionAlertsAccessedOnFilter.$lte =
+        automationQueryDto.subscription.alertsAccessedOnEnd;
+    if (Object.keys(subscriptionAlertsAccessedOnFilter).length)
+      filter['subscriptions.alertsAccessedOn'] =
+        subscriptionAlertsAccessedOnFilter;
+
+    const subscriptionAlertsAccessedOnByUserFilter: { [key: string]: number } =
+      {};
+    if (automationQueryDto.subscription.alertsAccessedOnByUserStart)
+      subscriptionAlertsAccessedOnByUserFilter.$gte =
+        automationQueryDto.subscription.alertsAccessedOnByUserStart;
+    if (automationQueryDto.subscription.alertsAccessedOnByUserEnd)
+      subscriptionAlertsAccessedOnByUserFilter.$lte =
+        automationQueryDto.subscription.alertsAccessedOnByUserEnd;
+    if (Object.keys(subscriptionAlertsAccessedOnByUserFilter).length)
+      filter['subscriptions.alertsAccessedOnByUser'] =
+        subscriptionAlertsAccessedOnByUserFilter;
+
+    return filter;
+  };
+
+  public all = async (): Promise<Automation[]> => {
+    const client = createClient();
+    const db = await connect(client);
+    const result: FindCursor = await db.collection(collectionName).find();
+    const results = await result.toArray();
+
+    close(client);
+
+    if (!results || !results.length) return [];
+
+    return results.map((element: any) =>
+      this.#toEntity(this.#buildProperties(element))
     );
+  };
 
-    if (!automations || !automations.length) return [];
-    return automations.map((automation: AutomationPersistence) =>
-      this.#toEntity(this.#buildProperties(automation))
-    );
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  private findByCallback(
-    automationEntity: AutomationPersistence,
-    automationQueryDto: AutomationQueryDto
-  ): boolean {
-    const nameMatch = automationQueryDto.name
-      ? automationEntity.name ===
-        automationQueryDto.name
-      : true;
-    const accountIdMatch = automationQueryDto.accountId
-      ? automationEntity.accountId === automationQueryDto.accountId
-      : true;
-    const modifiedOnStartMatch = automationQueryDto.modifiedOnStart
-      ? automationEntity.modifiedOn >= automationQueryDto.modifiedOnStart
-      : true;
-    const modifiedOnEndMatch = automationQueryDto.modifiedOnEnd
-      ? automationEntity.modifiedOn <= automationQueryDto.modifiedOnEnd
-      : true;
-
-    let subscriptionMatch: boolean;
-    if (automationQueryDto.subscription) {
-      const querySubscription: SubscriptionQueryDto = automationQueryDto.subscription;
-      const result: SubscriptionPersistence | undefined =
-        automationEntity.subscriptions.find((subscription: SubscriptionPersistence) => {
-          const subscriptionSelectorMatch = querySubscription.selectorId
-            ? subscription.selectorId === querySubscription.selectorId
-            : true;
-          const subscriptionSystemMatch = querySubscription.systemId
-            ? subscription.systemId === querySubscription.systemId
-            : true;
-          const alertsAccessedOnStartMatch = querySubscription.alertsAccessedOnStart
-            ? subscription.alertsAccessedOn >= querySubscription.alertsAccessedOnStart
-            : true;
-          const alertsAccessedOnEndMatch = querySubscription.alertsAccessedOnEnd
-            ? subscription.alertsAccessedOn <= querySubscription.alertsAccessedOnEnd
-            : true;
-          const alertsAccessedOnByUserStartMatch =
-            querySubscription.alertsAccessedOnByUserStart
-              ? subscription.alertsAccessedOnByUser >=
-                querySubscription.alertsAccessedOnByUserStart
-              : true;
-          const alertsAccessedOnByUserEndMatch =
-            querySubscription.alertsAccessedOnByUserEnd
-              ? subscription.alertsAccessedOnByUser <=
-                querySubscription.alertsAccessedOnByUserEnd
-              : true;
-          return (
-            subscriptionSelectorMatch &&
-            subscriptionSystemMatch &&
-            alertsAccessedOnStartMatch &&
-            alertsAccessedOnEndMatch &&
-            alertsAccessedOnByUserStartMatch &&
-            alertsAccessedOnByUserEndMatch
-          );
-        });
-      subscriptionMatch = !!result;
-    } else subscriptionMatch = true;
-
-    return (
-      nameMatch &&
-      accountIdMatch &&
-      modifiedOnStartMatch &&
-      modifiedOnEndMatch &&
-      subscriptionMatch
-    );
-  }
-
-  public async all(): Promise<Automation[]> {
-    const data: string = fs.readFileSync(
-      path.resolve(__dirname, '../../../db.json'),
-      'utf-8'
-    );
-    const db = JSON.parse(data);
-
-    const { automations } = db;
-
-    if (!automations || !automations.length) return [];
-    return automations.map((automation: AutomationPersistence) =>
-      this.#toEntity(this.#buildProperties(automation))
-    );
-  }
-
-  public async save(automation: Automation): Promise<Result<null>> {
-    const data: string = fs.readFileSync(
-      path.resolve(__dirname, '../../../db.json'),
-      'utf-8'
-    );
-    const db = JSON.parse(data);
-
+  public insertOne = async (account: Automation): Promise<Result<null>> => {
     try {
-      db.automations.push(this.#toPersistence(automation));
+      const client = createClient();
+      const db = await connect(client);
+      const result: InsertOneResult<Document> = await db
+        .collection(collectionName)
+        .insertOne(this.#toPersistence(account));
 
-      fs.writeFileSync(
-        path.resolve(__dirname, '../../../db.json'),
-        JSON.stringify(db),
-        'utf-8'
-      );
+      if (!result.acknowledged)
+        throw new Error('Automation creation failed. Insert not acknowledged');
 
-      return Result.ok<null>();
-    } catch (error) {
-      return Result.fail<null>(error.message);
-    }
-  }
-
-  public async update(automation: Automation): Promise<Result<null>> {
-    const data: string = fs.readFileSync(
-      path.resolve(__dirname, '../../../db.json'),
-      'utf-8'
-    );
-    const db = JSON.parse(data);
-
-    try {
-      for (let i = 0; i < db.automations.length; i += 1) {
-        if (db.automations[i].id === automation.id) {
-          db.automations[i] = this.#toPersistence(automation);
-          break;
-        }
-      }
-
-      fs.writeFileSync(
-        path.resolve(__dirname, '../../../db.json'),
-        JSON.stringify(db),
-        'utf-8'
-      );
-
-      return Result.ok<null>();
-    } catch (error) {
-      return Result.fail<null>(error.message);
-    }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  public async delete(id: string): Promise<Result<null>> {
-    const data: string = fs.readFileSync(
-      path.resolve(__dirname, '../../../db.json'),
-      'utf-8'
-    );
-    const db = JSON.parse(data);
-
-    try {
-      const automations: AutomationPersistence[] = db.automations.filter(
-        (automationEntity: { id: string }) => automationEntity.id !== id
-      );
-
-      if (automations.length === db.automations.length)
-        throw new Error(`Automation with id ${id} does not exist`);
-
-      db.automations = automations;
-
-      fs.writeFileSync(
-        path.resolve(__dirname, '../../../db.json'),
-        JSON.stringify(db),
-        'utf-8'
-      );
-
-      return Result.ok<null>();
-    } catch (error) {
-      return Result.fail<null>(error.message);
-    }
-  }
-
-  public deleteSubscription = async (
-    automationId: string,
-    selectorId: string
-  ): Promise<Result<null>> => {
-    const data: string = fs.readFileSync(
-      path.resolve(__dirname, '../../../db.json'),
-      'utf-8'
-    );
-    const db = JSON.parse(data);
-
-    try {
-      const automation: AutomationPersistence = db.automations.find(
-        (automationEntity: { id: string }) =>
-          automationEntity.id === automationId
-      );
-
-      if (!automation)
-        throw new Error(
-          `Automation with id ${automationId} does not exist`
-        );
-
-      let deletionSuccess = false;
-      for (let i = 0; i < automation.subscriptions.length; i += 1) {
-        if (automation.subscriptions[i].selectorId === selectorId) {
-          automation.subscriptions.splice(i, 1);
-          deletionSuccess = true;
-          break;
-        }
-      }
-
-      // TODO - Does file remains open? Problem??
-      if (!deletionSuccess)
-        throw new Error(
-          `Automation subscription of automation ${automationId} for selector ${selectorId} was not deleted, because it does not exist`
-        );
-
-      for (let i = 0; i < db.automations.length; i += 1) {
-        if (db.automations[i].id === automation.id) {
-          db.automations[i] = automation;
-          break;
-        }
-      }
-
-      fs.writeFileSync(
-        path.resolve(__dirname, '../../../db.json'),
-        JSON.stringify(db),
-        'utf-8'
-      );
+      close(client);
 
       return Result.ok<null>();
     } catch (error) {
@@ -283,12 +161,98 @@ export default class AutomationRepositoryImpl
     }
   };
 
-  #toEntity = (
-    automationProperties: AutomationProperties
-  ): Automation => {
-    const createAutomationResult: Result<Automation> = Automation.create(
-      automationProperties
-    );
+  // TODO - Do not update the whole doc rather than only elements
+  public updateOne = async (
+    id: string,
+    updateDto: AutomationUpdateDto
+  ): Promise<Result<null>> => {
+    try {
+      const client = createClient();
+      const db = await connect(client);
+      const result: Document | UpdateResult = await db
+        .collection(collectionName)
+        .updateOne(
+          { _id: new ObjectId(id) },
+          this.#buildUpdateFilter(updateDto)
+        );
+
+      if (!result.acknowledged)
+        throw new Error('Automation update failed. Update not acknowledged');
+
+      close(client);
+
+      return Result.ok<null>();
+    } catch (error) {
+      return Result.fail<null>(error.message);
+    }
+  };
+
+  #buildUpdateFilter = (selectorUpdateDto: AutomationUpdateDto): any => {
+    const filter: { [key: string]: any } = {};
+
+    if (selectorUpdateDto.name) filter.name = selectorUpdateDto.name;
+    if (selectorUpdateDto.accountId)
+      filter.accountId = selectorUpdateDto.accountId;
+    if (selectorUpdateDto.modifiedOn)
+      filter.modifiedOn = selectorUpdateDto.modifiedOn;
+    if (
+      selectorUpdateDto.subscriptions &&
+      selectorUpdateDto.subscriptions.length
+    )
+      filter.subscriptions = selectorUpdateDto.subscriptions.map(
+        (subscription) => this.#subscriptionToPersistence(subscription)
+      );
+
+    return { $set: filter };
+  };
+
+  public deleteOne = async (id: string): Promise<Result<null>> => {
+    try {
+      const client = createClient();
+      const db = await connect(client);
+      const result: DeleteResult = await db
+        .collection(collectionName)
+        .deleteOne({ _id: new ObjectId(id) });
+
+      if (!result.acknowledged)
+        throw new Error('Automation delete failed. Delete not acknowledged');
+
+      close(client);
+
+      return Result.ok<null>();
+    } catch (error) {
+      return Result.fail<null>(error.message);
+    }
+  };
+
+  public deleteSubscription = async (
+    automationId: string,
+    selectorId: string
+  ): Promise<Result<null>> => {
+    try {
+      const client = createClient();
+      const db = await connect(client);
+      const result: Document | UpdateResult = await db
+        .collection(collectionName)
+        .updateOne(
+          { _id: new ObjectId(automationId) },
+          { $pull: { subscriptions: { selectorId } } }
+        );
+
+      if (!result.acknowledged)
+        throw new Error('Automation update failed. Update not acknowledged');
+
+      close(client);
+
+      return Result.ok<null>();
+    } catch (error) {
+      return Result.fail<null>(error.message);
+    }
+  };
+
+  #toEntity = (automationProperties: AutomationProperties): Automation => {
+    const createAutomationResult: Result<Automation> =
+      Automation.create(automationProperties);
 
     if (createAutomationResult.error)
       throw new Error(createAutomationResult.error);
@@ -301,7 +265,8 @@ export default class AutomationRepositoryImpl
   #buildProperties = (
     automation: AutomationPersistence
   ): AutomationProperties => ({
-    id: automation.id,
+    // eslint-disable-next-line no-underscore-dangle
+    id: automation._id,
     name: automation.name,
     accountId: automation.accountId,
     modifiedOn: automation.modifiedOn,
@@ -314,18 +279,24 @@ export default class AutomationRepositoryImpl
     }),
   });
 
-  #toPersistence = (automation: Automation): AutomationPersistence => ({
-    id: automation.id,
+  #toPersistence = (automation: Automation): Document => ({
+    _id: ObjectId.createFromHexString(automation.id),
     name: automation.name,
     accountId: automation.accountId,
     modifiedOn: automation.modifiedOn,
     subscriptions: automation.subscriptions.map(
-      (subscription): SubscriptionPersistence => ({
-        selectorId: subscription.selectorId,
-        systemId: subscription.systemId,
-        alertsAccessedOn: subscription.alertsAccessedOn,
-        alertsAccessedOnByUser: subscription.alertsAccessedOnByUser,
-      })
+      (subscription): SubscriptionPersistence =>
+        this.#subscriptionToPersistence(subscription)
     ),
+  });
+
+  #subscriptionToPersistence = (
+    subscription: Subscription
+  ): SubscriptionPersistence => ({
+    selectorId: subscription.selectorId,
+    systemId: subscription.systemId,
+    alertsAccessedOn: subscription.alertsAccessedOn,
+    alertsAccessedOnByUser: subscription.alertsAccessedOnByUser,
+    modifiedOn: subscription.modifiedOn
   });
 }

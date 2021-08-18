@@ -39,7 +39,7 @@ export class DeleteAutomation
         throw new Error(`Couldn't read automation ${request.automationId}`);
 
       const deleteAutomationResult: Result<null> =
-        await this.#automationRepository.delete(request.automationId);
+        await this.#automationRepository.deleteOne(request.automationId);
 
       if (deleteAutomationResult.error)
         throw new Error(deleteAutomationResult.error);

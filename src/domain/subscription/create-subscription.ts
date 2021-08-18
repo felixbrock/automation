@@ -41,12 +41,13 @@ export class CreateSubscription
   public async execute(
     request: CreateSubscriptionRequestDto
   ): Promise<CreateSubscriptionResponseDto> {
-    // TODO Is this correct to also provide the automation id? Probably not.
-    const subscription: Result<Subscription | null> = this.#createSubscription(request);
-    if (!subscription.value) return subscription;
+    // TODO Is this correct to also provide the automation id? Probably not.   
+
+    const createResult: Result<Subscription | null> = this.#createSubscription(request);
+    if (!createResult.value) return createResult;
 
     try {
-      const validatedRequest = await this.validateRequest(subscription.value);
+      const validatedRequest = await this.validateRequest(createResult.value);
       if (validatedRequest.error) throw new Error(validatedRequest.error);
 
       // TODO Potential fix? Automation is read twice. Once in create-subscription and once in update automation
@@ -57,7 +58,7 @@ export class CreateSubscription
           `Automation with id ${request.automationId} does not exist`
         );
 
-      automation.subscriptions.push(subscription.value);
+      automation.subscriptions.push(createResult.value);
 
       const subscriptionDtos: SubscriptionDto[] = automation.subscriptions.map(
         (subscriptionElement) => buildSubscriptionDto(subscriptionElement)
@@ -76,7 +77,7 @@ export class CreateSubscription
           `Couldn't update automation ${request.automationId}`
         );
 
-      return Result.ok<SubscriptionDto>(buildSubscriptionDto(subscription.value));
+      return Result.ok<SubscriptionDto>(buildSubscriptionDto(createResult.value));
     } catch (error) {
       return Result.fail<SubscriptionDto>(error.message);
     }

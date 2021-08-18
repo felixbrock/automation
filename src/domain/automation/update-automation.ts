@@ -1,7 +1,9 @@
 import IUseCase from '../services/use-case';
-import { Automation } from '../entities/automation';
-import { AutomationDto, buildAutomationDto } from './automation';
-import { IAutomationRepository } from './i-automation-repository';
+import { AutomationDto, buildAutomationDto} from './automation';
+import {
+  AutomationUpdateDto,
+  IAutomationRepository,
+} from './i-automation-repository';
 import { Subscription } from '../value-types/subscription';
 import Result from '../value-types/transient-types/result';
 import { SubscriptionDto } from '../subscription/subscription-dto';
@@ -10,6 +12,7 @@ import {
   GetSelectorResponseDto,
 } from '../selector-api/get-selector';
 import { GetAccount, GetAccountResponseDto } from '../account-api/get-account';
+import { Automation } from '../entities/automation';
 
 // TODO - This would be a PATCH use-case since not all fields need to be necessarily updated
 
@@ -23,8 +26,7 @@ export interface UpdateAutomationRequestDto {
 export type UpdateAutomationResponseDto = Result<AutomationDto | null>;
 
 export class UpdateAutomation
-  implements
-    IUseCase<UpdateAutomationRequestDto, UpdateAutomationResponseDto>
+  implements IUseCase<UpdateAutomationRequestDto, UpdateAutomationResponseDto>
 {
   #automationRepository: IAutomationRepository;
 
@@ -59,7 +61,7 @@ export class UpdateAutomation
 
         if (!subscriptionsValid)
           throw new Error(
-            `One or more selectorIds and/or systemIds of the subscriptions of automation ${automation.id} are invalid`
+            `One or more selectorIds and/or systemIds of the subscriptions of automation ${request.id} are invalid`
           );
       }
 
@@ -72,49 +74,44 @@ export class UpdateAutomation
           );
       }
 
-      const modifiedAutomation = this.#modifyAutomation(
-        automation,
-        request
-      );
+      const updateDto = await this.#buildUpdateDto(request);
 
-      await this.#automationRepository.update(modifiedAutomation);
+      const updateResult = await this.#automationRepository.updateOne(request.id, updateDto);
 
-      return Result.ok<AutomationDto>(
-        buildAutomationDto(modifiedAutomation)
-      );
+      if(updateResult.error) throw new Error(updateResult.error);
+
+      // TODO - Doesn't return the right object. Fix.
+      return Result.ok<AutomationDto>(buildAutomationDto(automation));
     } catch (error) {
       return Result.fail<AutomationDto>(error.message);
     }
   }
 
-  #modifyAutomation = (
-    automation: Automation,
+  #buildUpdateDto = async (
     request: UpdateAutomationRequestDto
-  ): Automation => {
-    const automationToModify = automation;
+  ): Promise<AutomationUpdateDto> => {
+    const updateDto: AutomationUpdateDto = {};
 
-    automationToModify.name =
-      request.name || automation.name;
+    if (request.name) updateDto.name = request.name;
+    if (request.accountId) updateDto.accountId = request.accountId;
 
-    automationToModify.accountId =
-      request.accountId || automation.accountId;
+    if (request.subscriptions && request.subscriptions.length)
+      updateDto.subscriptions = request.subscriptions.map((subscription) => {
+        const subscriptionResult = Subscription.create(subscription);
+        if (subscriptionResult.value) return subscriptionResult.value;
+        throw new Error(
+          `Creation of subscription ${subscription.selectorId} for automation ${request.id} failed`
+        );
+      });
 
-    automationToModify.subscriptions = request.subscriptions
-      ? request.subscriptions.map((subscription) => {
-          const subscriptionResult = Subscription.create(subscription);
-          if (subscriptionResult.value) return subscriptionResult.value;
-          throw new Error(
-            `Creation of subscription ${subscription.selectorId} for automation ${automation.id} failed`
-          );
-        })
-      : automation.subscriptions;
+    updateDto.modifiedOn = Date.now();
 
-    automationToModify.modifiedOn = Date.now();
-
-    return automationToModify;
+    return updateDto;
   };
 
-  #subscriptionSelectorIdsValid = async (subscriptions: SubscriptionDto[]): Promise<boolean> => {
+  #subscriptionSelectorIdsValid = async (
+    subscriptions: SubscriptionDto[]
+  ): Promise<boolean> => {
     const isValidResults: boolean[] = await Promise.all(
       subscriptions.map(async (subscription) => {
         try {

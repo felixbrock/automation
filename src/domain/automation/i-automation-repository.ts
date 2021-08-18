@@ -1,4 +1,5 @@
 import { Automation } from '../entities/automation';
+import { Subscription } from '../value-types/subscription';
 import Result from '../value-types/transient-types/result';
 
 export interface AutomationQueryDto {
@@ -9,7 +10,7 @@ export interface AutomationQueryDto {
   modifiedOnEnd?: number;
 }
 
-export interface SubscriptionQueryDto {
+interface SubscriptionQueryDto {
   selectorId?: string;
   systemId?: string;
   alertsAccessedOnStart?: number;
@@ -18,13 +19,20 @@ export interface SubscriptionQueryDto {
   alertsAccessedOnByUserEnd?: number;
 }
 
+export interface AutomationUpdateDto{
+  name?: string;
+  accountId?: string;
+  subscriptions?: Subscription[];
+  modifiedOn?: number
+}
+
 export interface IAutomationRepository {
   findOne(id: string): Promise<Automation | null>;
   findBy(automationQueryDto: AutomationQueryDto): Promise<Automation[]>;
   all(): Promise<Automation[] | null>;
-  update(automation: Automation): Promise<Result<null>>;
-  save(automation: Automation): Promise<Result<null>>;
-  delete(automationId: string): Promise<Result<null>>;
+  updateOne(id: string, updateDto: AutomationUpdateDto): Promise<Result<null>>;
+  insertOne(automation: Automation): Promise<Result<null>>;
+  deleteOne(automationId: string): Promise<Result<null>>;
 
   deleteSubscription(
     automationId: string,
