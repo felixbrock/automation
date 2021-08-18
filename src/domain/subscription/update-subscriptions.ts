@@ -65,18 +65,10 @@ export class UpdateSubscriptions
 
       });
 
-      const subscriptionDtos: SubscriptionDto[] = automation.subscriptions.map((element) => {
-        const modifiedSubscription = modifiedSubscriptions.find((modifiedElement) => modifiedElement.selectorId === element.selectorId);
-
-        if (modifiedSubscription)
-          return buildSubscriptionDto(modifiedSubscription);
-        return buildSubscriptionDto(element);
-      });
-
       const updateAutomationResult: Result<AutomationDto | null> =
         await this.#updateAutomation.execute({
           id: request.automationId,
-          subscriptions: subscriptionDtos,
+          subscriptions: modifiedSubscriptions,
         });
 
       if (updateAutomationResult.error)

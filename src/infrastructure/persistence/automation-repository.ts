@@ -169,11 +169,20 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     try {
       const client = createClient();
       const db = await connect(client);
+
+      if (updateDto.subscriptions)
+        await Promise.all(
+          updateDto.subscriptions.map(async (subscription) =>
+            this.deleteSubscription(id, subscription.selectorId)
+          )
+        );
+
       const result: Document | UpdateResult = await db
         .collection(collectionName)
         .updateOne(
           { _id: new ObjectId(id) },
-          this.#buildUpdateFilter(updateDto)
+          this.#buildUpdateFilter(updateDto),
+          { arrayFilters: [] }
         );
 
       if (!result.acknowledged)
@@ -188,22 +197,25 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
   };
 
   #buildUpdateFilter = (selectorUpdateDto: AutomationUpdateDto): any => {
-    const filter: { [key: string]: any } = {};
+    const setFilter: { [key: string]: any } = {};
+    const push: { [key: string]: any } = {};
 
-    if (selectorUpdateDto.name) filter.name = selectorUpdateDto.name;
+    if (selectorUpdateDto.name) setFilter.name = selectorUpdateDto.name;
     if (selectorUpdateDto.accountId)
-      filter.accountId = selectorUpdateDto.accountId;
+      setFilter.accountId = selectorUpdateDto.accountId;
     if (selectorUpdateDto.modifiedOn)
-      filter.modifiedOn = selectorUpdateDto.modifiedOn;
+      setFilter.modifiedOn = selectorUpdateDto.modifiedOn;
     if (
       selectorUpdateDto.subscriptions &&
       selectorUpdateDto.subscriptions.length
     )
-      filter.subscriptions = selectorUpdateDto.subscriptions.map(
-        (subscription) => this.#subscriptionToPersistence(subscription)
-      );
+      push.subscriptions = {
+        $each: selectorUpdateDto.subscriptions.map((subscription) =>
+          this.#subscriptionToPersistence(subscription)
+        ),
+      };
 
-    return { $set: filter };
+    return { $set: setFilter, $push: push };
   };
 
   public deleteOne = async (id: string): Promise<Result<null>> => {
@@ -297,6 +309,6 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     systemId: subscription.systemId,
     alertsAccessedOn: subscription.alertsAccessedOn,
     alertsAccessedOnByUser: subscription.alertsAccessedOnByUser,
-    modifiedOn: subscription.modifiedOn
+    modifiedOn: subscription.modifiedOn,
   });
 }

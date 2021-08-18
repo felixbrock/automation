@@ -1,5 +1,8 @@
 import IUseCase from '../services/use-case';
-import { Subscription, SubscriptionProperties } from '../value-types/subscription';
+import {
+  Subscription,
+  SubscriptionProperties,
+} from '../value-types/subscription';
 import {
   GetSelector,
   GetSelectorResponseDto,
@@ -20,7 +23,8 @@ export interface CreateSubscriptionRequestDto {
 export type CreateSubscriptionResponseDto = Result<SubscriptionDto | null>;
 
 export class CreateSubscription
-  implements IUseCase<CreateSubscriptionRequestDto, CreateSubscriptionResponseDto>
+  implements
+    IUseCase<CreateSubscriptionRequestDto, CreateSubscriptionResponseDto>
 {
   #automationRepository: IAutomationRepository;
 
@@ -41,9 +45,10 @@ export class CreateSubscription
   public async execute(
     request: CreateSubscriptionRequestDto
   ): Promise<CreateSubscriptionResponseDto> {
-    // TODO Is this correct to also provide the automation id? Probably not.   
+    // TODO Is this correct to also provide the automation id? Probably not.
 
-    const createResult: Result<Subscription | null> = this.#createSubscription(request);
+    const createResult: Result<Subscription | null> =
+      this.#createSubscription(request);
     if (!createResult.value) return createResult;
 
     try {
@@ -58,32 +63,37 @@ export class CreateSubscription
           `Automation with id ${request.automationId} does not exist`
         );
 
-      automation.subscriptions.push(createResult.value);
-
-      const subscriptionDtos: SubscriptionDto[] = automation.subscriptions.map(
-        (subscriptionElement) => buildSubscriptionDto(subscriptionElement)
-      );
+      const existingSubscription: Subscription | undefined =
+        automation.subscriptions.find(
+          (subscription) => subscription.selectorId === request.selectorId
+        );
+      if (existingSubscription)
+        throw new Error(
+          `Subscription for selector ${request.selectorId} already in place for automation ${request.automationId}`
+        );
 
       const updateAutomationResult: Result<AutomationDto | null> =
         await this.#updateAutomation.execute({
           id: request.automationId,
-          subscriptions: subscriptionDtos,
+          subscriptions: [buildSubscriptionDto(createResult.value)],
         });
 
       if (updateAutomationResult.error)
         throw new Error(updateAutomationResult.error);
       if (!updateAutomationResult.value)
-        throw new Error(
-          `Couldn't update automation ${request.automationId}`
-        );
+        throw new Error(`Couldn't update automation ${request.automationId}`);
 
-      return Result.ok<SubscriptionDto>(buildSubscriptionDto(createResult.value));
+      return Result.ok<SubscriptionDto>(
+        buildSubscriptionDto(createResult.value)
+      );
     } catch (error) {
       return Result.fail<SubscriptionDto>(error.message);
     }
   }
 
-  private async validateRequest(subscription: Subscription): Promise<Result<null>> {
+  private async validateRequest(
+    subscription: Subscription
+  ): Promise<Result<null>> {
     const getSelectorResponse: GetSelectorResponseDto =
       await this.#getSelector.execute({
         id: subscription.selectorId,
@@ -104,7 +114,9 @@ export class CreateSubscription
     return Result.ok<null>(null);
   }
 
-  #createSubscription = (request: CreateSubscriptionRequestDto): Result<Subscription | null> => {
+  #createSubscription = (
+    request: CreateSubscriptionRequestDto
+  ): Result<Subscription | null> => {
     const subscriptionProperties: SubscriptionProperties = {
       selectorId: request.selectorId,
       systemId: request.systemId,

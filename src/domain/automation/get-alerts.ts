@@ -11,9 +11,14 @@ import {
   GetSystemResponseDto,
   WarningDto,
 } from '../system-api/get-system';
-import { IAutomationRepository } from './i-automation-repository';
+import {
+  IAutomationRepository,
+} from './i-automation-repository';
 import { Automation } from '../entities/automation';
-import { buildSubscriptionDto, SubscriptionDto } from '../subscription/subscription-dto';
+import {
+  buildSubscriptionDto,
+  SubscriptionDto,
+} from '../subscription/subscription-dto';
 import { UpdateAutomation } from './update-automation';
 import { AutomationDto } from './automation';
 import { Subscription } from '../value-types/subscription';
@@ -84,21 +89,21 @@ export class GetAutomationAlerts
     }
   }
 
-  #update = async (automation: Automation): Promise<Result<null>> => {
-    const subscriptionDtos: SubscriptionDto[] = automation.subscriptions.map((element) =>
-      buildSubscriptionDto(element)
+  #update = async (id: string, subscriptions: Subscription[]): Promise<Result<null>> => {
+    const subscriptionDtos: SubscriptionDto[] = subscriptions.map(
+      (element) => buildSubscriptionDto(element)
     );
 
     const updateAutomationResult: Result<AutomationDto | null> =
       await this.#updateAutomation.execute({
-        id: automation.id,
+        id,
         subscriptions: subscriptionDtos,
       });
 
     if (updateAutomationResult.error)
       return Result.fail(updateAutomationResult.error);
     if (!updateAutomationResult.value)
-      return Result.fail(`Couldn't update automation ${automation.id}`);
+      return Result.fail(`Couldn't update automation ${id}`);
 
     return Result.ok();
   };
@@ -116,17 +121,19 @@ export class GetAutomationAlerts
           const getSystemResponse: GetSystemResponseDto =
             await this.#getSystem.execute({ id: subscription.systemId });
 
-          if (getSystemResponse.error || !getSystemResponse.value) {
-            subscriptions.push(subscription);
-            return;
-          }
+          if (getSystemResponse.error || !getSystemResponse.value) return;
 
           // TODO Enable return of Warnings when covering warnings
-          // warnings = await this.#readSubscriptionWarnings(subscription, getSystemResponse.value);
-          alerts = await this.#readSubscriptionAlerts(
-            subscription,
-            getSystemResponse.value.name
-          );
+          // const newWarnings = await this.#readSubscriptionWarnings(subscription, getSystemResponse.value);
+          // warnings = warnings.concat(newWarnings);
+          const newAlerts = 
+            await this.#readSubscriptionAlerts(
+              subscription,
+              getSystemResponse.value.name
+            )
+          ;
+
+          alerts = alerts.concat(newAlerts);
 
           const subscriptionToModify = subscription;
           subscriptionToModify.alertsAccessedOn = Date.now();
@@ -134,9 +141,7 @@ export class GetAutomationAlerts
         })
       );
 
-      const automationToModify = automation;
-      automationToModify.subscriptions = subscriptions;
-      const updateAutomationResult = await this.#update(automation);
+      const updateAutomationResult = await this.#update(automation.id, subscriptions);
 
       if (updateAutomationResult.error)
         throw new Error(updateAutomationResult.error);
