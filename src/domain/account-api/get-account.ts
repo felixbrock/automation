@@ -43,7 +43,7 @@ export class GetAccount
 
       return Result.ok<GetAccountDto>(getAccountResponse);
     } catch (error) {
-      return Result.fail<GetAccountDto>(error.message);
+      return Result.fail<GetAccountDto>(typeof error === 'string' ? error : error.message);
     }
   }
 }

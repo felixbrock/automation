@@ -85,7 +85,7 @@ export class GetAutomationAlerts
 
       return getAutomationAlertsResponse;
     } catch (error) {
-      return Result.fail<null>(error.message);
+      return Result.fail<null>(typeof error === 'string' ? error : error.message);
     }
   }
 
@@ -151,7 +151,7 @@ export class GetAutomationAlerts
         warnings,
       });
     } catch (error) {
-      return Result.fail<null>(error.message);
+      return Result.fail<null>(typeof error === 'string' ? error : error.message);
     }
   }
 

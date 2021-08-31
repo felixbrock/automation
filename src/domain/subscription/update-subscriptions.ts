@@ -80,7 +80,7 @@ export class UpdateSubscriptions
 
       return Result.ok<SubscriptionDto[]>(modifiedSubscriptions.map((element) => buildSubscriptionDto(element)));
     } catch (error) {
-      return Result.fail<SubscriptionDto[]>(error.message);
+      return Result.fail<SubscriptionDto[]>(typeof error === 'string' ? error : error.message);
     }
   }
 

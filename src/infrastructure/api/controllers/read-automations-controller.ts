@@ -88,7 +88,7 @@ export default class ReadAutomationsController extends BaseController {
             : undefined,
       });
     } catch (error) {
-      return Result.fail<ReadAutomationsRequestDto>(error.message);
+      return Result.fail<ReadAutomationsRequestDto>(typeof error === 'string' ? error : error.message);
     }
   };
 

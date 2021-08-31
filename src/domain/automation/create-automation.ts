@@ -49,7 +49,7 @@ export class CreateAutomation
 
       return Result.ok<AutomationDto>(buildAutomationDto(automation.value));
     } catch (error) {
-      return Result.fail<AutomationDto>(error.message);
+      return Result.fail<AutomationDto>(typeof error === 'string' ? error : error.message);
     }
   }
 

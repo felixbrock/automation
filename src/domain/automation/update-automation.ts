@@ -83,7 +83,7 @@ export class UpdateAutomation
       // TODO - Doesn't return the right object. Fix.
       return Result.ok<AutomationDto>(buildAutomationDto(automation));
     } catch (error) {
-      return Result.fail<AutomationDto>(error.message);
+      return Result.fail<AutomationDto>(typeof error === 'string' ? error : error.message);
     }
   }
 

@@ -157,7 +157,7 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       return Result.ok<null>();
     } catch (error) {
-      return Result.fail<null>(error.message);
+      return Result.fail<null>(typeof error === 'string' ? error : error.message);
     }
   };
 
@@ -192,7 +192,7 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       return Result.ok<null>();
     } catch (error) {
-      return Result.fail<null>(error.message);
+      return Result.fail<null>(typeof error === 'string' ? error : error.message);
     }
   };
 
@@ -233,7 +233,7 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       return Result.ok<null>();
     } catch (error) {
-      return Result.fail<null>(error.message);
+      return Result.fail<null>(typeof error === 'string' ? error : error.message);
     }
   };
 
@@ -258,7 +258,7 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       return Result.ok<null>();
     } catch (error) {
-      return Result.fail<null>(error.message);
+      return Result.fail<null>(typeof error === 'string' ? error : error.message);
     }
   };
 

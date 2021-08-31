@@ -49,7 +49,7 @@ export class GetSelector
 
       return Result.ok<GetSelectorDto>(getSelectorResponse);
     } catch (error) {
-      return Result.fail<GetSelectorDto>(error.message);
+      return Result.fail<GetSelectorDto>(typeof error === 'string' ? error : error.message);
     }
   }
 }

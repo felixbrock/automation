@@ -87,7 +87,7 @@ export class CreateSubscription
         buildSubscriptionDto(createResult.value)
       );
     } catch (error) {
-      return Result.fail<SubscriptionDto>(error.message);
+      return Result.fail<SubscriptionDto>(typeof error === 'string' ? error : error.message);
     }
   }
 
