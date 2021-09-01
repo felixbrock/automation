@@ -1,7 +1,6 @@
 import { CreateAutomation } from './automation/create-automation';
 import { CreateSubscription } from './subscription/create-subscription';
 import { ReadAutomation } from './automation/read-automation';
-import { GetAutomationAlerts } from './automation/get-alerts';
 import { UpdateAutomation } from './automation/update-automation';
 import { DeleteSubscription } from './subscription/delete-subscription';
 import { DeleteAutomation } from './automation/delete-automation';
@@ -27,8 +26,6 @@ export default class AutomationDomain {
   #deleteSubscription: DeleteSubscription;
 
   #deleteSubscriptions: DeleteSubscriptions;
-
-  #getAutomationAlerts: GetAutomationAlerts;
 
   public get createAutomation(): CreateAutomation {
     return this.#createAutomation;
@@ -66,10 +63,6 @@ export default class AutomationDomain {
     return this.#deleteSubscriptions;
   }
 
-  public get getAutomationAlerts(): GetAutomationAlerts {
-    return this.#getAutomationAlerts;
-  }
-
   constructor(
     createAutomation: CreateAutomation,
     updateAutomation: UpdateAutomation,
@@ -79,8 +72,7 @@ export default class AutomationDomain {
     createSubscription: CreateSubscription,
     updateSubscriptions: UpdateSubscriptions,
     deleteSubscription: DeleteSubscription,
-    deleteSubscriptions: DeleteSubscriptions,
-    getAutomationAlerts: GetAutomationAlerts
+    deleteSubscriptions: DeleteSubscriptions
   ) {
     this.#createAutomation = createAutomation;
     this.#updateAutomation = updateAutomation;
@@ -91,6 +83,5 @@ export default class AutomationDomain {
     this.#updateSubscriptions = updateSubscriptions;
     this.#deleteSubscription = deleteSubscription;
     this.#deleteSubscriptions = deleteSubscriptions;
-    this.#getAutomationAlerts = getAutomationAlerts;
   }
 }

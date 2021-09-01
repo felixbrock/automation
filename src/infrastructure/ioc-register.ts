@@ -4,7 +4,6 @@ import AutomationDomain from '../domain/automation-domain';
 
 import { CreateAutomation } from '../domain/automation/create-automation';
 import { ReadAutomation } from '../domain/automation/read-automation';
-import { GetAutomationAlerts } from '../domain/automation/get-alerts';
 import { CreateSubscription } from '../domain/subscription/create-subscription';
 import { GetSelector } from '../domain/selector-api/get-selector';
 import { GetSystem } from '../domain/system-api/get-system';
@@ -37,8 +36,6 @@ iocRegister.register({
   deleteSubscription: asClass(DeleteSubscription),
   deleteSubscriptions: asClass(DeleteSubscriptions),
   
-  getAutomationAlerts: asClass(GetAutomationAlerts),
-
   getSelector: asClass(GetSelector),
   getSystem: asClass(GetSystem),
   getAccount: asClass(GetAccount),

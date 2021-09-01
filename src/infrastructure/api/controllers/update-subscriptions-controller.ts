@@ -17,8 +17,8 @@ export default class UpdateSubscriptionsController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): UpdateSubscriptionsRequestDto => {
-    const subscriptions: UpdateSubscriptionDto[] = [];
-
+    const subscriptions: UpdateSubscriptionDto[] = []; 
+    
     httpRequest.body.subscriptions.forEach(
       (subscription: { [key: string]: any }) =>
         subscriptions.push({

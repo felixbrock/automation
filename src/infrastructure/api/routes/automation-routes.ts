@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import CreateAutomationController from '../controllers/create-automation-controller';
 import ReadAutomationController from '../controllers/read-automation-controller';
-import GetAutomationAlertsController from '../controllers/read-automation-alerts-controller';
 import CreateSubscriptionController from '../controllers/create-subscription-controller';
 import app from '../../ioc-register';
 import AutomationDomain from '../../../domain/automation-domain';
@@ -37,10 +36,6 @@ const deleteSubscriptionController = new DeleteSubscriptionController(
   automationDomain.deleteSubscription
 );
 
-const getAutomationAlertsController = new GetAutomationAlertsController(
-  automationDomain.getAutomationAlerts
-);
-
 automationRoutes.post('/', (req, res) =>
   createAutomationController.execute(req, res)
 );
@@ -63,10 +58,6 @@ automationRoutes.patch('/:automationId/subscriptions', (req, res) =>
 
 automationRoutes.delete('/:automationId/subscription', (req, res) =>
   deleteSubscriptionController.execute(req, res)
-);
-
-automationRoutes.get('/:automationId/alerts', (req, res) =>
-  getAutomationAlertsController.execute(req, res)
 );
 
 export default automationRoutes;
