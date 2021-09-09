@@ -63,7 +63,7 @@ export default class AutomationDomain {
     return this.#deleteSubscriptions;
   }
 
-  constructor(
+  public constructor(
     createAutomation: CreateAutomation,
     updateAutomation: UpdateAutomation,
     readAutomation: ReadAutomation,
