@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { nodeEnv, serviceDiscoveryNamespace } from '../../config';
+import { nodeEnv, port, serviceDiscoveryNamespace } from '../../config';
 import {
   IGetSystemRepository,
   SystemDto,
@@ -15,7 +15,7 @@ export default class GetSystemRepositoryImpl implements IGetSystemRepository {
     try {
       const ip = await discoverIp(serviceDiscoveryNamespace, 'system-service');
 
-      return `http://${ip}/${path}`;
+      return `http://${ip}:${port}/${path}`;
     } catch (error: any) {
       return Promise.reject(typeof error === 'string' ? error : error.message);
     }

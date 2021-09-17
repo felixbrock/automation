@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { nodeEnv, serviceDiscoveryNamespace } from '../../config';
+import { nodeEnv, port, serviceDiscoveryNamespace } from '../../config';
 import {
   IGetAccountRepository,
   GetAccountDto as AccountDto,
@@ -18,7 +18,7 @@ export default class GetAccountRepositoryImpl implements IGetAccountRepository {
         'account-service'
       );
 
-      return `http://${ip}/${path}`;
+      return `http://${ip}:${port}/${path}`;
     } catch (error: any) {
       return Promise.reject(typeof error === 'string' ? error : error.message);
     }

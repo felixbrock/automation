@@ -38,18 +38,16 @@ export class GetSelector
   ): Promise<GetSelectorResponseDto> {
     try {
       const getSelectorResponse: GetSelectorDto | null =
-        await this.#getSelectorRepository.getOne(
-          request.id
-        );
+        await this.#getSelectorRepository.getOne(request.id);
 
       if (!getSelectorResponse)
-        throw new Error(
-          `No selector found for id ${request.id}`
-        );
+        throw new Error(`No selector found for id ${request.id}`);
 
       return Result.ok<GetSelectorDto>(getSelectorResponse);
-    } catch (error) {
-      return Result.fail<GetSelectorDto>(typeof error === 'string' ? error : error.message);
+    } catch (error: any) {
+      return Result.fail<GetSelectorDto>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   }
 }

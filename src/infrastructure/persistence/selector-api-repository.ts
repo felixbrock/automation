@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { nodeEnv, serviceDiscoveryNamespace } from '../../config';
+import { nodeEnv, port, serviceDiscoveryNamespace } from '../../config';
 import {
   IGetSelectorRepository,
   GetSelectorDto as SelectorDto,
@@ -20,7 +20,7 @@ export default class GetSelectorRepositoryImpl
         'selector-service'
       );
 
-      return `http://${ip}/${path}`;
+      return `http://${ip}:${port}/${path}`;
     } catch (error: any) {
       return Promise.reject(typeof error === 'string' ? error : error.message);
     }
