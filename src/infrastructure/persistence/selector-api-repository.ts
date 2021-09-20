@@ -35,7 +35,6 @@ export default class GetSelectorRepositoryImpl
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse);
     } catch (error: any) {
-      console.log(typeof error === 'string' ? error : error.message);
       return null;
     }
   };
