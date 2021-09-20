@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { nodeEnv, port, serviceDiscoveryNamespace } from '../../config';
+import { nodeEnv, serviceDiscoveryNamespace } from '../../config';
 import {
   IGetSelectorRepository,
   GetSelectorDto as SelectorDto,
 } from '../../domain/selector-api/get-selector';
-import discoverIp from '../shared/service-discovery';
+import { DiscoveredService, discoverService } from '../shared/service-discovery';
 
 export default class GetSelectorRepositoryImpl
   implements IGetSelectorRepository
@@ -15,12 +15,12 @@ export default class GetSelectorRepositoryImpl
     if (nodeEnv !== 'production') return `http://localhost:3000/${path}`;
 
     try {
-      const ip = await discoverIp(
+      const discoveredService : DiscoveredService = await discoverService(
         serviceDiscoveryNamespace,
         'selector-service'
       );
 
-      return `http://${ip}:${port}/${path}`;
+      return `http://${discoveredService.ip}:${discoveredService.port}/${path}`;
     } catch (error: any) {
       return Promise.reject(typeof error === 'string' ? error : error.message);
     }
@@ -34,7 +34,8 @@ export default class GetSelectorRepositoryImpl
       const jsonResponse = response.data;
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse);
-    } catch (error) {
+    } catch (error: any) {
+      console.log(typeof error === 'string' ? error : error.message);
       return null;
     }
   };

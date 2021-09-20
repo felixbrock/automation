@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { nodeEnv, port, serviceDiscoveryNamespace } from '../../config';
+import { nodeEnv, serviceDiscoveryNamespace } from '../../config';
 import {
   IGetSystemRepository,
   SystemDto,
 } from '../../domain/system-api/get-system';
-import discoverIp from '../shared/service-discovery';
+import { DiscoveredService, discoverService } from '../shared/service-discovery';
 
 export default class GetSystemRepositoryImpl implements IGetSystemRepository {
   #getRoot = async (): Promise<string> => {
@@ -13,9 +13,12 @@ export default class GetSystemRepositoryImpl implements IGetSystemRepository {
     if (nodeEnv !== 'production') return `http://localhost:3002/${path}`;
 
     try {
-      const ip = await discoverIp(serviceDiscoveryNamespace, 'system-service');
+      const discoveredService : DiscoveredService = await discoverService(
+        serviceDiscoveryNamespace,
+        'system-service'
+      );
 
-      return `http://${ip}:${port}/${path}`;
+      return `http://${discoveredService.ip}:${discoveredService.port}/${path}`;
     } catch (error: any) {
       return Promise.reject(typeof error === 'string' ? error : error.message);
     }

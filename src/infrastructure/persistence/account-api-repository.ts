@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { nodeEnv, port, serviceDiscoveryNamespace } from '../../config';
+import { nodeEnv, serviceDiscoveryNamespace } from '../../config';
 import {
   IGetAccountRepository,
   GetAccountDto as AccountDto,
 } from '../../domain/account-api/get-account';
-import discoverIp from '../shared/service-discovery';
+import {discoverService, DiscoveredService} from '../shared/service-discovery';
 
 export default class GetAccountRepositoryImpl implements IGetAccountRepository {
   #getRoot = async (): Promise<string> => {
@@ -13,12 +13,12 @@ export default class GetAccountRepositoryImpl implements IGetAccountRepository {
     if (nodeEnv !== 'production') return `http://localhost:8081/${path}`;
 
     try {
-      const ip = await discoverIp(
+      const discoveredService : DiscoveredService = await discoverService(
         serviceDiscoveryNamespace,
         'account-service'
       );
 
-      return `http://${ip}:${port}/${path}`;
+      return `http://${discoveredService.ip}:${discoveredService.port}/${path}`;
     } catch (error: any) {
       return Promise.reject(typeof error === 'string' ? error : error.message);
     }

@@ -39,7 +39,7 @@ export default class CreateSubscriptionController extends BaseController {
         useCaseResult.value,
         CodeHttp.CREATED
       );
-    } catch (error) {
+    } catch (error: any) {
       return CreateSubscriptionController.fail(res, error);
     }
   }
