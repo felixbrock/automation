@@ -52,7 +52,7 @@ export class CreateSubscription
     if (!createResult.value) return createResult;
 
     try {
-      const validatedRequest = await this.validateRequest(createResult.value);
+      const validatedRequest = await this.#validateRequest(createResult.value);
       if (validatedRequest.error) throw new Error(validatedRequest.error);
 
       // TODO Potential fix? Automation is read twice. Once in create-subscription and once in update automation
@@ -91,9 +91,9 @@ export class CreateSubscription
     }
   }
 
-  private async validateRequest(
+  #validateRequest = async (
     subscription: Subscription
-  ): Promise<Result<null>> {
+  ): Promise<Result<null>> => {
     const getSelectorResponse: GetSelectorResponseDto =
       await this.#getSelector.execute({
         id: subscription.selectorId,

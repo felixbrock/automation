@@ -32,18 +32,16 @@ export class GetAccount
   ): Promise<GetAccountResponseDto> {
     try {
       const getAccountResponse: GetAccountDto | null =
-        await this.#getAccountRepository.getOne(
-          request.id
-        );
+        await this.#getAccountRepository.getOne(request.id);
 
       if (!getAccountResponse)
-        throw new Error(
-          `No account found for id ${request.id}`
-        );
+        throw new Error(`No account found for id ${request.id}`);
 
       return Result.ok<GetAccountDto>(getAccountResponse);
-    } catch (error) {
-      return Result.fail<GetAccountDto>(typeof error === 'string' ? error : error.message);
+    } catch (error: any) {
+      return Result.fail<GetAccountDto>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   }
 }
