@@ -1,32 +1,20 @@
 import axios from 'axios';
-import { nodeEnv, serviceDiscoveryNamespace } from '../../config';
 import {
   IGetAccountRepository,
   GetAccountDto as AccountDto,
 } from '../../domain/account-api/get-account';
-import {discoverService, DiscoveredService} from '../shared/service-discovery';
+import getRoot from '../shared/api-root-builder';
 
 export default class GetAccountRepositoryImpl implements IGetAccountRepository {
-  #getRoot = async (): Promise<string> => {
-    const path = 'api/v1';
+  #path = 'api/v1';
 
-    if (nodeEnv !== 'production') return `http://localhost:8081/${path}`;
+  #serviceName = 'account';
 
-    try {
-      const discoveredService : DiscoveredService = await discoverService(
-        serviceDiscoveryNamespace,
-        'account-service'
-      );
-
-      return `http://${discoveredService.ip}:${discoveredService.port}/${path}`;
-    } catch (error: any) {
-      return Promise.reject(typeof error === 'string' ? error : error.message);
-    }
-  };
+  #port = '8081';
 
   public getOne = async (accountId: string): Promise<AccountDto | null> => {
     try {
-      const apiRoot = await this.#getRoot();
+      const apiRoot = await getRoot(this.#serviceName, this.#port, this.#path);
 
       const response = await axios.get(`${apiRoot}/account/${accountId}`);
       const jsonResponse = response.data;
