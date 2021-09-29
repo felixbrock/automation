@@ -19,7 +19,7 @@ export default class UpdateSubscriptionsController extends BaseController {
   #buildRequestDto = (httpRequest: Request): UpdateSubscriptionsRequestDto => {
     const subscriptions: UpdateSubscriptionDto[] = []; 
     
-    httpRequest.body.subscriptions.forEach(
+    httpRequest.body.data.subscriptions.forEach(
       (subscription: { [key: string]: any }) =>
         subscriptions.push({
           selectorId: subscription.selectorId,
@@ -54,7 +54,7 @@ export default class UpdateSubscriptionsController extends BaseController {
         useCaseResult.value,
         CodeHttp.OK
       );
-    } catch (error) {
+    } catch (error: any) {
       return UpdateSubscriptionsController.fail(res, error);
     }
   }
