@@ -16,8 +16,8 @@ export default class CreateAutomationController extends BaseController {
   }
 
   #buildRequestDto = (httpRequest: Request): CreateAutomationRequestDto => ({
-    name: httpRequest.body.data.name,
-    accountId: httpRequest.body.data.accountId,
+    name: httpRequest.body.name,
+    accountId: httpRequest.body.accountId,
   });
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
