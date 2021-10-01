@@ -9,22 +9,23 @@ export interface GetAccountRequestDto {
 export interface GetAccountDto {
   id: string;
   userId: string;
+  organizationId: string;
   modifiedOn: number;
 }
 
 export type GetAccountResponseDto = Result<GetAccountDto | null>;
 
-export interface IGetAccountRepository {
+export interface IAccountRepository {
   getOne(accountId: string): Promise<GetAccountDto | null>;
 }
 
 export class GetAccount
   implements IUseCase<GetAccountRequestDto, GetAccountResponseDto>
 {
-  #getAccountRepository: IGetAccountRepository;
+  #accountRepository: IAccountRepository;
 
-  public constructor(getAccountRepository: IGetAccountRepository) {
-    this.#getAccountRepository = getAccountRepository;
+  public constructor(accountRepository: IAccountRepository) {
+    this.#accountRepository = accountRepository;
   }
 
   public async execute(
@@ -32,7 +33,7 @@ export class GetAccount
   ): Promise<GetAccountResponseDto> {
     try {
       const getAccountResponse: GetAccountDto | null =
-        await this.#getAccountRepository.getOne(request.id);
+        await this.#accountRepository.getOne(request.id);
 
       if (!getAccountResponse)
         throw new Error(`No account found for id ${request.id}`);

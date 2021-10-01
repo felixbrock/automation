@@ -2,7 +2,7 @@ import IUseCase from '../services/use-case';
 import Result from '../value-types/transient-types/result';
 import { IAutomationRepository } from './i-automation-repository';
 import { ReadAutomation } from './read-automation';
-import { AutomationDto } from './automation';
+import { AutomationDto } from './automation-dto';
 
 export interface DeleteAutomationRequestDto {
   automationId: string;

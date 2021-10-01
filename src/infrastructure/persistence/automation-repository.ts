@@ -31,6 +31,7 @@ interface AutomationPersistence {
   _id: string;
   name: string;
   accountId: string;
+  organizationId: string;
   subscriptions: SubscriptionPersistence[];
   modifiedOn: number;
 }
@@ -79,6 +80,8 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     if (automationQueryDto.name) filter.name = automationQueryDto.name;
     if (automationQueryDto.accountId)
       filter.accountId = automationQueryDto.accountId;
+    if (automationQueryDto.organizationId)
+      filter.organizationId = automationQueryDto.organizationId;
 
     const modifiedOnFilter: { [key: string]: number } = {};
     if (automationQueryDto.modifiedOnStart)
@@ -157,7 +160,9 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       return Result.ok<null>();
     } catch (error: any) {
-      return Result.fail<null>(typeof error === 'string' ? error : error.message);
+      return Result.fail<null>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   };
 
@@ -192,7 +197,9 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       return Result.ok<null>();
     } catch (error: any) {
-      return Result.fail<null>(typeof error === 'string' ? error : error.message);
+      return Result.fail<null>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   };
 
@@ -203,6 +210,8 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     if (selectorUpdateDto.name) setFilter.name = selectorUpdateDto.name;
     if (selectorUpdateDto.accountId)
       setFilter.accountId = selectorUpdateDto.accountId;
+      if (selectorUpdateDto.organizationId)
+      setFilter.organizationId = selectorUpdateDto.organizationId;
     if (selectorUpdateDto.modifiedOn)
       setFilter.modifiedOn = selectorUpdateDto.modifiedOn;
     if (
@@ -233,7 +242,9 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       return Result.ok<null>();
     } catch (error: any) {
-      return Result.fail<null>(typeof error === 'string' ? error : error.message);
+      return Result.fail<null>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   };
 
@@ -258,7 +269,9 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       return Result.ok<null>();
     } catch (error: any) {
-      return Result.fail<null>(typeof error === 'string' ? error : error.message);
+      return Result.fail<null>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   };
 
@@ -281,6 +294,7 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     id: automation._id,
     name: automation.name,
     accountId: automation.accountId,
+    organizationId: automation.organizationId,
     modifiedOn: automation.modifiedOn,
     subscriptions: automation.subscriptions.map((subscription) => {
       const subscriptionResult = Subscription.create(subscription);
@@ -295,6 +309,7 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     _id: ObjectId.createFromHexString(automation.id),
     name: automation.name,
     accountId: automation.accountId,
+    organizationId: automation.organizationId,
     modifiedOn: automation.modifiedOn,
     subscriptions: automation.subscriptions.map(
       (subscription): SubscriptionPersistence =>

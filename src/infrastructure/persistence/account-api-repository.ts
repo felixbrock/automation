@@ -1,18 +1,18 @@
 import axios from 'axios';
 import {
-  IGetAccountRepository,
-  GetAccountDto as AccountDto,
+  IAccountRepository,
+  GetAccountDto,
 } from '../../domain/account-api/get-account';
 import getRoot from '../shared/api-root-builder';
 
-export default class GetAccountRepositoryImpl implements IGetAccountRepository {
+export default class AccountRepositoryImpl implements IAccountRepository {
   #path = 'api/v1';
 
   #serviceName = 'account';
 
   #port = '8081';
 
-  public getOne = async (accountId: string): Promise<AccountDto | null> => {
+  public getOne = async (accountId: string): Promise<GetAccountDto | null> => {
     try {
       const apiRoot = await getRoot(this.#serviceName, this.#port, this.#path);
 

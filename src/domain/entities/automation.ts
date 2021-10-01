@@ -5,6 +5,7 @@ export interface AutomationProperties {
   id: string;
   name: string;
   accountId: string;
+  organizationId: string;
   modifiedOn?: number;
   subscriptions?: Subscription[];
 }
@@ -15,6 +16,8 @@ export class Automation {
   #name: string;
 
   #accountId: string;
+
+  #organizationId: string;
 
   #modifiedOn: number;
 
@@ -44,6 +47,16 @@ export class Automation {
     this.#accountId = id;
   }
 
+  public get organizationId(): string {
+    return this.#organizationId;
+  }
+
+  public set organizationId(id: string) {
+    if (!id) throw new Error('OrganizationId cannot be null');
+
+    this.#organizationId = id;
+  }
+
   public get modifiedOn(): number {
     return this.#modifiedOn;
   }
@@ -69,6 +82,7 @@ export class Automation {
     this.#id = properties.id;
     this.#name = properties.name;
     this.#accountId = properties.accountId;
+    this.#organizationId = properties.organizationId;
     this.#modifiedOn = properties.modifiedOn || Date.now();
     this.#subscriptions = properties.subscriptions || [];
   }
@@ -80,6 +94,8 @@ export class Automation {
       return Result.fail<Automation>('Automation must have automation id');
     if (!properties.accountId)
       return Result.fail<Automation>('Automation must have account id');
+    if(!properties.organizationId)
+    return Result.fail<Automation>('Organization must have organization id');
     if (!properties.id)
       return Result.fail<Automation>('Automation must have id');
 

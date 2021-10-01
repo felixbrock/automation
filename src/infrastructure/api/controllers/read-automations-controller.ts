@@ -22,6 +22,7 @@ export default class ReadAutomationsController extends BaseController {
     const {
       name,
       accountId,
+      organizationId,
       subscriptionSelectorId,
       subscriptionSystemId,
       subscriptionAlertsAccessedOnStart,
@@ -36,6 +37,7 @@ export default class ReadAutomationsController extends BaseController {
     const requestValid = this.#queryParametersValid([
       name,
       accountId,
+      organizationId,
       subscriptionSelectorId,
       subscriptionSystemId,
       subscriptionAlertsAccessedOnStart,
@@ -56,6 +58,7 @@ export default class ReadAutomationsController extends BaseController {
         name:
           typeof name === 'string' ? name : undefined,
         accountId: typeof accountId === 'string' ? accountId : undefined,
+        organizationId: typeof organizationId === 'string' ? organizationId : undefined,
         subscription: {
           selectorId:
             typeof subscriptionSelectorId === 'string' ? subscriptionSelectorId : undefined,
@@ -87,7 +90,7 @@ export default class ReadAutomationsController extends BaseController {
             ? this.#buildDate(modifiedOnEnd)
             : undefined,
       });
-    } catch (error) {
+    } catch (error: any) {
       return Result.fail<ReadAutomationsRequestDto>(typeof error === 'string' ? error : error.message);
     }
   };
@@ -152,7 +155,7 @@ export default class ReadAutomationsController extends BaseController {
         useCaseResult.value,
         CodeHttp.OK
       );
-    } catch (error) {
+    } catch (error: any) {
       return ReadAutomationsController.fail(res, error);
     }
   }

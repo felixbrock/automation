@@ -5,11 +5,12 @@ import {
   IAutomationRepository,
   AutomationQueryDto,
 } from './i-automation-repository';
-import { buildAutomationDto, AutomationDto } from './automation';
+import { buildAutomationDto, AutomationDto } from './automation-dto';
 
 export interface ReadAutomationsRequestDto {
   name?: string;
   accountId?: string;
+  organizationId?: string;
   subscription?: {
     selectorId?: string;
     systemId?: string;
@@ -47,7 +48,7 @@ export class ReadAutomations
       return Result.ok<AutomationDto[]>(
         automations.map((automation) => buildAutomationDto(automation))
       );
-    } catch (error) {
+    } catch (error: any) {
       return Result.fail<null>(typeof error === 'string' ? error : error.message);
     }
   }
@@ -60,6 +61,7 @@ export class ReadAutomations
     if (request.name)
       queryDto.name = request.name;
     if (request.accountId) queryDto.accountId = request.accountId;
+    if (request.organizationId) queryDto.organizationId = request.organizationId;
     if (
       request.subscription &&
       (request.subscription.selectorId ||

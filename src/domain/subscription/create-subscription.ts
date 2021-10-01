@@ -8,7 +8,7 @@ import {
   GetSelectorResponseDto,
 } from '../selector-api/get-selector';
 import { buildSubscriptionDto, SubscriptionDto } from './subscription-dto';
-import { AutomationDto } from '../automation/automation';
+import { AutomationDto } from '../automation/automation-dto';
 import { UpdateAutomation } from '../automation/update-automation';
 import Result from '../value-types/transient-types/result';
 import { Automation } from '../entities/automation';

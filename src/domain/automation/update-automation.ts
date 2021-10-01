@@ -1,5 +1,5 @@
 import IUseCase from '../services/use-case';
-import { AutomationDto, buildAutomationDto} from './automation';
+import { AutomationDto, buildAutomationDto } from './automation-dto';
 import {
   AutomationUpdateDto,
   IAutomationRepository,
@@ -20,6 +20,7 @@ export interface UpdateAutomationRequestDto {
   id: string;
   name?: string;
   accountId?: string;
+  organizationId?: string;
   subscriptions?: SubscriptionDto[];
 }
 
@@ -65,25 +66,44 @@ export class UpdateAutomation
           );
       }
 
-      if (request.accountId) {
-        const accountIdValid = await this.#accountIdValid(request.accountId);
+      if (request.organizationId && !request.accountId)
+        throw new Error(
+          `In order to update an automation's organization please also provide the user's account id`
+        );
 
-        if (!accountIdValid)
+      if (request.accountId) {
+        const getAccountResponse: GetAccountResponseDto =
+          await this.#getAccount.execute({ id: request.accountId });
+
+        if (!getAccountResponse.value)
           throw new Error(
             `No account for provided id ${request.accountId} found`
+          );
+
+        if (
+          request.organizationId &&
+          request.organizationId !== getAccountResponse.value.organizationId
+        )
+          throw new Error(
+            `Automation ${request.id} to update doesn't match the user's organization`
           );
       }
 
       const updateDto = await this.#buildUpdateDto(request);
 
-      const updateResult = await this.#automationRepository.updateOne(request.id, updateDto);
+      const updateResult = await this.#automationRepository.updateOne(
+        request.id,
+        updateDto
+      );
 
-      if(updateResult.error) throw new Error(updateResult.error);
+      if (updateResult.error) throw new Error(updateResult.error);
 
       // TODO - Doesn't return the right object. Fix.
       return Result.ok<AutomationDto>(buildAutomationDto(automation));
-    } catch (error) {
-      return Result.fail<AutomationDto>(typeof error === 'string' ? error : error.message);
+    } catch (error: any) {
+      return Result.fail<AutomationDto>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   }
 
@@ -94,6 +114,7 @@ export class UpdateAutomation
 
     if (request.name) updateDto.name = request.name;
     if (request.accountId) updateDto.accountId = request.accountId;
+    if (request.organizationId) updateDto.organizationId = request.organizationId;
 
     if (request.subscriptions && request.subscriptions.length)
       updateDto.subscriptions = request.subscriptions.map((subscription) => {
@@ -124,26 +145,12 @@ export class UpdateAutomation
             return false;
 
           return true;
-        } catch (error) {
+        } catch (error: any) {
           throw new Error(error);
         }
       })
     );
 
     return !isValidResults.includes(false);
-  };
-
-  #accountIdValid = async (accountId: string): Promise<boolean> => {
-    try {
-      const getAccountResponse: GetAccountResponseDto =
-        await this.#getAccount.execute({ id: accountId });
-
-      if (getAccountResponse.error) return false;
-      if (!getAccountResponse.value) return false;
-
-      return true;
-    } catch (error) {
-      throw new Error(error);
-    }
   };
 }

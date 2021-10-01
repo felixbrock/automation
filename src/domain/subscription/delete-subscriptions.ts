@@ -1,6 +1,6 @@
 import IUseCase from '../services/use-case';
 import { SubscriptionDto } from './subscription-dto';
-import { AutomationDto } from '../automation/automation';
+import { AutomationDto } from '../automation/automation-dto';
 import Result from '../value-types/transient-types/result';
 import { ReadAutomations } from '../automation/read-automations';
 import { DeleteSubscription } from './delete-subscription';

@@ -11,7 +11,7 @@ import { GetAccount } from '../domain/account-api/get-account';
 
 import GetSelectorRepository from './persistence/selector-api-repository';
 import GetSystemRepository from './persistence/system-api-repository';
-import GetAccountRepository from './persistence/account-api-repository';
+import AccountRepository from './persistence/account-api-repository';
 import AutomationRepository from './persistence/automation-repository';
 import { UpdateAutomation } from '../domain/automation/update-automation';
 import { DeleteSubscription } from '../domain/subscription/delete-subscription';
@@ -44,7 +44,7 @@ iocRegister.register({
 
   getSelectorRepository: asClass(GetSelectorRepository),
   getSystemRepository: asClass(GetSystemRepository),
-  getAccountRepository: asClass(GetAccountRepository),
+  accountRepository: asClass(AccountRepository),
 });
 
 const automationMain =

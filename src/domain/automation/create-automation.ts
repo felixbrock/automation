@@ -2,7 +2,7 @@
 import { ObjectId } from 'mongodb';
 import IUseCase from '../services/use-case';
 import { Automation, AutomationProperties } from '../entities/automation';
-import { buildAutomationDto, AutomationDto } from './automation';
+import { buildAutomationDto, AutomationDto } from './automation-dto';
 import { IAutomationRepository } from './i-automation-repository';
 import Result from '../value-types/transient-types/result';
 import { GetAccount, GetAccountResponseDto } from '../account-api/get-account';
@@ -33,49 +33,38 @@ export class CreateAutomation
     request: CreateAutomationRequestDto
   ): Promise<CreateAutomationResponseDto> {
     try {
-      const accountIdValid = await this.#accountIdValid(request.accountId);
+      const getAccountResponse: GetAccountResponseDto =
+        await this.#getAccount.execute({ id: request.accountId });
 
-      if (!accountIdValid)
+      if (!getAccountResponse.value)
         throw new Error(
           `No account for provided id ${request.accountId} found`
         );
 
       const automation: Result<Automation | null> =
-        this.#createAutomation(request);
+        this.#createAutomation(request, getAccountResponse.value.organizationId);
       if (!automation.value) return automation;
 
       // TODO Install error handling
       await this.#automationRepository.insertOne(automation.value);
 
       return Result.ok<AutomationDto>(buildAutomationDto(automation.value));
-    } catch (error) {
+    } catch (error: any) {
       return Result.fail<AutomationDto>(typeof error === 'string' ? error : error.message);
     }
   }
 
   #createAutomation = (
-    request: CreateAutomationRequestDto
+    request: CreateAutomationRequestDto,
+    organizationId: string
   ): Result<Automation | null> => {
     const automationProperties: AutomationProperties = {
       id: new ObjectId().toHexString(),
       name: request.name,
       accountId: request.accountId,
+      organizationId
     };
 
     return Automation.create(automationProperties);
-  };
-
-  #accountIdValid = async (accountId: string): Promise<boolean> => {
-    try {      
-      const getAccountResponse: GetAccountResponseDto =
-        await this.#getAccount.execute({ id: accountId });
-      
-      if (getAccountResponse.error) return false;
-      if (!getAccountResponse.value) return false;
-
-      return true;
-    } catch (error) {
-      throw new Error(error);
-    }
   };
 }

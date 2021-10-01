@@ -2,7 +2,7 @@ import { Automation } from '../entities/automation';
 import IUseCase from '../services/use-case';
 import Result from '../value-types/transient-types/result';
 import {IAutomationRepository} from './i-automation-repository';
-import {AutomationDto, buildAutomationDto } from './automation';
+import {AutomationDto, buildAutomationDto } from './automation-dto';
 
 export interface ReadAutomationRequestDto {
   id: string;
@@ -33,7 +33,7 @@ export class ReadAutomation
       return Result.ok<AutomationDto>(
         buildAutomationDto(automation)
       );
-    } catch (error) {
+    } catch (error: any) {
       return Result.fail<null>(typeof error === 'string' ? error : error.message);
     }
   }

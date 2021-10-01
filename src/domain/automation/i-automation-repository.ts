@@ -5,6 +5,7 @@ import Result from '../value-types/transient-types/result';
 export interface AutomationQueryDto {
   name?: string;
   accountId?: string;
+  organizationId?: string;
   subscription?: SubscriptionQueryDto;
   modifiedOnStart?: number;
   modifiedOnEnd?: number;
@@ -22,6 +23,7 @@ interface SubscriptionQueryDto {
 export interface AutomationUpdateDto{
   name?: string;
   accountId?: string;
+  organizationId?: string;
   subscriptions?: Subscription[];
   modifiedOn?: number
 }

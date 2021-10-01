@@ -1,6 +1,6 @@
 import IUseCase from '../services/use-case';
 import { ReadAutomation } from '../automation/read-automation';
-import {AutomationDto} from '../automation/automation';
+import {AutomationDto} from '../automation/automation-dto';
 import Result from '../value-types/transient-types/result';
 import {IAutomationRepository} from '../automation/i-automation-repository';
 
