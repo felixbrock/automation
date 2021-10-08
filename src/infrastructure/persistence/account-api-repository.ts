@@ -1,11 +1,11 @@
 import axios from 'axios';
 import {
-  IAccountRepository,
+  IAccountApiRepository,
   GetAccountDto,
 } from '../../domain/account-api/get-account';
 import getRoot from '../shared/api-root-builder';
 
-export default class AccountRepositoryImpl implements IAccountRepository {
+export default class AccountApiRepositoryImpl implements IAccountApiRepository {
   #path = 'api/v1';
 
   #serviceName = 'account';

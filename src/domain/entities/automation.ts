@@ -95,7 +95,7 @@ export class Automation {
     if (!properties.accountId)
       return Result.fail<Automation>('Automation must have account id');
     if(!properties.organizationId)
-    return Result.fail<Automation>('Organization must have organization id');
+    return Result.fail<Automation>('Automation must have organization id');
     if (!properties.id)
       return Result.fail<Automation>('Automation must have id');
 

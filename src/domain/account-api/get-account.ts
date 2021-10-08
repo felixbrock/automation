@@ -15,16 +15,16 @@ export interface GetAccountDto {
 
 export type GetAccountResponseDto = Result<GetAccountDto | null>;
 
-export interface IAccountRepository {
+export interface IAccountApiRepository {
   getOne(accountId: string): Promise<GetAccountDto | null>;
 }
 
 export class GetAccount
   implements IUseCase<GetAccountRequestDto, GetAccountResponseDto>
 {
-  #accountRepository: IAccountRepository;
+  #accountRepository: IAccountApiRepository;
 
-  public constructor(accountRepository: IAccountRepository) {
+  public constructor(accountRepository: IAccountApiRepository) {
     this.#accountRepository = accountRepository;
   }
 
