@@ -1,5 +1,6 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
+import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
   CreateSubscription,
   CreateSubscriptionRequestDto,
@@ -10,9 +11,15 @@ import { BaseController, CodeHttp } from '../../shared/base-controller';
 export default class CreateSubscriptionController extends BaseController {
   #createSubscription: CreateSubscription;
 
-  public constructor(createSubscription: CreateSubscription) {
+  #getAccounts: GetAccounts;
+
+  public constructor(
+    createSubscription: CreateSubscription,
+    getAccounts: GetAccounts
+  ) {
     super();
     this.#createSubscription = createSubscription;
+    this.#getAccounts = getAccounts;
   }
 
   #buildRequestDto = (httpRequest: Request): CreateSubscriptionRequestDto => ({
@@ -23,7 +30,8 @@ export default class CreateSubscriptionController extends BaseController {
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
-      const requestDto: CreateSubscriptionRequestDto = this.#buildRequestDto(req);
+      const requestDto: CreateSubscriptionRequestDto =
+        this.#buildRequestDto(req);
       const useCaseResult: CreateSubscriptionResponseDto =
         await this.#createSubscription.execute(requestDto);
 

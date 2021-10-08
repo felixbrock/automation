@@ -1,5 +1,6 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
+import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
   CreateAutomation,
   CreateAutomationRequestDto,
@@ -10,9 +11,12 @@ import { BaseController, CodeHttp } from '../../shared/base-controller';
 export default class CreateAutomationController extends BaseController {
   #createAutomation: CreateAutomation;
 
-  public constructor(createAutomation: CreateAutomation) {
+  #getAccounts: GetAccounts;
+
+  public constructor(createAutomation: CreateAutomation, getAccounts: GetAccounts) {
     super();
     this.#createAutomation = createAutomation;
+    this.#getAccounts = getAccounts;
   }
 
   #buildRequestDto = (httpRequest: Request): CreateAutomationRequestDto => ({

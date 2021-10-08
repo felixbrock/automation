@@ -11,42 +11,45 @@ import {
   GetSelector,
   GetSelectorResponseDto,
 } from '../selector-api/get-selector';
-import { GetAccount, GetAccountResponseDto } from '../account-api/get-account';
 import { Automation } from '../entities/automation';
-
-// TODO - This would be a PATCH use-case since not all fields need to be necessarily updated
 
 export interface UpdateAutomationRequestDto {
   id: string;
   name?: string;
   accountId?: string;
-  organizationId?: string;
   subscriptions?: SubscriptionDto[];
+}
+
+export interface UpdateAutomationAuthDto {
+  organizationId: string;
+  jwt: string;
 }
 
 export type UpdateAutomationResponseDto = Result<AutomationDto | null>;
 
 export class UpdateAutomation
-  implements IUseCase<UpdateAutomationRequestDto, UpdateAutomationResponseDto>
+  implements
+    IUseCase<
+      UpdateAutomationRequestDto,
+      UpdateAutomationResponseDto,
+      UpdateAutomationAuthDto
+    >
 {
   #automationRepository: IAutomationRepository;
 
   #getSelector: GetSelector;
 
-  #getAccount: GetAccount;
-
   public constructor(
     automationRepository: IAutomationRepository,
-    getSelector: GetSelector,
-    getAccount: GetAccount
+    getSelector: GetSelector
   ) {
     this.#automationRepository = automationRepository;
     this.#getSelector = getSelector;
-    this.#getAccount = getAccount;
   }
 
   public async execute(
-    request: UpdateAutomationRequestDto
+    request: UpdateAutomationRequestDto,
+    auth: UpdateAutomationAuthDto
   ): Promise<UpdateAutomationResponseDto> {
     try {
       const automation: Automation | null =
@@ -55,9 +58,13 @@ export class UpdateAutomation
       if (!automation)
         throw new Error(`Automation with id ${request.id} does not exist`);
 
+      if (automation.organizationId !== auth.organizationId)
+        throw new Error('Not allowed to perform action');
+
       if (request.subscriptions) {
         const subscriptionsValid = await this.#subscriptionSelectorIdsValid(
-          request.subscriptions
+          request.subscriptions,
+          auth.jwt
         );
 
         if (!subscriptionsValid)
@@ -66,30 +73,10 @@ export class UpdateAutomation
           );
       }
 
-      if (request.organizationId && !request.accountId)
-        throw new Error(
-          `In order to update an automation's organization please also provide the user's account id`
-        );
-
-      if (request.accountId) {
-        const getAccountResponse: GetAccountResponseDto =
-          await this.#getAccount.execute({ id: request.accountId });
-
-        if (!getAccountResponse.value)
-          throw new Error(
-            `No account for provided id ${request.accountId} found`
-          );
-
-        if (
-          request.organizationId &&
-          request.organizationId !== getAccountResponse.value.organizationId
-        )
-          throw new Error(
-            `Automation ${request.id} to update doesn't match the user's organization`
-          );
-      }
-
-      const updateDto = await this.#buildUpdateDto(request);
+      const updateDto = await this.#buildUpdateDto(
+        request,
+        auth.organizationId
+      );
 
       const updateResult = await this.#automationRepository.updateOne(
         request.id,
@@ -108,13 +95,14 @@ export class UpdateAutomation
   }
 
   #buildUpdateDto = async (
-    request: UpdateAutomationRequestDto
+    request: UpdateAutomationRequestDto,
+    organizationId: string
   ): Promise<AutomationUpdateDto> => {
     const updateDto: AutomationUpdateDto = {};
 
     if (request.name) updateDto.name = request.name;
     if (request.accountId) updateDto.accountId = request.accountId;
-    if (request.organizationId) updateDto.organizationId = request.organizationId;
+    updateDto.organizationId = organizationId;
 
     if (request.subscriptions && request.subscriptions.length)
       updateDto.subscriptions = request.subscriptions.map((subscription) => {
@@ -131,13 +119,17 @@ export class UpdateAutomation
   };
 
   #subscriptionSelectorIdsValid = async (
-    subscriptions: SubscriptionDto[]
+    subscriptions: SubscriptionDto[],
+    jwt: string
   ): Promise<boolean> => {
     const isValidResults: boolean[] = await Promise.all(
       subscriptions.map(async (subscription) => {
         try {
           const getSelectorResponse: GetSelectorResponseDto =
-            await this.#getSelector.execute({ id: subscription.selectorId });
+            await this.#getSelector.execute(
+              { id: subscription.selectorId },
+              { jwt }
+            );
 
           if (getSelectorResponse.error) return false;
           if (!getSelectorResponse.value) return false;

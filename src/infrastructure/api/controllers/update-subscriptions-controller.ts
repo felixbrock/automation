@@ -1,5 +1,6 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
+import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
   UpdateSubscriptions,
   UpdateSubscriptionDto,
@@ -11,14 +12,20 @@ import { BaseController, CodeHttp } from '../../shared/base-controller';
 export default class UpdateSubscriptionsController extends BaseController {
   #updateSubscriptions: UpdateSubscriptions;
 
-  public constructor(updateSubscriptions: UpdateSubscriptions) {
+  #getAccounts: GetAccounts;
+
+  public constructor(
+    updateSubscriptions: UpdateSubscriptions,
+    getAccounts: GetAccounts
+  ) {
     super();
     this.#updateSubscriptions = updateSubscriptions;
+    this.#getAccounts = getAccounts;
   }
 
   #buildRequestDto = (httpRequest: Request): UpdateSubscriptionsRequestDto => {
-    const subscriptions: UpdateSubscriptionDto[] = []; 
-    
+    const subscriptions: UpdateSubscriptionDto[] = [];
+
     httpRequest.body.subscriptions.forEach(
       (subscription: { [key: string]: any }) =>
         subscriptions.push({

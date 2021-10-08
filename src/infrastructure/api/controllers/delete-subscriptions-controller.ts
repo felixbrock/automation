@@ -1,5 +1,6 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
+import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
   DeleteSubscriptions,
   DeleteSubscriptionsRequestDto,
@@ -11,9 +12,15 @@ import { BaseController, CodeHttp } from '../../shared/base-controller';
 export default class DeleteSubscriptionsController extends BaseController {
   #deleteSubscriptions: DeleteSubscriptions;
 
-  public constructor(deleteSubscriptions: DeleteSubscriptions) {
+  #getAccounts: GetAccounts;
+
+  public constructor(
+    deleteSubscriptions: DeleteSubscriptions,
+    getAccounts: GetAccounts
+  ) {
     super();
     this.#deleteSubscriptions = deleteSubscriptions;
+    this.#getAccounts = getAccounts;
   }
 
   #buildRequestDto = (
@@ -35,7 +42,10 @@ export default class DeleteSubscriptionsController extends BaseController {
         this.#buildRequestDto(req);
 
       if (buildDtoResult.error)
-        return DeleteSubscriptionsController.badRequest(res, buildDtoResult.error);
+        return DeleteSubscriptionsController.badRequest(
+          res,
+          buildDtoResult.error
+        );
       if (!buildDtoResult.value)
         return DeleteSubscriptionsController.badRequest(
           res,
@@ -46,10 +56,17 @@ export default class DeleteSubscriptionsController extends BaseController {
         await this.#deleteSubscriptions.execute(buildDtoResult.value);
 
       if (useCaseResult.error) {
-        return DeleteSubscriptionsController.badRequest(res, useCaseResult.error);
+        return DeleteSubscriptionsController.badRequest(
+          res,
+          useCaseResult.error
+        );
       }
 
-      return DeleteSubscriptionsController.ok(res, useCaseResult.value, CodeHttp.OK);
+      return DeleteSubscriptionsController.ok(
+        res,
+        useCaseResult.value,
+        CodeHttp.OK
+      );
     } catch (error) {
       return DeleteSubscriptionsController.fail(res, error);
     }

@@ -10,7 +10,6 @@ import { buildAutomationDto, AutomationDto } from './automation-dto';
 export interface ReadAutomationsRequestDto {
   name?: string;
   accountId?: string;
-  organizationId?: string;
   subscription?: {
     selectorId?: string;
     systemId?: string;
@@ -23,11 +22,19 @@ export interface ReadAutomationsRequestDto {
   modifiedOnEnd?: number;
 }
 
+export interface ReadAutomationsAuthDto {
+  organizationId: string;
+}
+
 export type ReadAutomationsResponseDto = Result<AutomationDto[] | null>;
 
 export class ReadAutomations
   implements
-    IUseCase<ReadAutomationsRequestDto, ReadAutomationsResponseDto>
+    IUseCase<
+      ReadAutomationsRequestDto,
+      ReadAutomationsResponseDto,
+      ReadAutomationsAuthDto
+    >
 {
   #automationRepository: IAutomationRepository;
 
@@ -36,32 +43,34 @@ export class ReadAutomations
   }
 
   public async execute(
-    request: ReadAutomationsRequestDto
+    request: ReadAutomationsRequestDto,
+    auth: ReadAutomationsAuthDto
   ): Promise<ReadAutomationsResponseDto> {
     try {
-      const automations: Automation[] =
-        await this.#automationRepository.findBy(
-          this.#buildAutomationQueryDto(request)
-        );
+      const automations: Automation[] = await this.#automationRepository.findBy(
+        this.#buildAutomationQueryDto(request, auth.organizationId)
+      );
       if (!automations) throw new Error(`Queried automations do not exist`);
 
       return Result.ok<AutomationDto[]>(
         automations.map((automation) => buildAutomationDto(automation))
       );
     } catch (error: any) {
-      return Result.fail<null>(typeof error === 'string' ? error : error.message);
+      return Result.fail<null>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   }
 
   #buildAutomationQueryDto = (
-    request: ReadAutomationsRequestDto
+    request: ReadAutomationsRequestDto,
+    organizationId: string
   ): AutomationQueryDto => {
     const queryDto: AutomationQueryDto = {};
 
-    if (request.name)
-      queryDto.name = request.name;
+    if (request.name) queryDto.name = request.name;
     if (request.accountId) queryDto.accountId = request.accountId;
-    if (request.organizationId) queryDto.organizationId = request.organizationId;
+    queryDto.organizationId = organizationId;
     if (
       request.subscription &&
       (request.subscription.selectorId ||

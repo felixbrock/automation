@@ -1,5 +1,5 @@
 import IUseCase from '../services/use-case';
-import { Subscription} from '../value-types/subscription';
+import { Subscription } from '../value-types/subscription';
 import { buildSubscriptionDto, SubscriptionDto } from './subscription-dto';
 import { AutomationDto } from '../automation/automation-dto';
 import { UpdateAutomation } from '../automation/update-automation';
@@ -15,13 +15,23 @@ export interface UpdateSubscriptionDto {
 
 export interface UpdateSubscriptionsRequestDto {
   automationId: string;
-  subscriptions: UpdateSubscriptionDto[] 
+  subscriptions: UpdateSubscriptionDto[];
+}
+
+export interface UpdateSubscriptionsAuthDto {
+  organizationId: string;
+  jwt: string;
 }
 
 export type UpdateSubscriptionsResponseDto = Result<SubscriptionDto[]>;
 
 export class UpdateSubscriptions
-  implements IUseCase<UpdateSubscriptionsRequestDto, UpdateSubscriptionsResponseDto>
+  implements
+    IUseCase<
+      UpdateSubscriptionsRequestDto,
+      UpdateSubscriptionsResponseDto,
+      UpdateSubscriptionsAuthDto
+    >
 {
   #automationRepository: IAutomationRepository;
 
@@ -29,7 +39,7 @@ export class UpdateSubscriptions
 
   public constructor(
     automationRepository: IAutomationRepository,
-    updateAutomation: UpdateAutomation,
+    updateAutomation: UpdateAutomation
   ) {
     this.#automationRepository = automationRepository;
     this.#updateAutomation = updateAutomation;
@@ -37,7 +47,8 @@ export class UpdateSubscriptions
 
   // TODO Potential fix? Automation is read twice. Once in update-subscription and once in update automation
   public async execute(
-    request: UpdateSubscriptionsRequestDto
+    request: UpdateSubscriptionsRequestDto,
+    auth: UpdateSubscriptionsAuthDto
   ): Promise<UpdateSubscriptionsResponseDto> {
     try {
       const automation: Automation | null =
@@ -48,43 +59,55 @@ export class UpdateSubscriptions
           `Automation with id ${request.automationId} does not exist`
         );
 
+      if (automation.organizationId !== auth.organizationId)
+        throw new Error('Not authorized to perform action');
+
       const modifiedSubscriptions: Subscription[] = [];
 
       request.subscriptions.forEach((requestElement) => {
+        const subscription: Subscription | undefined =
+          automation.subscriptions.find(
+            (element) => element.selectorId === requestElement.selectorId
+          );
 
-        const subscription: Subscription | undefined = automation.subscriptions.find(
-          (element) => element.selectorId === requestElement.selectorId
-        );
-  
         if (!subscription)
           throw new Error(
             `Subscription subscribing to  ${requestElement.selectorId} does not exist`
           );
-  
-        modifiedSubscriptions.push(this.#modifySubscription(subscription, requestElement));
 
+        modifiedSubscriptions.push(
+          this.#modifySubscription(subscription, requestElement)
+        );
       });
 
       const updateAutomationResult: Result<AutomationDto | null> =
-        await this.#updateAutomation.execute({
-          id: request.automationId,
-          subscriptions: modifiedSubscriptions,
-        });
+        await this.#updateAutomation.execute(
+          {
+            id: request.automationId,
+            subscriptions: modifiedSubscriptions,
+          },
+          { jwt: auth.jwt, organizationId: auth.organizationId }
+        );
 
       if (updateAutomationResult.error)
         throw new Error(updateAutomationResult.error);
       if (!updateAutomationResult.value)
-        throw new Error(
-          `Couldn't update automation ${request.automationId}`
-        );    
+        throw new Error(`Couldn't update automation ${request.automationId}`);
 
-      return Result.ok<SubscriptionDto[]>(modifiedSubscriptions.map((element) => buildSubscriptionDto(element)));
-    } catch (error) {
-      return Result.fail<SubscriptionDto[]>(typeof error === 'string' ? error : error.message);
+      return Result.ok<SubscriptionDto[]>(
+        modifiedSubscriptions.map((element) => buildSubscriptionDto(element))
+      );
+    } catch (error: any) {
+      return Result.fail<SubscriptionDto[]>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   }
 
-  #modifySubscription = (subscription: Subscription, request: UpdateSubscriptionDto): Subscription => {
+  #modifySubscription = (
+    subscription: Subscription,
+    request: UpdateSubscriptionDto
+  ): Subscription => {
     const subscriptionToModify = subscription;
 
     subscriptionToModify.alertsAccessedOn =

@@ -8,11 +8,19 @@ export interface DeleteAutomationRequestDto {
   automationId: string;
 }
 
+export interface DeleteAutomationAuthDto {
+  organizationId: string;
+}
+
 export type DeleteAutomationResponseDto = Result<null>;
 
 export class DeleteAutomation
   implements
-    IUseCase<DeleteAutomationRequestDto, DeleteAutomationResponseDto>
+    IUseCase<
+      DeleteAutomationRequestDto,
+      DeleteAutomationResponseDto,
+      DeleteAutomationAuthDto
+    >
 {
   #automationRepository: IAutomationRepository;
 
@@ -27,16 +35,23 @@ export class DeleteAutomation
   }
 
   public async execute(
-    request: DeleteAutomationRequestDto
+    request: DeleteAutomationRequestDto,
+    auth: DeleteAutomationAuthDto
   ): Promise<DeleteAutomationResponseDto> {
     try {
       const readAutomationResult: Result<AutomationDto | null> =
-        await this.#readAutomation.execute({ id: request.automationId });
+        await this.#readAutomation.execute(
+          { id: request.automationId },
+          { organizationId: auth.organizationId }
+        );
 
       if (readAutomationResult.error)
         throw new Error(readAutomationResult.error);
       if (!readAutomationResult.value)
         throw new Error(`Couldn't read automation ${request.automationId}`);
+
+      if (readAutomationResult.value.organizationId !== auth.organizationId)
+        throw new Error('Not authorized to perform action');
 
       const deleteAutomationResult: Result<null> =
         await this.#automationRepository.deleteOne(request.automationId);
@@ -45,8 +60,10 @@ export class DeleteAutomation
         throw new Error(deleteAutomationResult.error);
 
       return Result.ok<null>();
-    } catch (error) {
-      return Result.fail<null>(typeof error === 'string' ? error : error.message);
+    } catch (error: any) {
+      return Result.fail<null>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   }
 }

@@ -20,11 +20,20 @@ export interface CreateSubscriptionRequestDto {
   selectorId: string;
 }
 
+export interface CreateSubscriptionAuthDto {
+  organizationId: string;
+  jwt: string;
+}
+
 export type CreateSubscriptionResponseDto = Result<SubscriptionDto | null>;
 
 export class CreateSubscription
   implements
-    IUseCase<CreateSubscriptionRequestDto, CreateSubscriptionResponseDto>
+    IUseCase<
+      CreateSubscriptionRequestDto,
+      CreateSubscriptionResponseDto,
+      CreateSubscriptionAuthDto
+    >
 {
   #automationRepository: IAutomationRepository;
 
@@ -43,7 +52,8 @@ export class CreateSubscription
   }
 
   public async execute(
-    request: CreateSubscriptionRequestDto
+    request: CreateSubscriptionRequestDto,
+    auth: CreateSubscriptionAuthDto
   ): Promise<CreateSubscriptionResponseDto> {
     // TODO Is this correct to also provide the automation id? Probably not.
 
@@ -52,7 +62,10 @@ export class CreateSubscription
     if (!createResult.value) return createResult;
 
     try {
-      const validatedRequest = await this.#validateRequest(createResult.value);
+      const validatedRequest = await this.#validateRequest(
+        createResult.value,
+        auth.jwt
+      );
       if (validatedRequest.error) throw new Error(validatedRequest.error);
 
       // TODO Potential fix? Automation is read twice. Once in create-subscription and once in update automation
@@ -62,6 +75,9 @@ export class CreateSubscription
         throw new Error(
           `Automation with id ${request.automationId} does not exist`
         );
+
+      if (automation.organizationId !== auth.organizationId)
+        throw new Error('Not authorized to perform action');
 
       const existingSubscription: Subscription | undefined =
         automation.subscriptions.find(
@@ -73,10 +89,13 @@ export class CreateSubscription
         );
 
       const updateAutomationResult: Result<AutomationDto | null> =
-        await this.#updateAutomation.execute({
-          id: request.automationId,
-          subscriptions: [buildSubscriptionDto(createResult.value)],
-        });
+        await this.#updateAutomation.execute(
+          {
+            id: request.automationId,
+            subscriptions: [buildSubscriptionDto(createResult.value)],
+          },
+          { jwt: auth.jwt, organizationId: auth.organizationId }
+        );
 
       if (updateAutomationResult.error)
         throw new Error(updateAutomationResult.error);
@@ -87,17 +106,23 @@ export class CreateSubscription
         buildSubscriptionDto(createResult.value)
       );
     } catch (error: any) {
-      return Result.fail<SubscriptionDto>(typeof error === 'string' ? error : error.message);
+      return Result.fail<SubscriptionDto>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   }
 
   #validateRequest = async (
-    subscription: Subscription
+    subscription: Subscription,
+    jwt: string
   ): Promise<Result<null>> => {
     const getSelectorResponse: GetSelectorResponseDto =
-      await this.#getSelector.execute({
-        id: subscription.selectorId,
-      });
+      await this.#getSelector.execute(
+        {
+          id: subscription.selectorId,
+        },
+        { jwt }
+      );
 
     if (getSelectorResponse.error)
       return Result.fail<null>(getSelectorResponse.error);
@@ -112,7 +137,7 @@ export class CreateSubscription
       );
 
     return Result.ok<null>(null);
-  }
+  };
 
   #createSubscription = (
     request: CreateSubscriptionRequestDto

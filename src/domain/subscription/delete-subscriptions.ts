@@ -9,10 +9,19 @@ export interface DeleteSubscriptionsRequestDto {
   selectorId: string;
 }
 
+export interface DeleteSubscriptionsAuthDto {
+  organizationId: string;
+}
+
 export type DeleteSubscriptionsResponseDto = Result<null>;
 
 export class DeleteSubscriptions
-  implements IUseCase<DeleteSubscriptionsRequestDto, DeleteSubscriptionsResponseDto>
+  implements
+    IUseCase<
+      DeleteSubscriptionsRequestDto,
+      DeleteSubscriptionsResponseDto,
+      DeleteSubscriptionsAuthDto
+    >
 {
   #deleteSubscription: DeleteSubscription;
 
@@ -27,11 +36,15 @@ export class DeleteSubscriptions
   }
 
   public async execute(
-    request: DeleteSubscriptionsRequestDto
+    request: DeleteSubscriptionsRequestDto,
+    auth: DeleteSubscriptionsAuthDto
   ): Promise<DeleteSubscriptionsResponseDto> {
     try {
       const readAutomationsResult: Result<AutomationDto[] | null> =
-        await this.#readAutomations.execute({});
+        await this.#readAutomations.execute(
+          {},
+          { organizationId: auth.organizationId }
+        );
 
       if (readAutomationsResult.error)
         throw new Error(readAutomationsResult.error);
@@ -40,7 +53,11 @@ export class DeleteSubscriptions
 
       const deletionResults = await Promise.all(
         readAutomationsResult.value.map(async (automation) =>
-          this.deleteSubscription(automation, request.selectorId)
+          this.deleteSubscription(
+            automation,
+            request.selectorId,
+            auth.organizationId
+          )
         )
       );
 
@@ -51,24 +68,31 @@ export class DeleteSubscriptions
         );
 
       return Result.ok<null>();
-    } catch (error) {
-      return Result.fail<null>(typeof error === 'string' ? error : error.message);
+    } catch (error: any) {
+      return Result.fail<null>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   }
 
   private async deleteSubscription(
     automationDto: AutomationDto,
-    selectorId: string
+    selectorId: string,
+    organizationId: string
   ): Promise<Result<null>> {
-    const subscription: SubscriptionDto | undefined = automationDto.subscriptions.find(
-      (element) => element.selectorId === selectorId
-    );
+    const subscription: SubscriptionDto | undefined =
+      automationDto.subscriptions.find(
+        (element) => element.selectorId === selectorId
+      );
 
     if (!subscription) return Result.ok<null>();
 
-    return this.#deleteSubscription.execute({
-      automationId: automationDto.id,
-      selectorId,
-    });
+    return this.#deleteSubscription.execute(
+      {
+        automationId: automationDto.id,
+        selectorId,
+      },
+      { organizationId }
+    );
   }
 }

@@ -6,6 +6,10 @@ export interface GetSelectorRequestDto {
   id: string;
 }
 
+export interface GetSelectorAuthDto {
+  jwt: string;
+}
+
 export interface AlertDto {
   createdOn: number;
 }
@@ -21,11 +25,12 @@ export interface GetSelectorDto {
 export type GetSelectorResponseDto = Result<GetSelectorDto | null>;
 
 export interface IGetSelectorRepository {
-  getOne(selectorId: string): Promise<GetSelectorDto | null>;
+  getOne(selectorId: string, jwt: string): Promise<GetSelectorDto | null>;
 }
 
 export class GetSelector
-  implements IUseCase<GetSelectorRequestDto, GetSelectorResponseDto>
+  implements
+    IUseCase<GetSelectorRequestDto, GetSelectorResponseDto, GetSelectorAuthDto>
 {
   #getSelectorRepository: IGetSelectorRepository;
 
@@ -34,11 +39,12 @@ export class GetSelector
   }
 
   public async execute(
-    request: GetSelectorRequestDto
+    request: GetSelectorRequestDto,
+    auth: GetSelectorAuthDto
   ): Promise<GetSelectorResponseDto> {
     try {
       const getSelectorResponse: GetSelectorDto | null =
-        await this.#getSelectorRepository.getOne(request.id);
+        await this.#getSelectorRepository.getOne(request.id, auth.jwt);
 
       if (!getSelectorResponse)
         throw new Error(`No selector found for id ${request.id}`);

@@ -1,5 +1,6 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
+import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
   ReadAutomations,
   ReadAutomationsRequestDto,
@@ -11,9 +12,15 @@ import { BaseController, CodeHttp } from '../../shared/base-controller';
 export default class ReadAutomationsController extends BaseController {
   #readAutomations: ReadAutomations;
 
-  public constructor(readAutomations: ReadAutomations) {
+  #getAccounts: GetAccounts;
+
+  public constructor(
+    readAutomations: ReadAutomations,
+    getAccounts: GetAccounts
+  ) {
     super();
     this.#readAutomations = readAutomations;
+    this.#getAccounts = getAccounts;
   }
 
   #buildRequestDto = (
@@ -55,15 +62,19 @@ export default class ReadAutomationsController extends BaseController {
 
     try {
       return Result.ok<ReadAutomationsRequestDto>({
-        name:
-          typeof name === 'string' ? name : undefined,
+        name: typeof name === 'string' ? name : undefined,
         accountId: typeof accountId === 'string' ? accountId : undefined,
-        organizationId: typeof organizationId === 'string' ? organizationId : undefined,
+        organizationId:
+          typeof organizationId === 'string' ? organizationId : undefined,
         subscription: {
           selectorId:
-            typeof subscriptionSelectorId === 'string' ? subscriptionSelectorId : undefined,
+            typeof subscriptionSelectorId === 'string'
+              ? subscriptionSelectorId
+              : undefined,
           systemId:
-            typeof subscriptionSystemId === 'string' ? subscriptionSystemId : undefined,
+            typeof subscriptionSystemId === 'string'
+              ? subscriptionSystemId
+              : undefined,
           alertsAccessedOnStart:
             typeof subscriptionAlertsAccessedOnStart === 'string'
               ? this.#buildDate(subscriptionAlertsAccessedOnStart)
@@ -91,7 +102,9 @@ export default class ReadAutomationsController extends BaseController {
             : undefined,
       });
     } catch (error: any) {
-      return Result.fail<ReadAutomationsRequestDto>(typeof error === 'string' ? error : error.message);
+      return Result.fail<ReadAutomationsRequestDto>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   };
 
@@ -133,10 +146,7 @@ export default class ReadAutomationsController extends BaseController {
         this.#buildRequestDto(req);
 
       if (buildDtoResult.error)
-        return ReadAutomationsController.badRequest(
-          res,
-          buildDtoResult.error
-        );
+        return ReadAutomationsController.badRequest(res, buildDtoResult.error);
       if (!buildDtoResult.value)
         return ReadAutomationsController.badRequest(
           res,

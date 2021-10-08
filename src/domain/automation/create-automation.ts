@@ -5,44 +5,44 @@ import { Automation, AutomationProperties } from '../entities/automation';
 import { buildAutomationDto, AutomationDto } from './automation-dto';
 import { IAutomationRepository } from './i-automation-repository';
 import Result from '../value-types/transient-types/result';
-import { GetAccount, GetAccountResponseDto } from '../account-api/get-account';
 
 export interface CreateAutomationRequestDto {
   name: string;
+}
+
+export interface CreateAutomationAuthDto {
   accountId: string;
+  organizationId: string;
 }
 
 export type CreateAutomationResponseDto = Result<AutomationDto | null>;
 
 export class CreateAutomation
-  implements IUseCase<CreateAutomationRequestDto, CreateAutomationResponseDto>
+  implements
+    IUseCase<
+      CreateAutomationRequestDto,
+      CreateAutomationResponseDto,
+      CreateAutomationAuthDto
+    >
 {
   #automationRepository: IAutomationRepository;
 
-  #getAccount: GetAccount;
 
   public constructor(
     automationRepository: IAutomationRepository,
-    getAccount: GetAccount
   ) {
     this.#automationRepository = automationRepository;
-    this.#getAccount = getAccount;
   }
 
   public async execute(
-    request: CreateAutomationRequestDto
+    request: CreateAutomationRequestDto,
+    auth: CreateAutomationAuthDto
   ): Promise<CreateAutomationResponseDto> {
     try {
-      const getAccountResponse: GetAccountResponseDto =
-        await this.#getAccount.execute({ id: request.accountId });
-
-      if (!getAccountResponse.value)
-        throw new Error(
-          `No account for provided id ${request.accountId} found`
-        );
-
-      const automation: Result<Automation | null> =
-        this.#createAutomation(request, getAccountResponse.value.organizationId);
+      const automation: Result<Automation | null> = this.#createAutomation(
+        request,
+        auth
+      );
       if (!automation.value) return automation;
 
       // TODO Install error handling
@@ -50,19 +50,21 @@ export class CreateAutomation
 
       return Result.ok<AutomationDto>(buildAutomationDto(automation.value));
     } catch (error: any) {
-      return Result.fail<AutomationDto>(typeof error === 'string' ? error : error.message);
+      return Result.fail<AutomationDto>(
+        typeof error === 'string' ? error : error.message
+      );
     }
   }
 
   #createAutomation = (
     request: CreateAutomationRequestDto,
-    organizationId: string
+    auth: CreateAutomationAuthDto
   ): Result<Automation | null> => {
     const automationProperties: AutomationProperties = {
       id: new ObjectId().toHexString(),
       name: request.name,
-      accountId: request.accountId,
-      organizationId
+      accountId: auth.accountId,
+      organizationId: auth.organizationId,
     };
 
     return Automation.create(automationProperties);

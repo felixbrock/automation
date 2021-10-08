@@ -1,5 +1,6 @@
 // TODO: Violation of control flow. DI for express instead
 import { Request, Response } from 'express';
+import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
   DeleteSubscription,
   DeleteSubscriptionRequestDto,
@@ -11,9 +12,15 @@ import { BaseController, CodeHttp } from '../../shared/base-controller';
 export default class DeleteSubscriptionController extends BaseController {
   #deleteSubscription: DeleteSubscription;
 
-  public constructor(deleteSubscription: DeleteSubscription) {
+  #getAccounts: GetAccounts;
+
+  public constructor(
+    deleteSubscription: DeleteSubscription,
+    getAccounts: GetAccounts
+  ) {
     super();
     this.#deleteSubscription = deleteSubscription;
+    this.#getAccounts = getAccounts;
   }
 
   #buildRequestDto = (
@@ -32,10 +39,19 @@ export default class DeleteSubscriptionController extends BaseController {
 
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
-      const buildDtoResult: Result<DeleteSubscriptionRequestDto> = this.#buildRequestDto(req);
+      const buildDtoResult: Result<DeleteSubscriptionRequestDto> =
+        this.#buildRequestDto(req);
 
-      if(buildDtoResult.error) return DeleteSubscriptionController.badRequest(res, buildDtoResult.error);
-      if(!buildDtoResult.value) return DeleteSubscriptionController.badRequest(res, 'Invalid request query paramerters');
+      if (buildDtoResult.error)
+        return DeleteSubscriptionController.badRequest(
+          res,
+          buildDtoResult.error
+        );
+      if (!buildDtoResult.value)
+        return DeleteSubscriptionController.badRequest(
+          res,
+          'Invalid request query paramerters'
+        );
 
       const useCaseResult: DeleteSubscriptionResponseDto =
         await this.#deleteSubscription.execute(buildDtoResult.value);
