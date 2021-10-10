@@ -6,8 +6,14 @@ import {
   UpdateSubscriptionDto,
   UpdateSubscriptionsRequestDto,
   UpdateSubscriptionsResponseDto,
+  UpdateSubscriptionsAuthDto,
 } from '../../../domain/subscription/update-subscriptions';
-import { BaseController, CodeHttp } from '../../shared/base-controller';
+import Result from '../../../domain/value-types/transient-types/result';
+import {
+  BaseController,
+  CodeHttp,
+  UserAccountInfo,
+} from '../../shared/base-controller';
 
 export default class UpdateSubscriptionsController extends BaseController {
   #updateSubscriptions: UpdateSubscriptions;
@@ -42,12 +48,44 @@ export default class UpdateSubscriptionsController extends BaseController {
     };
   };
 
+  #buildAuthDto = (
+    userAccountInfo: UserAccountInfo,
+    jwt: string
+  ): UpdateSubscriptionsAuthDto => ({
+    organizationId: userAccountInfo.organizationId,
+    jwt,
+  });
+
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
+      const token = req.headers.authorization;
+
+      if (!token)
+        return UpdateSubscriptionsController.unauthorized(res, 'Unauthorized');
+
+      const getUserAccountInfoResult: Result<UserAccountInfo> =
+        await UpdateSubscriptionsController.getUserAccountInfo(
+          token,
+          this.#getAccounts
+        );
+
+      if (!getUserAccountInfoResult.success)
+        return UpdateSubscriptionsController.unauthorized(
+          res,
+          getUserAccountInfoResult.error
+        );
+      if (!getUserAccountInfoResult.value)
+        throw new Error('Authorization failed');
+
       const requestDto: UpdateSubscriptionsRequestDto =
         this.#buildRequestDto(req);
+      const authDto: UpdateSubscriptionsAuthDto = this.#buildAuthDto(
+        getUserAccountInfoResult.value,
+        token
+      );
+
       const useCaseResult: UpdateSubscriptionsResponseDto =
-        await this.#updateSubscriptions.execute(requestDto);
+        await this.#updateSubscriptions.execute(requestDto, authDto);
 
       if (useCaseResult.error) {
         return UpdateSubscriptionsController.badRequest(

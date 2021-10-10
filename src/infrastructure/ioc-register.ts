@@ -7,11 +7,11 @@ import { ReadAutomation } from '../domain/automation/read-automation';
 import { CreateSubscription } from '../domain/subscription/create-subscription';
 import { GetSelector } from '../domain/selector-api/get-selector';
 import { GetSystem } from '../domain/system-api/get-system';
-import { GetAccount } from '../domain/account-api/get-account';
+import { GetAccounts } from '../domain/account-api/get-accounts';
 
 import GetSelectorRepository from './persistence/selector-api-repository';
 import GetSystemRepository from './persistence/system-api-repository';
-import AccountRepository from './persistence/account-api-repository';
+import AccountApiRepository from './persistence/account-api-repository';
 import AutomationRepository from './persistence/automation-repository';
 import { UpdateAutomation } from '../domain/automation/update-automation';
 import { DeleteSubscription } from '../domain/subscription/delete-subscription';
@@ -30,21 +30,21 @@ iocRegister.register({
   readAutomations: asClass(ReadAutomations),
   updateAutomation: asClass(UpdateAutomation),
   deleteAutomation: asClass(DeleteAutomation),
-  
+
   createSubscription: asClass(CreateSubscription),
   updateSubscriptions: asClass(UpdateSubscriptions),
   deleteSubscription: asClass(DeleteSubscription),
   deleteSubscriptions: asClass(DeleteSubscriptions),
-  
+
   getSelector: asClass(GetSelector),
   getSystem: asClass(GetSystem),
-  getAccount: asClass(GetAccount),
+  getAccounts: asClass(GetAccounts),
 
   automationRepository: asClass(AutomationRepository),
 
   getSelectorRepository: asClass(GetSelectorRepository),
   getSystemRepository: asClass(GetSystemRepository),
-  accountRepository: asClass(AccountRepository),
+  accountApiRepository: asClass(AccountApiRepository),
 });
 
 const automationMain =

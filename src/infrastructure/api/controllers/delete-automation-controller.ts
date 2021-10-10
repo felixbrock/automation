@@ -3,10 +3,16 @@ import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
   DeleteAutomation,
+  DeleteAutomationAuthDto,
   DeleteAutomationRequestDto,
   DeleteAutomationResponseDto,
 } from '../../../domain/automation/delete-automation';
-import { BaseController, CodeHttp } from '../../shared/base-controller';
+import Result from '../../../domain/value-types/transient-types/result';
+import {
+  BaseController,
+  CodeHttp,
+  UserAccountInfo,
+} from '../../shared/base-controller';
 
 export default class DeleteAutomationController extends BaseController {
   #deleteAutomation: DeleteAutomation;
@@ -26,12 +32,40 @@ export default class DeleteAutomationController extends BaseController {
     automationId: httpRequest.params.automationId,
   });
 
+  #buildAuthDto = (
+    userAccountInfo: UserAccountInfo
+  ): DeleteAutomationAuthDto => ({
+    organizationId: userAccountInfo.organizationId,
+  });
+
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
+      const token = req.headers.authorization;
+
+      if (!token)
+        return DeleteAutomationController.unauthorized(res, 'Unauthorized');
+
+      const getUserAccountInfoResult: Result<UserAccountInfo> =
+        await DeleteAutomationController.getUserAccountInfo(
+          token,
+          this.#getAccounts
+        );
+
+      if (!getUserAccountInfoResult.success)
+        return DeleteAutomationController.unauthorized(
+          res,
+          getUserAccountInfoResult.error
+        );
+      if (!getUserAccountInfoResult.value)
+        throw new Error('Authorization failed');
+
       const requestDto: DeleteAutomationRequestDto = this.#buildRequestDto(req);
+      const authDto: DeleteAutomationAuthDto = this.#buildAuthDto(
+        getUserAccountInfoResult.value
+      );
 
       const useCaseResult: DeleteAutomationResponseDto =
-        await this.#deleteAutomation.execute(requestDto);
+        await this.#deleteAutomation.execute(requestDto, authDto);
 
       if (useCaseResult.error) {
         return DeleteAutomationController.badRequest(res, useCaseResult.error);
@@ -42,7 +76,7 @@ export default class DeleteAutomationController extends BaseController {
         useCaseResult.value,
         CodeHttp.OK
       );
-    } catch (error) {
+    } catch (error: any) {
       return DeleteAutomationController.fail(res, error);
     }
   }

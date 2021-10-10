@@ -1,8 +1,7 @@
-import axios from 'axios';
-import {
-  IAccountApiRepository,
-  GetAccountDto,
-} from '../../domain/account-api/get-account';
+import axios, { AxiosRequestConfig } from 'axios';
+import { URLSearchParams } from 'url';
+import { AccountDto } from '../../domain/account-api/account-dto';
+import { IAccountApiRepository } from '../../domain/account-api/i-account-api-repository';
 import getRoot from '../shared/api-root-builder';
 
 export default class AccountApiRepositoryImpl implements IAccountApiRepository {
@@ -12,16 +11,24 @@ export default class AccountApiRepositoryImpl implements IAccountApiRepository {
 
   #port = '8081';
 
-  public getOne = async (accountId: string): Promise<GetAccountDto | null> => {
+  public getBy = async (
+    params: URLSearchParams,
+    jwt: string
+  ): Promise<AccountDto[]> => {
     try {
       const apiRoot = await getRoot(this.#serviceName, this.#port, this.#path);
 
-      const response = await axios.get(`${apiRoot}/account/${accountId}`);
+      const config: AxiosRequestConfig = {
+        headers: { Authorization: `Bearer ${jwt}` },
+        params,
+      };
+
+      const response = await axios.get(`${apiRoot}/accounts`, config);
       const jsonResponse = response.data;
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse);
-    } catch (error) {
-      return null;
+    } catch (error: any) {
+      return Promise.reject(new Error(error.response.data.message));
     }
   };
 }

@@ -9,15 +9,17 @@ const automationsRoutes = Router();
 const automationDomain: AutomationDomain = app.automationMain;
 
 const deleteSubscriptionsController = new DeleteSubscriptionsController(
-  automationDomain.deleteSubscriptions
+  automationDomain.deleteSubscriptions,
+  app.container.resolve('getAccounts')
 );
 
 const readAutomationsController = new ReadAutomationsController(
-  automationDomain.readAutomations
+  automationDomain.readAutomations,
+  app.container.resolve('getAccounts')
 );
 
 automationsRoutes.get('/', (req, res) =>
-readAutomationsController.execute(req, res)
+  readAutomationsController.execute(req, res)
 );
 
 automationsRoutes.delete('/subscriptions', (req, res) =>

@@ -3,11 +3,16 @@ import { Request, Response } from 'express';
 import { GetAccounts } from '../../../domain/account-api/get-accounts';
 import {
   ReadAutomations,
+  ReadAutomationsAuthDto,
   ReadAutomationsRequestDto,
   ReadAutomationsResponseDto,
 } from '../../../domain/automation/read-automations';
 import Result from '../../../domain/value-types/transient-types/result';
-import { BaseController, CodeHttp } from '../../shared/base-controller';
+import {
+  BaseController,
+  CodeHttp,
+  UserAccountInfo,
+} from '../../shared/base-controller';
 
 export default class ReadAutomationsController extends BaseController {
   #readAutomations: ReadAutomations;
@@ -64,8 +69,6 @@ export default class ReadAutomationsController extends BaseController {
       return Result.ok<ReadAutomationsRequestDto>({
         name: typeof name === 'string' ? name : undefined,
         accountId: typeof accountId === 'string' ? accountId : undefined,
-        organizationId:
-          typeof organizationId === 'string' ? organizationId : undefined,
         subscription: {
           selectorId:
             typeof subscriptionSelectorId === 'string'
@@ -140,8 +143,33 @@ export default class ReadAutomationsController extends BaseController {
     return Date.parse(`${year}-${month}-${day}T${hour}:${minute}:${second}Z`);
   };
 
+  #buildAuthDto = (
+    userAccountInfo: UserAccountInfo
+  ): ReadAutomationsAuthDto => ({
+    organizationId: userAccountInfo.organizationId,
+  });
+
   protected async executeImpl(req: Request, res: Response): Promise<Response> {
     try {
+      const token = req.headers.authorization;
+
+      if (!token)
+        return ReadAutomationsController.unauthorized(res, 'Unauthorized');
+
+      const getUserAccountInfoResult: Result<UserAccountInfo> =
+        await ReadAutomationsController.getUserAccountInfo(
+          token,
+          this.#getAccounts
+        );
+
+      if (!getUserAccountInfoResult.success)
+        return ReadAutomationsController.unauthorized(
+          res,
+          getUserAccountInfoResult.error
+        );
+      if (!getUserAccountInfoResult.value)
+        throw new Error('Authorization failed');
+
       const buildDtoResult: Result<ReadAutomationsRequestDto> =
         this.#buildRequestDto(req);
 
@@ -153,8 +181,12 @@ export default class ReadAutomationsController extends BaseController {
           'Invalid request query paramerters'
         );
 
+      const authDto: ReadAutomationsAuthDto = this.#buildAuthDto(
+        getUserAccountInfoResult.value
+      );
+
       const useCaseResult: ReadAutomationsResponseDto =
-        await this.#readAutomations.execute(buildDtoResult.value);
+        await this.#readAutomations.execute(buildDtoResult.value, authDto);
 
       if (useCaseResult.error) {
         return ReadAutomationsController.badRequest(res, useCaseResult.error);

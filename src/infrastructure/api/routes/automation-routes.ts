@@ -13,27 +13,33 @@ const automationRoutes = Router();
 const automationDomain: AutomationDomain = app.automationMain;
 
 const createAutomationController = new CreateAutomationController(
-  automationDomain.createAutomation
+  automationDomain.createAutomation,
+  app.container.resolve('getAccounts')
 );
 
 const readAutomationController = new ReadAutomationController(
-  automationDomain.readAutomation
+  automationDomain.readAutomation,
+  app.container.resolve('getAccounts')
 );
 
 const deleteAutomationController = new DeleteAutomationController(
-  automationDomain.deleteAutomation
+  automationDomain.deleteAutomation,
+  app.container.resolve('getAccounts')
 );
 
 const createSubscriptionController = new CreateSubscriptionController(
-  automationDomain.createSubscription
+  automationDomain.createSubscription,
+  app.container.resolve('getAccounts')
 );
 
 const updateSubscriptionsController = new UpdateSubscriptionsController(
-  automationDomain.updateSubscriptions
+  automationDomain.updateSubscriptions,
+  app.container.resolve('getAccounts')
 );
 
 const deleteSubscriptionController = new DeleteSubscriptionController(
-  automationDomain.deleteSubscription
+  automationDomain.deleteSubscription,
+  app.container.resolve('getAccounts')
 );
 
 automationRoutes.post('/', (req, res) =>
