@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
+import jsonwebtoken from 'jsonwebtoken';
 import {
   GetAccounts,
   GetAccountsResponseDto,
@@ -41,12 +41,13 @@ export abstract class BaseController {
   }
 
   public static async getUserAccountInfo(
-    token: string,
+    jwt: string,
     getAccounts: GetAccounts
   ): Promise<Result<UserAccountInfo>> {
-    if (!token) return Result.fail('Unauthorized');
+    if (!jwt) return Result.fail('Unauthorized');
 
-    const authPayload = jwt.decode(token, { json: true });
+    const authPayload = jsonwebtoken.decode(jwt, { json: true });
+
     if (!authPayload) return Result.fail('Unauthorized - No auth payload');
 
     try {
@@ -55,8 +56,8 @@ export abstract class BaseController {
           {
             userId: authPayload.username,
           },
-          { jwt: token }
-        );
+          { jwt }
+        );              
 
       if (!getAccountsResult.value)
         throw new Error(`No account found for ${authPayload.username}`);
