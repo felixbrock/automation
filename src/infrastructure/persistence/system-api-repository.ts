@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import {
   IGetSystemRepository,
   SystemDto,
@@ -12,11 +12,15 @@ export default class GetSystemRepositoryImpl implements IGetSystemRepository {
 
   #port = '3002';
 
-  public getOne = async (systemId: string): Promise<SystemDto | null> => {
+  public getOne = async (systemId: string, jwt: string): Promise<SystemDto | null> => {
     try {
       const apiRoot = await getRoot(this.#serviceName, this.#port, this.#path);
 
-      const response = await axios.get(`${apiRoot}/system/${systemId}`);
+      const config: AxiosRequestConfig = {
+        headers: { Authorization: `Bearer ${jwt}` }
+      };
+
+      const response = await axios.get(`${apiRoot}/system/${systemId}`, config);
       const jsonResponse = response.data;
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse);

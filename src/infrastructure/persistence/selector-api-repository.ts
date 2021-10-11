@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import {
   IGetSelectorRepository,
   GetSelectorDto as SelectorDto,
@@ -14,11 +14,15 @@ export default class GetSelectorRepositoryImpl
 
   #port = '3000';
 
-  public getOne = async (selectorId: string): Promise<SelectorDto | null> => {
+  public getOne = async (selectorId: string, jwt: string): Promise<SelectorDto | null> => {
     try {
       const apiRoot = await getRoot(this.#serviceName, this.#port, this.#path);
 
-      const response = await axios.get(`${apiRoot}/selector/${selectorId}`);
+      const config: AxiosRequestConfig = {
+        headers: { Authorization: `Bearer ${jwt}` }
+      };
+
+      const response = await axios.get(`${apiRoot}/selector/${selectorId}`, config);
       const jsonResponse = response.data;
       if (response.status === 200) return jsonResponse;
       throw new Error(jsonResponse);
