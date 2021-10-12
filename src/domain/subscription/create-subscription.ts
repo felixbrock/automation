@@ -11,8 +11,7 @@ import { buildSubscriptionDto, SubscriptionDto } from './subscription-dto';
 import { AutomationDto } from '../automation/automation-dto';
 import { UpdateAutomation } from '../automation/update-automation';
 import Result from '../value-types/transient-types/result';
-import { Automation } from '../entities/automation';
-import { IAutomationRepository } from '../automation/i-automation-repository';
+import { ReadAutomation } from '../automation/read-automation';
 
 export interface CreateSubscriptionRequestDto {
   automationId: string;
@@ -35,20 +34,21 @@ export class CreateSubscription
       CreateSubscriptionAuthDto
     >
 {
-  #automationRepository: IAutomationRepository;
 
   #updateAutomation: UpdateAutomation;
 
   #getSelector: GetSelector;
 
+  #readAutomation: ReadAutomation;
+
   public constructor(
-    automationRepository: IAutomationRepository,
     updateAutomation: UpdateAutomation,
+    readAutomation: ReadAutomation,
     getSelector: GetSelector
   ) {
-    this.#automationRepository = automationRepository;
     this.#updateAutomation = updateAutomation;
     this.#getSelector = getSelector;
+    this.#readAutomation = readAutomation;
   }
 
   public async execute(
@@ -69,18 +69,23 @@ export class CreateSubscription
       if (validatedRequest.error) throw new Error(validatedRequest.error);
 
       // TODO Potential fix? Automation is read twice. Once in create-subscription and once in update automation
-      const automation: Automation | null =
-        await this.#automationRepository.findOne(request.automationId);
-      if (!automation)
+      const readAutomationResult = await this.#readAutomation.execute(
+        { id: request.automationId },
+        { organizationId: auth.organizationId }
+      );
+
+      if (!readAutomationResult.success)
+        throw new Error(readAutomationResult.error);
+      if (!readAutomationResult.value)
         throw new Error(
           `Automation with id ${request.automationId} does not exist`
         );
 
-      if (automation.organizationId !== auth.organizationId)
+      if (readAutomationResult.value.organizationId !== auth.organizationId)
         throw new Error('Not authorized to perform action');
 
-      const existingSubscription: Subscription | undefined =
-        automation.subscriptions.find(
+      const existingSubscription: SubscriptionDto | undefined =
+        readAutomationResult.value.subscriptions.find(
           (subscription) => subscription.selectorId === request.selectorId
         );
       if (existingSubscription)

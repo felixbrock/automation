@@ -1,5 +1,5 @@
 import IUseCase from '../services/use-case';
-import { AutomationDto, buildAutomationDto } from './automation-dto';
+import { AutomationDto } from './automation-dto';
 import {
   AutomationUpdateDto,
   IAutomationRepository,
@@ -11,7 +11,7 @@ import {
   GetSelector,
   GetSelectorResponseDto,
 } from '../selector-api/get-selector';
-import { Automation } from '../entities/automation';
+import { ReadAutomation } from './read-automation';
 
 export interface UpdateAutomationRequestDto {
   id: string;
@@ -37,13 +37,17 @@ export class UpdateAutomation
 {
   #automationRepository: IAutomationRepository;
 
+  #readAutomation: ReadAutomation;
+
   #getSelector: GetSelector;
 
   public constructor(
     automationRepository: IAutomationRepository,
+    readAutomation: ReadAutomation,
     getSelector: GetSelector
   ) {
     this.#automationRepository = automationRepository;
+    this.#readAutomation = readAutomation;
     this.#getSelector = getSelector;
   }
 
@@ -52,13 +56,17 @@ export class UpdateAutomation
     auth: UpdateAutomationAuthDto
   ): Promise<UpdateAutomationResponseDto> {
     try {
-      const automation: Automation | null =
-        await this.#automationRepository.findOne(request.id);
+      const readAutomationResult = await this.#readAutomation.execute(
+        { id: request.id },
+        { organizationId: auth.organizationId }
+      );
 
-      if (!automation)
+      if (!readAutomationResult.success)
+        throw new Error(readAutomationResult.error);
+      if (!readAutomationResult.value)
         throw new Error(`Automation with id ${request.id} does not exist`);
 
-      if (automation.organizationId !== auth.organizationId)
+      if (readAutomationResult.value.organizationId !== auth.organizationId)
         throw new Error('Not allowed to perform action');
 
       if (request.subscriptions) {
@@ -86,7 +94,7 @@ export class UpdateAutomation
       if (updateResult.error) throw new Error(updateResult.error);
 
       // TODO - Doesn't return the right object. Fix.
-      return Result.ok<AutomationDto>(buildAutomationDto(automation));
+      return Result.ok<AutomationDto>(readAutomationResult.value);
     } catch (error: any) {
       return Result.fail<AutomationDto>(
         typeof error === 'string' ? error : error.message

@@ -1,11 +1,9 @@
 import IUseCase from '../services/use-case';
-import { Subscription } from '../value-types/subscription';
-import { buildSubscriptionDto, SubscriptionDto } from './subscription-dto';
+import { SubscriptionDto } from './subscription-dto';
 import { AutomationDto } from '../automation/automation-dto';
 import { UpdateAutomation } from '../automation/update-automation';
 import Result from '../value-types/transient-types/result';
-import { Automation } from '../entities/automation';
-import { IAutomationRepository } from '../automation/i-automation-repository';
+import { ReadAutomation } from '../automation/read-automation';
 
 export interface UpdateSubscriptionDto {
   selectorId: string;
@@ -33,15 +31,15 @@ export class UpdateSubscriptions
       UpdateSubscriptionsAuthDto
     >
 {
-  #automationRepository: IAutomationRepository;
-
   #updateAutomation: UpdateAutomation;
 
+  #readAutomation: ReadAutomation;
+
   public constructor(
-    automationRepository: IAutomationRepository,
+    readAutomation: ReadAutomation,
     updateAutomation: UpdateAutomation
   ) {
-    this.#automationRepository = automationRepository;
+    this.#readAutomation = readAutomation;
     this.#updateAutomation = updateAutomation;
   }
 
@@ -51,9 +49,15 @@ export class UpdateSubscriptions
     auth: UpdateSubscriptionsAuthDto
   ): Promise<UpdateSubscriptionsResponseDto> {
     try {
-      const automation: Automation | null =
-        await this.#automationRepository.findOne(request.automationId);
+      const readAutomationResult = await this.#readAutomation.execute(
+        { id: request.automationId },
+        { organizationId: auth.organizationId }
+      );
 
+      if (!readAutomationResult.success)
+        throw new Error(readAutomationResult.error);
+
+      const automation = readAutomationResult.value;
       if (!automation)
         throw new Error(
           `Automation with id ${request.automationId} does not exist`
@@ -62,17 +66,17 @@ export class UpdateSubscriptions
       if (automation.organizationId !== auth.organizationId)
         throw new Error('Not authorized to perform action');
 
-      const modifiedSubscriptions: Subscription[] = [];
+      const modifiedSubscriptions: SubscriptionDto[] = [];
 
       request.subscriptions.forEach((requestElement) => {
-        const subscription: Subscription | undefined =
+        const subscription: SubscriptionDto | undefined =
           automation.subscriptions.find(
             (element) => element.selectorId === requestElement.selectorId
           );
 
         if (!subscription)
           throw new Error(
-            `Subscription subscribing to  ${requestElement.selectorId} does not exist`
+            `Subscription to selector  ${requestElement.selectorId} does not exist for automation ${automation.id}`
           );
 
         modifiedSubscriptions.push(
@@ -94,9 +98,7 @@ export class UpdateSubscriptions
       if (!updateAutomationResult.value)
         throw new Error(`Couldn't update automation ${request.automationId}`);
 
-      return Result.ok<SubscriptionDto[]>(
-        modifiedSubscriptions.map((element) => buildSubscriptionDto(element))
-      );
+      return Result.ok<SubscriptionDto[]>(modifiedSubscriptions);
     } catch (error: any) {
       return Result.fail<SubscriptionDto[]>(
         typeof error === 'string' ? error : error.message
@@ -105,9 +107,9 @@ export class UpdateSubscriptions
   }
 
   #modifySubscription = (
-    subscription: Subscription,
+    subscription: SubscriptionDto,
     request: UpdateSubscriptionDto
-  ): Subscription => {
+  ): SubscriptionDto => {
     const subscriptionToModify = subscription;
 
     subscriptionToModify.alertsAccessedOn =
