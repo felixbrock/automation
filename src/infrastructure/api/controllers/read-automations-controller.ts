@@ -66,7 +66,7 @@ export default class ReadAutomationsController extends BaseController {
       );
 
     try {
-      return Result.ok<ReadAutomationsRequestDto>({
+      return Result.ok({
         name: typeof name === 'string' ? name : undefined,
         accountId: typeof accountId === 'string' ? accountId : undefined,
         subscription: {
@@ -104,10 +104,10 @@ export default class ReadAutomationsController extends BaseController {
             ? this.#buildDate(modifiedOnEnd)
             : undefined,
       });
-    } catch (error: any) {
-      return Result.fail<ReadAutomationsRequestDto>(
-        typeof error === 'string' ? error : error.message
-      );
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   };
 
@@ -156,7 +156,7 @@ export default class ReadAutomationsController extends BaseController {
       if (!authHeader)
         return ReadAutomationsController.unauthorized(res, 'Unauthorized');
 
-      const jwt = authHeader.split(' ')[1];     
+      const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
         await ReadAutomationsController.getUserAccountInfo(
@@ -199,8 +199,12 @@ export default class ReadAutomationsController extends BaseController {
         useCaseResult.value,
         CodeHttp.OK
       );
-    } catch (error: any) {
-      return ReadAutomationsController.fail(res, error);
+    } catch (error: unknown) {
+      if (typeof error === 'string')
+        return ReadAutomationsController.fail(res, error);
+      if (error instanceof Error)
+        return ReadAutomationsController.fail(res, error);
+      return ReadAutomationsController.fail(res, 'Unknown error occured');
     }
   }
 }

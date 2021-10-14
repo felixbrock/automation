@@ -68,10 +68,10 @@ export class Subscription {
   }
 
   public static create(properties: SubscriptionProperties): Result<Subscription> {
-    if (!properties.selectorId) return Result.fail<Subscription>('Subscription must have selector id');
-    if (!properties.systemId) return Result.fail<Subscription>('Subscription must have system id');
+    if (!properties.selectorId) return Result.fail('Subscription must have selector id');
+    if (!properties.systemId) return Result.fail('Subscription must have system id');
 
     const subscription = new Subscription(properties);
-    return Result.ok<Subscription>(subscription);
+    return Result.ok(subscription);
   }
 }

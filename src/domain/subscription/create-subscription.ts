@@ -24,7 +24,7 @@ export interface CreateSubscriptionAuthDto {
   jwt: string;
 }
 
-export type CreateSubscriptionResponseDto = Result<SubscriptionDto | null>;
+export type CreateSubscriptionResponseDto = Result<SubscriptionDto>;
 
 export class CreateSubscription
   implements
@@ -34,7 +34,6 @@ export class CreateSubscription
       CreateSubscriptionAuthDto
     >
 {
-
   #updateAutomation: UpdateAutomation;
 
   #getSelector: GetSelector;
@@ -55,20 +54,13 @@ export class CreateSubscription
     request: CreateSubscriptionRequestDto,
     auth: CreateSubscriptionAuthDto
   ): Promise<CreateSubscriptionResponseDto> {
-    // TODO Is this correct to also provide the automation id? Probably not.
-
-    const createResult: Result<Subscription | null> =
+    const createResult: Result<Subscription> =
       this.#createSubscription(request);
     if (!createResult.value) return createResult;
 
     try {
-      const validatedRequest = await this.#validateRequest(
-        createResult.value,
-        auth.jwt
-      );
-      if (validatedRequest.error) throw new Error(validatedRequest.error);
+      await this.#requestIsValid(createResult.value, auth.jwt);
 
-      // TODO Potential fix? Automation is read twice. Once in create-subscription and once in update automation
       const readAutomationResult = await this.#readAutomation.execute(
         { id: request.automationId },
         { organizationId: auth.organizationId }
@@ -93,7 +85,7 @@ export class CreateSubscription
           `Subscription for selector ${request.selectorId} already in place for automation ${request.automationId}`
         );
 
-      const updateAutomationResult: Result<AutomationDto | null> =
+      const updateAutomationResult: Result<AutomationDto> =
         await this.#updateAutomation.execute(
           {
             id: request.automationId,
@@ -107,20 +99,18 @@ export class CreateSubscription
       if (!updateAutomationResult.value)
         throw new Error(`Couldn't update automation ${request.automationId}`);
 
-      return Result.ok<SubscriptionDto>(
-        buildSubscriptionDto(createResult.value)
-      );
-    } catch (error: any) {
-      return Result.fail<SubscriptionDto>(
-        typeof error === 'string' ? error : error.message
-      );
+      return Result.ok(buildSubscriptionDto(createResult.value));
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 
-  #validateRequest = async (
+  #requestIsValid = async (
     subscription: Subscription,
     jwt: string
-  ): Promise<Result<null>> => {
+  ): Promise<boolean> => {
     const getSelectorResponse: GetSelectorResponseDto =
       await this.#getSelector.execute(
         {
@@ -130,23 +120,25 @@ export class CreateSubscription
       );
 
     if (getSelectorResponse.error)
-      return Result.fail<null>(getSelectorResponse.error);
+      return Promise.reject(getSelectorResponse.error);
     if (!getSelectorResponse.value)
-      return Result.fail<null>(
-        `No selector was found for id ${subscription.selectorId}`
+      return Promise.reject(
+        new Error(`No selector was found for id ${subscription.selectorId}`)
       );
 
     if (getSelectorResponse.value.systemId !== subscription.systemId)
-      return Result.fail<null>(
-        `Provided system id ${subscription.systemId} doesn't match the selector's system ${getSelectorResponse.value.systemId}`
+      return Promise.reject(
+        new Error(
+          `Provided system id ${subscription.systemId} doesn't match the selector's system ${getSelectorResponse.value.systemId}`
+        )
       );
 
-    return Result.ok<null>(null);
+    return true;
   };
 
   #createSubscription = (
     request: CreateSubscriptionRequestDto
-  ): Result<Subscription | null> => {
+  ): Result<Subscription> => {
     const subscriptionProperties: SubscriptionProperties = {
       selectorId: request.selectorId,
       systemId: request.systemId,

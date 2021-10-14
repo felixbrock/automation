@@ -15,7 +15,7 @@ export interface CreateAutomationAuthDto {
   organizationId: string;
 }
 
-export type CreateAutomationResponseDto = Result<AutomationDto | null>;
+export type CreateAutomationResponseDto = Result<AutomationDto>;
 
 export class CreateAutomation
   implements
@@ -27,10 +27,7 @@ export class CreateAutomation
 {
   #automationRepository: IAutomationRepository;
 
-
-  public constructor(
-    automationRepository: IAutomationRepository,
-  ) {
+  public constructor(automationRepository: IAutomationRepository) {
     this.#automationRepository = automationRepository;
   }
 
@@ -39,7 +36,7 @@ export class CreateAutomation
     auth: CreateAutomationAuthDto
   ): Promise<CreateAutomationResponseDto> {
     try {
-      const automation: Result<Automation | null> = this.#createAutomation(
+      const automation: Result<Automation> = this.#createAutomation(
         request,
         auth
       );
@@ -48,18 +45,18 @@ export class CreateAutomation
       // TODO Install error handling
       await this.#automationRepository.insertOne(automation.value);
 
-      return Result.ok<AutomationDto>(buildAutomationDto(automation.value));
-    } catch (error: any) {
-      return Result.fail<AutomationDto>(
-        typeof error === 'string' ? error : error.message
-      );
+      return Result.ok(buildAutomationDto(automation.value));
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 
   #createAutomation = (
     request: CreateAutomationRequestDto,
     auth: CreateAutomationAuthDto
-  ): Result<Automation | null> => {
+  ): Result<Automation> => {
     const automationProperties: AutomationProperties = {
       id: new ObjectId().toHexString(),
       name: request.name,

@@ -37,21 +37,47 @@ interface AutomationPersistence {
   modifiedOn: number;
 }
 
+interface SubscriptionsQueryFilter {
+  selectorId?: string;
+  systemId?: string;
+  alertsAccessedOn?: { [key: string]: number };
+  alertsAccessedOnByUser?: { [key: string]: number };
+}
+
+interface AutomationQueryFilter {
+  name?: string;
+  accountId?: string;
+  organizationId?: string;
+  modifiedOn?: { [key: string]: number };
+  subscriptions?: SubscriptionsQueryFilter;
+}
+
+interface AutomationUpdateFilter {
+  $set: { [key: string]: any };
+  $push: { [key: string]: any };
+}
+
 const collectionName = 'automations';
 
 export default class AutomationRepositoryImpl implements IAutomationRepository {
   public findOne = async (id: string): Promise<Automation | null> => {
     const client = createClient();
-    const db = await connect(client);
-    const result: any = await db
-      .collection(collectionName)
-      .findOne({ _id: new ObjectId(sanitize(id)) });
+    try {
+      const db = await connect(client);
+      const result: any = await db
+        .collection(collectionName)
+        .findOne({ _id: new ObjectId(sanitize(id)) });
 
-    close(client);
+      close(client);
 
-    if (!result) return null;
+      if (!result) return null;
 
-    return this.#toEntity(this.#buildProperties(result));
+      return this.#toEntity(this.#buildProperties(result));
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
   };
 
   public findBy = async (
@@ -60,22 +86,30 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     if (!Object.keys(automationQueryDto).length) return this.all();
 
     const client = createClient();
-    const db = await connect(client);
-    const result: FindCursor = await db
-      .collection(collectionName)
-      .find(this.#buildFilter(sanitize(automationQueryDto)));
-    const results = await result.toArray();
+    try {
+      const db = await connect(client);
+      const result: FindCursor = await db
+        .collection(collectionName)
+        .find(this.#buildFilter(sanitize(automationQueryDto)));
+      const results = await result.toArray();
 
-    close(client);
+      close(client);
 
-    if (!results || !results.length) return [];
+      if (!results || !results.length) return [];
 
-    return results.map((element: any) =>
-      this.#toEntity(this.#buildProperties(element))
-    );
+      return results.map((element: any) =>
+        this.#toEntity(this.#buildProperties(element))
+      );
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
   };
 
-  #buildFilter = (automationQueryDto: AutomationQueryDto): any => {
+  #buildFilter = (
+    automationQueryDto: AutomationQueryDto
+  ): AutomationQueryFilter => {
     const filter: { [key: string]: any } = {};
 
     if (automationQueryDto.name) filter.name = automationQueryDto.name;
@@ -133,22 +167,28 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
   public all = async (): Promise<Automation[]> => {
     const client = createClient();
-    const db = await connect(client);
-    const result: FindCursor = await db.collection(collectionName).find();
-    const results = await result.toArray();
+    try {
+      const db = await connect(client);
+      const result: FindCursor = await db.collection(collectionName).find();
+      const results = await result.toArray();
 
-    close(client);
+      close(client);
 
-    if (!results || !results.length) return [];
+      if (!results || !results.length) return [];
 
-    return results.map((element: any) =>
-      this.#toEntity(this.#buildProperties(element))
-    );
+      return results.map((element: any) =>
+        this.#toEntity(this.#buildProperties(element))
+      );
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
+    }
   };
 
-  public insertOne = async (account: Automation): Promise<Result<null>> => {
+  public insertOne = async (account: Automation): Promise<string> => {
+    const client = createClient();
     try {
-      const client = createClient();
       const db = await connect(client);
       const result: InsertOneResult<Document> = await db
         .collection(collectionName)
@@ -159,11 +199,11 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       close(client);
 
-      return Result.ok<null>();
-    } catch (error: any) {
-      return Result.fail<null>(
-        typeof error === 'string' ? error : error.message
-      );
+      return result.insertedId.toHexString();
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
     }
   };
 
@@ -171,9 +211,9 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
   public updateOne = async (
     id: string,
     updateDto: AutomationUpdateDto
-  ): Promise<Result<null>> => {
+  ): Promise<string> => {
+    const client = createClient();
     try {
-      const client = createClient();
       const db = await connect(client);
 
       const sanitizedId = sanitize(id);
@@ -199,15 +239,17 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       close(client);
 
-      return Result.ok<null>();
-    } catch (error: any) {
-      return Result.fail<null>(
-        typeof error === 'string' ? error : error.message
-      );
+      return result.upsertedId;
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
     }
   };
 
-  #buildUpdateFilter = (selectorUpdateDto: AutomationUpdateDto): any => {
+  #buildUpdateFilter = (
+    selectorUpdateDto: AutomationUpdateDto
+  ): AutomationUpdateFilter => {
     const setFilter: { [key: string]: any } = {};
     const push: { [key: string]: any } = {};
 
@@ -231,9 +273,9 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     return { $set: setFilter, $push: push };
   };
 
-  public deleteOne = async (id: string): Promise<Result<null>> => {
+  public deleteOne = async (id: string): Promise<string> => {
+    const client = createClient();
     try {
-      const client = createClient();
       const db = await connect(client);
       const result: DeleteResult = await db
         .collection(collectionName)
@@ -244,20 +286,20 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       close(client);
 
-      return Result.ok<null>();
-    } catch (error: any) {
-      return Result.fail<null>(
-        typeof error === 'string' ? error : error.message
-      );
+      return result.deletedCount.toString();
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
     }
   };
 
   public deleteSubscription = async (
     automationId: string,
     selectorId: string
-  ): Promise<Result<null>> => {
-    try {
+  ): Promise<string> => {
       const client = createClient();
+      try {
       const db = await connect(client);
       const result: Document | UpdateResult = await db
         .collection(collectionName)
@@ -271,11 +313,11 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
 
       close(client);
 
-      return Result.ok<null>();
-    } catch (error: any) {
-      return Result.fail<null>(
-        typeof error === 'string' ? error : error.message
-      );
+      return result.upsertedId;
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Promise.reject(error);
+      if (error instanceof Error) return Promise.reject(error.message);
+      return Promise.reject(new Error('Unknown error occured'));
     }
   };
 

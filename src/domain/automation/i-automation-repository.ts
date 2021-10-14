@@ -1,6 +1,5 @@
 import { Automation } from '../entities/automation';
 import { Subscription } from '../value-types/subscription';
-import Result from '../value-types/transient-types/result';
 
 export interface AutomationQueryDto {
   name?: string;
@@ -31,13 +30,13 @@ export interface AutomationUpdateDto{
 export interface IAutomationRepository {
   findOne(id: string): Promise<Automation | null>;
   findBy(automationQueryDto: AutomationQueryDto): Promise<Automation[]>;
-  all(): Promise<Automation[] | null>;
-  updateOne(id: string, updateDto: AutomationUpdateDto): Promise<Result<null>>;
-  insertOne(automation: Automation): Promise<Result<null>>;
-  deleteOne(automationId: string): Promise<Result<null>>;
+  all(): Promise<Automation[]>;
+  updateOne(id: string, updateDto: AutomationUpdateDto): Promise<string>;
+  insertOne(automation: Automation): Promise<string>;
+  deleteOne(automationId: string): Promise<string>;
 
   deleteSubscription(
     automationId: string,
     selectorId: string
-  ): Promise<Result<null>>;
+  ): Promise<string>;
 }

@@ -33,10 +33,10 @@ export default class DeleteSubscriptionsController extends BaseController {
   ): Result<DeleteSubscriptionsRequestDto> => {
     const { selectorId } = httpRequest.query;
     if (typeof selectorId === 'string')
-      return Result.ok<DeleteSubscriptionsRequestDto>({
+      return Result.ok({
         selectorId,
       });
-    return Result.fail<DeleteSubscriptionsRequestDto>(
+    return Result.fail(
       'request query parameter selectorId is supposed to be in string format'
     );
   };
@@ -54,7 +54,7 @@ export default class DeleteSubscriptionsController extends BaseController {
       if (!authHeader)
         return DeleteSubscriptionsController.unauthorized(res, 'Unauthorized');
 
-      const jwt = authHeader.split(' ')[1];     
+      const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
         await DeleteSubscriptionsController.getUserAccountInfo(
@@ -103,8 +103,12 @@ export default class DeleteSubscriptionsController extends BaseController {
         useCaseResult.value,
         CodeHttp.OK
       );
-    } catch (error: any) {
-      return DeleteSubscriptionsController.fail(res, error);
+    } catch (error: unknown) {
+      if (typeof error === 'string')
+        return DeleteSubscriptionsController.fail(res, error);
+      if (error instanceof Error)
+        return DeleteSubscriptionsController.fail(res, error);
+      return DeleteSubscriptionsController.fail(res, 'Unknown error occured');
     }
   }
 }

@@ -101,8 +101,12 @@ export default class UpdateSubscriptionsController extends BaseController {
         useCaseResult.value,
         CodeHttp.OK
       );
-    } catch (error: any) {
-      return UpdateSubscriptionsController.fail(res, error);
+    } catch (error: unknown) {
+      if (typeof error === 'string')
+        return UpdateSubscriptionsController.fail(res, error);
+      if (error instanceof Error)
+        return UpdateSubscriptionsController.fail(res, error);
+      return UpdateSubscriptionsController.fail(res, 'Unknown error occured');
     }
   }
 }

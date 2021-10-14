@@ -8,7 +8,11 @@ import {
   ReadAutomationResponseDto,
 } from '../../../domain/automation/read-automation';
 import Result from '../../../domain/value-types/transient-types/result';
-import { BaseController, CodeHttp, UserAccountInfo } from '../../shared/base-controller';
+import {
+  BaseController,
+  CodeHttp,
+  UserAccountInfo,
+} from '../../shared/base-controller';
 
 export default class ReadAutomationController extends BaseController {
   #readAutomation: ReadAutomation;
@@ -38,7 +42,7 @@ export default class ReadAutomationController extends BaseController {
       if (!authHeader)
         return ReadAutomationController.unauthorized(res, 'Unauthorized');
 
-      const jwt = authHeader.split(' ')[1];     
+      const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
         await ReadAutomationController.getUserAccountInfo(
@@ -67,8 +71,12 @@ export default class ReadAutomationController extends BaseController {
       }
 
       return ReadAutomationController.ok(res, useCaseResult.value, CodeHttp.OK);
-    } catch (error: any) {
-      return ReadAutomationController.fail(res, error);
+    } catch (error: unknown) {
+      if (typeof error === 'string')
+        return ReadAutomationController.fail(res, error);
+      if (error instanceof Error)
+        return ReadAutomationController.fail(res, error);
+      return ReadAutomationController.fail(res, 'Unknown error occured');
     }
   }
 }

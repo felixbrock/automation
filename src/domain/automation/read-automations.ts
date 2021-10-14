@@ -26,7 +26,7 @@ export interface ReadAutomationsAuthDto {
   organizationId: string;
 }
 
-export type ReadAutomationsResponseDto = Result<AutomationDto[] | null>;
+export type ReadAutomationsResponseDto = Result<AutomationDto[]>;
 
 export class ReadAutomations
   implements
@@ -52,13 +52,13 @@ export class ReadAutomations
       );
       if (!automations) throw new Error(`Queried automations do not exist`);
 
-      return Result.ok<AutomationDto[]>(
+      return Result.ok(
         automations.map((automation) => buildAutomationDto(automation))
       );
-    } catch (error: any) {
-      return Result.fail<null>(
-        typeof error === 'string' ? error : error.message
-      );
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 

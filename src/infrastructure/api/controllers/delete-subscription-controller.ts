@@ -33,11 +33,11 @@ export default class DeleteSubscriptionController extends BaseController {
   ): Result<DeleteSubscriptionRequestDto> => {
     const { selectorId } = httpRequest.query;
     if (typeof selectorId === 'string')
-      return Result.ok<DeleteSubscriptionRequestDto>({
+      return Result.ok({
         automationId: httpRequest.params.automationId,
         selectorId,
       });
-    return Result.fail<DeleteSubscriptionRequestDto>(
+    return Result.fail(
       'request query parameter automationId is supposed to be in string format'
     );
   };
@@ -104,8 +104,12 @@ export default class DeleteSubscriptionController extends BaseController {
         useCaseResult.value,
         CodeHttp.OK
       );
-    } catch (error: any) {
-      return DeleteSubscriptionController.fail(res, error);
+    } catch (error: unknown) {
+      if (typeof error === 'string')
+        return DeleteSubscriptionController.fail(res, error);
+      if (error instanceof Error)
+        return DeleteSubscriptionController.fail(res, error);
+      return DeleteSubscriptionController.fail(res, 'Unknown error occured');
     }
   }
 }

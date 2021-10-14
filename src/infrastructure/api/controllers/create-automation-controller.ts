@@ -46,7 +46,7 @@ export default class CreateAutomationController extends BaseController {
       if (!authHeader)
         return CreateAutomationController.unauthorized(res, 'Unauthorized');
 
-      const jwt = authHeader.split(' ')[1];     
+      const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
         await CreateAutomationController.getUserAccountInfo(
@@ -79,8 +79,12 @@ export default class CreateAutomationController extends BaseController {
         useCaseResult.value,
         CodeHttp.CREATED
       );
-    } catch (error: any) {
-      return CreateAutomationController.fail(res, error);
+    } catch (error: unknown) {
+      if (typeof error === 'string')
+        return CreateAutomationController.fail(res, error);
+      if (error instanceof Error)
+        return CreateAutomationController.fail(res, error);
+      return CreateAutomationController.fail(res, 'Unknown error occured');
     }
   }
 }

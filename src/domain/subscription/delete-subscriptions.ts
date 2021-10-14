@@ -3,7 +3,10 @@ import { SubscriptionDto } from './subscription-dto';
 import { AutomationDto } from '../automation/automation-dto';
 import Result from '../value-types/transient-types/result';
 import { ReadAutomations } from '../automation/read-automations';
-import { DeleteSubscription } from './delete-subscription';
+import {
+  DeleteSubscription,
+  DeleteSubscriptionResponseDto,
+} from './delete-subscription';
 
 export interface DeleteSubscriptionsRequestDto {
   selectorId: string;
@@ -13,7 +16,7 @@ export interface DeleteSubscriptionsAuthDto {
   organizationId: string;
 }
 
-export type DeleteSubscriptionsResponseDto = Result<null>;
+export type DeleteSubscriptionsResponseDto = Result<string>;
 
 export class DeleteSubscriptions
   implements
@@ -40,7 +43,7 @@ export class DeleteSubscriptions
     auth: DeleteSubscriptionsAuthDto
   ): Promise<DeleteSubscriptionsResponseDto> {
     try {
-      const readAutomationsResult: Result<AutomationDto[] | null> =
+      const readAutomationsResult: Result<AutomationDto[]> =
         await this.#readAutomations.execute(
           {},
           { organizationId: auth.organizationId }
@@ -67,11 +70,13 @@ export class DeleteSubscriptions
           `Deletion of automation subscriptions referencing selector ${request.selectorId} failed. Please try again`
         );
 
-      return Result.ok<null>();
-    } catch (error: any) {
-      return Result.fail<null>(
-        typeof error === 'string' ? error : error.message
+      return Result.ok(
+        `Number of subscriptions deleted: ${deletionResults.length}`
       );
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 
@@ -79,13 +84,14 @@ export class DeleteSubscriptions
     automationDto: AutomationDto,
     selectorId: string,
     organizationId: string
-  ): Promise<Result<null>> {
+  ): Promise<DeleteSubscriptionResponseDto> {
     const subscription: SubscriptionDto | undefined =
       automationDto.subscriptions.find(
         (element) => element.selectorId === selectorId
       );
 
-    if (!subscription) return Result.ok<null>();
+    if (!subscription)
+      return Result.ok('No subscriptions found. Deletion not necessary');
 
     return this.#deleteSubscription.execute(
       {

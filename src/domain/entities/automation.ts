@@ -32,7 +32,7 @@ export class Automation {
   }
 
   public set name(name: string) {
-    if (!name) throw new Error('Automation name cannot be null');
+    if (!name) throw new Error('Automation must have name');
 
     this.#name = name;
   }
@@ -42,7 +42,7 @@ export class Automation {
   }
 
   public set accountId(id: string) {
-    if (!id) throw new Error('AccountId cannot be null');
+    if (!id) throw new Error('Automation must have accountId');
 
     this.#accountId = id;
   }
@@ -52,7 +52,7 @@ export class Automation {
   }
 
   public set organizationId(id: string) {
-    if (!id) throw new Error('OrganizationId cannot be null');
+    if (!id) throw new Error('Automation must have organizationId');
 
     this.#organizationId = id;
   }
@@ -91,16 +91,16 @@ export class Automation {
     properties: AutomationProperties
   ): Result<Automation> {
     if (!properties.name)
-      return Result.fail<Automation>('Automation must have automation id');
+      return Result.fail('Automation must have automation id');
     if (!properties.accountId)
-      return Result.fail<Automation>('Automation must have account id');
+      return Result.fail('Automation must have account id');
     if(!properties.organizationId)
-    return Result.fail<Automation>('Automation must have organization id');
+    return Result.fail('Automation must have organization id');
     if (!properties.id)
-      return Result.fail<Automation>('Automation must have id');
+      return Result.fail('Automation must have id');
 
     const automation = new Automation(properties);
-    return Result.ok<Automation>(automation);
+    return Result.ok(automation);
   }
 
   #subscriptionDuplicated = (subscriptions: Subscription[]): boolean => {

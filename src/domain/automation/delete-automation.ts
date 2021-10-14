@@ -12,7 +12,7 @@ export interface DeleteAutomationAuthDto {
   organizationId: string;
 }
 
-export type DeleteAutomationResponseDto = Result<null>;
+export type DeleteAutomationResponseDto = Result<string>;
 
 export class DeleteAutomation
   implements
@@ -39,7 +39,7 @@ export class DeleteAutomation
     auth: DeleteAutomationAuthDto
   ): Promise<DeleteAutomationResponseDto> {
     try {
-      const readAutomationResult: Result<AutomationDto | null> =
+      const readAutomationResult: Result<AutomationDto> =
         await this.#readAutomation.execute(
           { id: request.automationId },
           { organizationId: auth.organizationId }
@@ -53,17 +53,14 @@ export class DeleteAutomation
       if (readAutomationResult.value.organizationId !== auth.organizationId)
         throw new Error('Not authorized to perform action');
 
-      const deleteAutomationResult: Result<null> =
+      const deleteAutomationResult: string =
         await this.#automationRepository.deleteOne(request.automationId);
 
-      if (deleteAutomationResult.error)
-        throw new Error(deleteAutomationResult.error);
-
-      return Result.ok<null>();
-    } catch (error: any) {
-      return Result.fail<null>(
-        typeof error === 'string' ? error : error.message
-      );
+      return Result.ok(deleteAutomationResult);
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 }

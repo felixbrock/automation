@@ -22,10 +22,10 @@ export interface GetSelectorDto {
   modifiedOn: number;
 }
 
-export type GetSelectorResponseDto = Result<GetSelectorDto | null>;
+export type GetSelectorResponseDto = Result<GetSelectorDto>;
 
 export interface IGetSelectorRepository {
-  getOne(selectorId: string, jwt: string): Promise<GetSelectorDto | null>;
+  getOne(selectorId: string, jwt: string): Promise<GetSelectorDto>;
 }
 
 export class GetSelector
@@ -43,17 +43,17 @@ export class GetSelector
     auth: GetSelectorAuthDto
   ): Promise<GetSelectorResponseDto> {
     try {
-      const getSelectorResponse: GetSelectorDto | null =
+      const getSelectorResponse: GetSelectorDto =
         await this.#getSelectorRepository.getOne(request.id, auth.jwt);
 
       if (!getSelectorResponse)
         throw new Error(`No selector found for id ${request.id}`);
 
-      return Result.ok<GetSelectorDto>(getSelectorResponse);
-    } catch (error: any) {
-      return Result.fail<GetSelectorDto>(
-        typeof error === 'string' ? error : error.message
-      );
+      return Result.ok(getSelectorResponse);
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 }

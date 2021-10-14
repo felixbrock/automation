@@ -49,7 +49,7 @@ export default class CreateSubscriptionController extends BaseController {
       if (!authHeader)
         return CreateSubscriptionController.unauthorized(res, 'Unauthorized');
 
-      const jwt = authHeader.split(' ')[1];     
+      const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
         await CreateSubscriptionController.getUserAccountInfo(
@@ -87,8 +87,12 @@ export default class CreateSubscriptionController extends BaseController {
         useCaseResult.value,
         CodeHttp.CREATED
       );
-    } catch (error: any) {
-      return CreateSubscriptionController.fail(res, error);
+    } catch (error: unknown) {
+      if (typeof error === 'string')
+        return CreateSubscriptionController.fail(res, error);
+      if (error instanceof Error)
+        return CreateSubscriptionController.fail(res, error);
+      return CreateSubscriptionController.fail(res, 'Unknown error occured');
     }
   }
 }

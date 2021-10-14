@@ -25,7 +25,7 @@ export interface UpdateAutomationAuthDto {
   jwt: string;
 }
 
-export type UpdateAutomationResponseDto = Result<AutomationDto | null>;
+export type UpdateAutomationResponseDto = Result<AutomationDto>;
 
 export class UpdateAutomation
   implements
@@ -86,19 +86,13 @@ export class UpdateAutomation
         auth.organizationId
       );
 
-      const updateResult = await this.#automationRepository.updateOne(
-        request.id,
-        updateDto
-      );
+      await this.#automationRepository.updateOne(request.id, updateDto);
 
-      if (updateResult.error) throw new Error(updateResult.error);
-
-      // TODO - Doesn't return the right object. Fix.
-      return Result.ok<AutomationDto>(readAutomationResult.value);
-    } catch (error: any) {
-      return Result.fail<AutomationDto>(
-        typeof error === 'string' ? error : error.message
-      );
+      return Result.ok(readAutomationResult.value);
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 
@@ -145,8 +139,10 @@ export class UpdateAutomation
             return false;
 
           return true;
-        } catch (error: any) {
-          throw new Error(error);
+        } catch (error: unknown) {
+          if (typeof error === 'string') return Promise.reject(error);
+          if (error instanceof Error) return Promise.reject(error.message);
+          return Promise.reject(new Error('Unknown error occured'));
         }
       })
     );

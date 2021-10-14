@@ -12,7 +12,7 @@ export interface ReadAutomationAuthDto {
   organizationId: string;
 }
 
-export type ReadAutomationResponseDto = Result<AutomationDto | null>;
+export type ReadAutomationResponseDto = Result<AutomationDto>;
 
 export class ReadAutomation
   implements
@@ -41,11 +41,11 @@ export class ReadAutomation
       if (automation.organizationId !== auth.organizationId)
         throw new Error('Not authorized to perform action');
 
-      return Result.ok<AutomationDto>(buildAutomationDto(automation));
-    } catch (error: any) {
-      return Result.fail<null>(
-        typeof error === 'string' ? error : error.message
-      );
+      return Result.ok(buildAutomationDto(automation));
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 }

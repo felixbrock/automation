@@ -22,10 +22,10 @@ export interface SystemDto {
   modifiedOn: number;
 }
 
-export type GetSystemResponseDto = Result<SystemDto | null>;
+export type GetSystemResponseDto = Result<SystemDto>;
 
 export interface IGetSystemRepository {
-  getOne(systemId: string, jwt: string): Promise<SystemDto | null>;
+  getOne(systemId: string, jwt: string): Promise<SystemDto>;
 }
 
 export class GetSystem
@@ -43,17 +43,17 @@ export class GetSystem
     auth: GetSystemAuthDto
   ): Promise<GetSystemResponseDto> {
     try {
-      const getSystemResult: SystemDto | null =
+      const getSystemResult: SystemDto =
         await this.#getSystemRepository.getOne(request.id, auth.jwt);
 
       if (!getSystemResult)
         throw new Error(`No system found for id ${request.id}`);
 
-      return Result.ok<SystemDto>(getSystemResult);
-    } catch (error: any) {
-      return Result.fail<SystemDto>(
-        typeof error === 'string' ? error : error.message
-      );
+      return Result.ok(getSystemResult);
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 }

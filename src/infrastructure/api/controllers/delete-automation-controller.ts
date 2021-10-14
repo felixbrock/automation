@@ -45,7 +45,7 @@ export default class DeleteAutomationController extends BaseController {
       if (!authHeader)
         return DeleteAutomationController.unauthorized(res, 'Unauthorized');
 
-      const jwt = authHeader.split(' ')[1];     
+      const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
         await DeleteAutomationController.getUserAccountInfo(
@@ -78,8 +78,12 @@ export default class DeleteAutomationController extends BaseController {
         useCaseResult.value,
         CodeHttp.OK
       );
-    } catch (error: any) {
-      return DeleteAutomationController.fail(res, error);
+    } catch (error: unknown) {
+      if (typeof error === 'string')
+        return DeleteAutomationController.fail(res, error);
+      if (error instanceof Error)
+        return DeleteAutomationController.fail(res, error);
+      return DeleteAutomationController.fail(res, 'Unknown error occured');
     }
   }
 }

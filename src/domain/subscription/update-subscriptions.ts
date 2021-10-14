@@ -84,7 +84,7 @@ export class UpdateSubscriptions
         );
       });
 
-      const updateAutomationResult: Result<AutomationDto | null> =
+      const updateAutomationResult: Result<AutomationDto> =
         await this.#updateAutomation.execute(
           {
             id: request.automationId,
@@ -98,11 +98,11 @@ export class UpdateSubscriptions
       if (!updateAutomationResult.value)
         throw new Error(`Couldn't update automation ${request.automationId}`);
 
-      return Result.ok<SubscriptionDto[]>(modifiedSubscriptions);
-    } catch (error: any) {
-      return Result.fail<SubscriptionDto[]>(
-        typeof error === 'string' ? error : error.message
-      );
+      return Result.ok(modifiedSubscriptions);
+    } catch (error: unknown) {
+      if (typeof error === 'string') return Result.fail(error);
+      if (error instanceof Error) return Result.fail(error.message);
+      return Result.fail('Unknown error occured');
     }
   }
 
