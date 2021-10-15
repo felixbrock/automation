@@ -36,16 +36,14 @@ export class CreateAutomation
     auth: CreateAutomationAuthDto
   ): Promise<CreateAutomationResponseDto> {
     try {
-      const automation: Result<Automation> = this.#createAutomation(
+      const automation: Automation = this.#createAutomation(
         request,
         auth
       );
-      if (!automation.value) return automation;
 
-      // TODO Install error handling
-      await this.#automationRepository.insertOne(automation.value);
+      await this.#automationRepository.insertOne(automation);
 
-      return Result.ok(buildAutomationDto(automation.value));
+      return Result.ok(buildAutomationDto(automation));
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);
       if (error instanceof Error) return Result.fail(error.message);
@@ -56,7 +54,7 @@ export class CreateAutomation
   #createAutomation = (
     request: CreateAutomationRequestDto,
     auth: CreateAutomationAuthDto
-  ): Result<Automation> => {
+  ): Automation => {
     const automationProperties: AutomationProperties = {
       id: new ObjectId().toHexString(),
       name: request.name,

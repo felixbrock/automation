@@ -49,7 +49,7 @@ export class DeleteSubscriptions
           { organizationId: auth.organizationId }
         );
 
-      if (readAutomationsResult.error)
+      if (!readAutomationsResult.success)
         throw new Error(readAutomationsResult.error);
       if (!readAutomationsResult.value)
         throw new Error(`Couldn't read automations`);

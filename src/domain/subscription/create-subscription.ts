@@ -54,12 +54,10 @@ export class CreateSubscription
     request: CreateSubscriptionRequestDto,
     auth: CreateSubscriptionAuthDto
   ): Promise<CreateSubscriptionResponseDto> {
-    const createResult: Result<Subscription> =
-      this.#createSubscription(request);
-    if (!createResult.value) return createResult;
-
     try {
-      await this.#requestIsValid(createResult.value, auth.jwt);
+      const createResult: Subscription = this.#createSubscription(request);
+
+      await this.#requestIsValid(createResult, auth.jwt);
 
       const readAutomationResult = await this.#readAutomation.execute(
         { id: request.automationId },
@@ -89,7 +87,7 @@ export class CreateSubscription
         await this.#updateAutomation.execute(
           {
             id: request.automationId,
-            subscriptions: [buildSubscriptionDto(createResult.value)],
+            subscriptions: [buildSubscriptionDto(createResult)],
           },
           { jwt: auth.jwt, organizationId: auth.organizationId }
         );
@@ -99,7 +97,7 @@ export class CreateSubscription
       if (!updateAutomationResult.value)
         throw new Error(`Couldn't update automation ${request.automationId}`);
 
-      return Result.ok(buildSubscriptionDto(createResult.value));
+      return Result.ok(buildSubscriptionDto(createResult));
     } catch (error: unknown) {
       if (typeof error === 'string') return Result.fail(error);
       if (error instanceof Error) return Result.fail(error.message);
@@ -138,7 +136,7 @@ export class CreateSubscription
 
   #createSubscription = (
     request: CreateSubscriptionRequestDto
-  ): Result<Subscription> => {
+  ): Subscription => {
     const subscriptionProperties: SubscriptionProperties = {
       selectorId: request.selectorId,
       systemId: request.systemId,

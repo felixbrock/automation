@@ -93,7 +93,7 @@ export class UpdateSubscriptions
           { jwt: auth.jwt, organizationId: auth.organizationId }
         );
 
-      if (updateAutomationResult.error)
+      if (!updateAutomationResult.success)
         throw new Error(updateAutomationResult.error);
       if (!updateAutomationResult.value)
         throw new Error(`Couldn't update automation ${request.automationId}`);

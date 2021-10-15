@@ -1,4 +1,3 @@
-import Result from '../value-types/transient-types/result';
 import { Subscription } from '../value-types/subscription';
 
 export interface AutomationProperties {
@@ -87,20 +86,15 @@ export class Automation {
     this.#subscriptions = properties.subscriptions || [];
   }
 
-  public static create(
-    properties: AutomationProperties
-  ): Result<Automation> {
-    if (!properties.name)
-      return Result.fail('Automation must have automation id');
+  public static create(properties: AutomationProperties): Automation {
+    if (!properties.name) throw new Error('Automation must have automation id');
     if (!properties.accountId)
-      return Result.fail('Automation must have account id');
-    if(!properties.organizationId)
-    return Result.fail('Automation must have organization id');
-    if (!properties.id)
-      return Result.fail('Automation must have id');
+      throw new Error('Automation must have account id');
+    if (!properties.organizationId)
+      throw new Error('Automation must have organization id');
+    if (!properties.id) throw new Error('Automation must have id');
 
-    const automation = new Automation(properties);
-    return Result.ok(automation);
+    return new Automation(properties);
   }
 
   #subscriptionDuplicated = (subscriptions: Subscription[]): boolean => {

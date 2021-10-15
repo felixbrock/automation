@@ -28,16 +28,14 @@ export default class DeleteSubscriptionController extends BaseController {
     this.#getAccounts = getAccounts;
   }
 
-  #buildRequestDto = (
-    httpRequest: Request
-  ): Result<DeleteSubscriptionRequestDto> => {
+  #buildRequestDto = (httpRequest: Request): DeleteSubscriptionRequestDto => {
     const { selectorId } = httpRequest.query;
     if (typeof selectorId === 'string')
-      return Result.ok({
+      return {
         automationId: httpRequest.params.automationId,
         selectorId,
-      });
-    return Result.fail(
+      };
+    throw new Error(
       'request query parameter automationId is supposed to be in string format'
     );
   };
@@ -55,7 +53,7 @@ export default class DeleteSubscriptionController extends BaseController {
       if (!authHeader)
         return DeleteSubscriptionController.unauthorized(res, 'Unauthorized');
 
-      const jwt = authHeader.split(' ')[1];     
+      const jwt = authHeader.split(' ')[1];
 
       const getUserAccountInfoResult: Result<UserAccountInfo> =
         await DeleteSubscriptionController.getUserAccountInfo(
@@ -71,26 +69,15 @@ export default class DeleteSubscriptionController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new Error('Authorization failed');
 
-      const buildDtoResult: Result<DeleteSubscriptionRequestDto> =
+      const buildDtoResult: DeleteSubscriptionRequestDto =
         this.#buildRequestDto(req);
-
-      if (buildDtoResult.error)
-        return DeleteSubscriptionController.badRequest(
-          res,
-          buildDtoResult.error
-        );
-      if (!buildDtoResult.value)
-        return DeleteSubscriptionController.badRequest(
-          res,
-          'Invalid request query paramerters'
-        );
 
       const authDto: DeleteSubscriptionAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
 
       const useCaseResult: DeleteSubscriptionResponseDto =
-        await this.#deleteSubscription.execute(buildDtoResult.value, authDto);
+        await this.#deleteSubscription.execute(buildDtoResult, authDto);
 
       if (useCaseResult.error) {
         return DeleteSubscriptionController.badRequest(

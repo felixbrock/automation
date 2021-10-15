@@ -1,5 +1,3 @@
-import Result from "./transient-types/result";
-
 export interface SubscriptionProperties {
   systemId: string;
   selectorId: string;
@@ -10,7 +8,7 @@ export interface SubscriptionProperties {
 
 export class Subscription {
   #selectorId: string;
-  
+
   #systemId: string;
 
   #alertsAccessedOn: number;
@@ -32,9 +30,10 @@ export class Subscription {
   }
 
   public set alertsAccessedOn(accessedOn: number) {
-    if(accessedOn < this.#alertsAccessedOn) throw new Error(
-      'New alertsAccessedOn value cannot be smaller than old value'
-    );
+    if (accessedOn < this.#alertsAccessedOn)
+      throw new Error(
+        'New alertsAccessedOn value cannot be smaller than old value'
+      );
 
     this.#alertsAccessedOn = accessedOn;
   }
@@ -44,9 +43,10 @@ export class Subscription {
   }
 
   public set alertsAccessedOnByUser(accessedOn: number) {
-    if(accessedOn < this.#alertsAccessedOnByUser) throw new Error(
-      'New alertsAccessedOnByUser value cannot be smaller than old value'
-    );
+    if (accessedOn < this.#alertsAccessedOnByUser)
+      throw new Error(
+        'New alertsAccessedOnByUser value cannot be smaller than old value'
+      );
 
     this.#alertsAccessedOnByUser = accessedOn;
   }
@@ -63,15 +63,18 @@ export class Subscription {
     this.#selectorId = properties.selectorId;
     this.#systemId = properties.systemId;
     this.#alertsAccessedOn = properties.alertsAccessedOn || Date.now();
-    this.#alertsAccessedOnByUser = properties.alertsAccessedOnByUser || Date.now();
+    this.#alertsAccessedOnByUser =
+      properties.alertsAccessedOnByUser || Date.now();
     this.#modifiedOn = properties.modifiedOn || Date.now();
   }
 
-  public static create(properties: SubscriptionProperties): Result<Subscription> {
-    if (!properties.selectorId) return Result.fail('Subscription must have selector id');
-    if (!properties.systemId) return Result.fail('Subscription must have system id');
+  public static create(properties: SubscriptionProperties): Subscription {
+    if (!properties.selectorId)
+      throw new Error('Subscription must have selector id');
+    if (!properties.systemId)
+      throw new Error('Subscription must have system id');
 
     const subscription = new Subscription(properties);
-    return Result.ok(subscription);
+    return subscription;
   }
 }

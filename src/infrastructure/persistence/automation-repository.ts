@@ -17,7 +17,6 @@ import {
   AutomationUpdateDto,
 } from '../../domain/automation/i-automation-repository';
 import { Subscription } from '../../domain/value-types/subscription';
-import Result from '../../domain/value-types/transient-types/result';
 import { close, connect, createClient } from './db/mongo-db';
 
 interface SubscriptionPersistence {
@@ -321,17 +320,8 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     }
   };
 
-  #toEntity = (automationProperties: AutomationProperties): Automation => {
-    const createAutomationResult: Result<Automation> =
-      Automation.create(automationProperties);
-
-    if (createAutomationResult.error)
-      throw new Error(createAutomationResult.error);
-    if (!createAutomationResult.value)
-      throw new Error('Automation creation failed');
-
-    return createAutomationResult.value;
-  };
+  #toEntity = (automationProperties: AutomationProperties): Automation =>
+    Automation.create(automationProperties);
 
   #buildProperties = (
     automation: AutomationPersistence
@@ -342,13 +332,9 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     accountId: automation.accountId,
     organizationId: automation.organizationId,
     modifiedOn: automation.modifiedOn,
-    subscriptions: automation.subscriptions.map((subscription) => {
-      const subscriptionResult = Subscription.create(subscription);
-      if (subscriptionResult.value) return subscriptionResult.value;
-      throw new Error(
-        subscriptionResult.error || `Creation of automation subscription failed`
-      );
-    }),
+    subscriptions: automation.subscriptions.map((subscription) =>
+      Subscription.create(subscription)
+    ),
   });
 
   #toPersistence = (automation: Automation): Document => ({

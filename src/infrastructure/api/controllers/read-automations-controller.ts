@@ -28,9 +28,7 @@ export default class ReadAutomationsController extends BaseController {
     this.#getAccounts = getAccounts;
   }
 
-  #buildRequestDto = (
-    httpRequest: Request
-  ): Result<ReadAutomationsRequestDto> => {
+  #buildRequestDto = (httpRequest: Request): ReadAutomationsRequestDto => {
     const {
       name,
       accountId,
@@ -65,50 +63,44 @@ export default class ReadAutomationsController extends BaseController {
         'Request query parameter are supposed to be in string format'
       );
 
-    try {
-      return Result.ok({
-        name: typeof name === 'string' ? name : undefined,
-        accountId: typeof accountId === 'string' ? accountId : undefined,
-        subscription: {
-          selectorId:
-            typeof subscriptionSelectorId === 'string'
-              ? subscriptionSelectorId
-              : undefined,
-          systemId:
-            typeof subscriptionSystemId === 'string'
-              ? subscriptionSystemId
-              : undefined,
-          alertsAccessedOnStart:
-            typeof subscriptionAlertsAccessedOnStart === 'string'
-              ? this.#buildDate(subscriptionAlertsAccessedOnStart)
-              : undefined,
-          alertsAccessedOnEnd:
-            typeof subscriptionAlertsAccessedOnEnd === 'string'
-              ? this.#buildDate(subscriptionAlertsAccessedOnEnd)
-              : undefined,
-          alertsAccessedOnByUserStart:
-            typeof subscriptionAlertsAccessedOnByUserStart === 'string'
-              ? this.#buildDate(subscriptionAlertsAccessedOnByUserStart)
-              : undefined,
-          alertsAccessedOnByUserEnd:
-            typeof subscriptionAlertsAccessedOnByUserEnd === 'string'
-              ? this.#buildDate(subscriptionAlertsAccessedOnByUserEnd)
-              : undefined,
-        },
-        modifiedOnStart:
-          typeof modifiedOnStart === 'string'
-            ? this.#buildDate(modifiedOnStart)
+    return {
+      name: typeof name === 'string' ? name : undefined,
+      accountId: typeof accountId === 'string' ? accountId : undefined,
+      subscription: {
+        selectorId:
+          typeof subscriptionSelectorId === 'string'
+            ? subscriptionSelectorId
             : undefined,
-        modifiedOnEnd:
-          typeof modifiedOnEnd === 'string'
-            ? this.#buildDate(modifiedOnEnd)
+        systemId:
+          typeof subscriptionSystemId === 'string'
+            ? subscriptionSystemId
             : undefined,
-      });
-    } catch (error: unknown) {
-      if (typeof error === 'string') return Result.fail(error);
-      if (error instanceof Error) return Result.fail(error.message);
-      return Result.fail('Unknown error occured');
-    }
+        alertsAccessedOnStart:
+          typeof subscriptionAlertsAccessedOnStart === 'string'
+            ? this.#buildDate(subscriptionAlertsAccessedOnStart)
+            : undefined,
+        alertsAccessedOnEnd:
+          typeof subscriptionAlertsAccessedOnEnd === 'string'
+            ? this.#buildDate(subscriptionAlertsAccessedOnEnd)
+            : undefined,
+        alertsAccessedOnByUserStart:
+          typeof subscriptionAlertsAccessedOnByUserStart === 'string'
+            ? this.#buildDate(subscriptionAlertsAccessedOnByUserStart)
+            : undefined,
+        alertsAccessedOnByUserEnd:
+          typeof subscriptionAlertsAccessedOnByUserEnd === 'string'
+            ? this.#buildDate(subscriptionAlertsAccessedOnByUserEnd)
+            : undefined,
+      },
+      modifiedOnStart:
+        typeof modifiedOnStart === 'string'
+          ? this.#buildDate(modifiedOnStart)
+          : undefined,
+      modifiedOnEnd:
+        typeof modifiedOnEnd === 'string'
+          ? this.#buildDate(modifiedOnEnd)
+          : undefined,
+    };
   };
 
   #queryParametersValid = (parameters: unknown[]): boolean => {
@@ -172,23 +164,15 @@ export default class ReadAutomationsController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new Error('Authorization failed');
 
-      const buildDtoResult: Result<ReadAutomationsRequestDto> =
+      const buildDtoResult: ReadAutomationsRequestDto =
         this.#buildRequestDto(req);
-
-      if (buildDtoResult.error)
-        return ReadAutomationsController.badRequest(res, buildDtoResult.error);
-      if (!buildDtoResult.value)
-        return ReadAutomationsController.badRequest(
-          res,
-          'Invalid request query paramerters'
-        );
 
       const authDto: ReadAutomationsAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
 
       const useCaseResult: ReadAutomationsResponseDto =
-        await this.#readAutomations.execute(buildDtoResult.value, authDto);
+        await this.#readAutomations.execute(buildDtoResult, authDto);
 
       if (useCaseResult.error) {
         return ReadAutomationsController.badRequest(res, useCaseResult.error);

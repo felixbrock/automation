@@ -107,13 +107,9 @@ export class UpdateAutomation
     updateDto.organizationId = organizationId;
 
     if (request.subscriptions && request.subscriptions.length)
-      updateDto.subscriptions = request.subscriptions.map((subscription) => {
-        const subscriptionResult = Subscription.create(subscription);
-        if (subscriptionResult.value) return subscriptionResult.value;
-        throw new Error(
-          `Creation of subscription ${subscription.selectorId} for automation ${request.id} failed`
-        );
-      });
+      updateDto.subscriptions = request.subscriptions.map((subscription) =>
+        Subscription.create(subscription)
+      );
 
     updateDto.modifiedOn = Date.now();
 

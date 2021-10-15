@@ -28,15 +28,13 @@ export default class DeleteSubscriptionsController extends BaseController {
     this.#getAccounts = getAccounts;
   }
 
-  #buildRequestDto = (
-    httpRequest: Request
-  ): Result<DeleteSubscriptionsRequestDto> => {
+  #buildRequestDto = (httpRequest: Request): DeleteSubscriptionsRequestDto => {
     const { selectorId } = httpRequest.query;
     if (typeof selectorId === 'string')
-      return Result.ok({
+      return {
         selectorId,
-      });
-    return Result.fail(
+      };
+    throw new Error(
       'request query parameter selectorId is supposed to be in string format'
     );
   };
@@ -70,26 +68,15 @@ export default class DeleteSubscriptionsController extends BaseController {
       if (!getUserAccountInfoResult.value)
         throw new Error('Authorization failed');
 
-      const buildDtoResult: Result<DeleteSubscriptionsRequestDto> =
+      const buildDtoResult: DeleteSubscriptionsRequestDto =
         this.#buildRequestDto(req);
-
-      if (buildDtoResult.error)
-        return DeleteSubscriptionsController.badRequest(
-          res,
-          buildDtoResult.error
-        );
-      if (!buildDtoResult.value)
-        return DeleteSubscriptionsController.badRequest(
-          res,
-          'Invalid request query paramerters'
-        );
 
       const authDto: DeleteSubscriptionsAuthDto = this.#buildAuthDto(
         getUserAccountInfoResult.value
       );
 
       const useCaseResult: DeleteSubscriptionsResponseDto =
-        await this.#deleteSubscriptions.execute(buildDtoResult.value, authDto);
+        await this.#deleteSubscriptions.execute(buildDtoResult, authDto);
 
       if (useCaseResult.error) {
         return DeleteSubscriptionsController.badRequest(
