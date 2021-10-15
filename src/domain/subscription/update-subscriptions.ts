@@ -43,7 +43,6 @@ export class UpdateSubscriptions
     this.#updateAutomation = updateAutomation;
   }
 
-  // TODO Potential fix? Automation is read twice. Once in update-subscription and once in update automation
   public async execute(
     request: UpdateSubscriptionsRequestDto,
     auth: UpdateSubscriptionsAuthDto

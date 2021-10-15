@@ -1,4 +1,3 @@
-// TODO Should those really be use cases?
 import Result from '../value-types/transient-types/result';
 import IUseCase from '../services/use-case';
 
@@ -43,8 +42,10 @@ export class GetSystem
     auth: GetSystemAuthDto
   ): Promise<GetSystemResponseDto> {
     try {
-      const getSystemResult: SystemDto =
-        await this.#getSystemRepository.getOne(request.id, auth.jwt);
+      const getSystemResult: SystemDto = await this.#getSystemRepository.getOne(
+        request.id,
+        auth.jwt
+      );
 
       if (!getSystemResult)
         throw new Error(`No system found for id ${request.id}`);

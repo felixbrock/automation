@@ -206,7 +206,6 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     }
   };
 
-  // TODO - Do not update the whole doc rather than only elements
   public updateOne = async (
     id: string,
     updateDto: AutomationUpdateDto
