@@ -26,7 +26,7 @@ export default class AccountApiRepositoryImpl implements IAccountApiRepository {
       const response = await axios.get(`${apiRoot}/accounts`, config);
       const jsonResponse = response.data;
       if (response.status === 200) return jsonResponse;
-      throw new Error(jsonResponse.response.data.message);
+      throw new Error(jsonResponse.message);
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);

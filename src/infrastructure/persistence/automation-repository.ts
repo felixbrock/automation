@@ -83,10 +83,10 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
   public findBy = async (
     automationQueryDto: AutomationQueryDto
   ): Promise<Automation[]> => {
-    if (!Object.keys(automationQueryDto).length) return this.all();
-
-    const client = createClient();
     try {
+      if (!Object.keys(automationQueryDto).length) return await this.all();
+
+      const client = createClient();
       const db = await connect(client);
       const result: FindCursor = await db
         .collection(collectionName)
@@ -298,8 +298,8 @@ export default class AutomationRepositoryImpl implements IAutomationRepository {
     automationId: string,
     selectorId: string
   ): Promise<string> => {
-      const client = createClient();
-      try {
+    const client = createClient();
+    try {
       const db = await connect(client);
       const result: Document | UpdateResult = await db
         .collection(collectionName)

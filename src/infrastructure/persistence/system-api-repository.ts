@@ -12,10 +12,7 @@ export default class GetSystemRepositoryImpl implements IGetSystemRepository {
 
   #port = '3002';
 
-  public getOne = async (
-    systemId: string,
-    jwt: string
-  ): Promise<SystemDto> => {
+  public getOne = async (systemId: string, jwt: string): Promise<SystemDto> => {
     try {
       const apiRoot = await getRoot(this.#serviceName, this.#port, this.#path);
 
@@ -26,7 +23,7 @@ export default class GetSystemRepositoryImpl implements IGetSystemRepository {
       const response = await axios.get(`${apiRoot}/system/${systemId}`, config);
       const jsonResponse = response.data;
       if (response.status === 200) return jsonResponse;
-      throw new Error(jsonResponse.response.data.message);
+      throw new Error(jsonResponse.message);
     } catch (error: unknown) {
       if (typeof error === 'string') return Promise.reject(error);
       if (error instanceof Error) return Promise.reject(error.message);
