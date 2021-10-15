@@ -75,7 +75,7 @@ export default class CreateSubscriptionController extends BaseController {
       const useCaseResult: CreateSubscriptionResponseDto =
         await this.#createSubscription.execute(requestDto, authDto);
 
-      if (useCaseResult.error) {
+      if (!useCaseResult.success) {
         return CreateSubscriptionController.badRequest(
           res,
           useCaseResult.error

@@ -66,7 +66,7 @@ export default class ReadAutomationController extends BaseController {
       const useCaseResult: ReadAutomationResponseDto =
         await this.#readAutomation.execute(requestDto, authDto);
 
-      if (useCaseResult.error) {
+      if (!useCaseResult.success) {
         return ReadAutomationController.badRequest(res, useCaseResult.error);
       }
 

@@ -70,7 +70,7 @@ export default class CreateAutomationController extends BaseController {
       const useCaseResult: CreateAutomationResponseDto =
         await this.#createAutomation.execute(requestDto, authDto);
 
-      if (useCaseResult.error) {
+      if (!useCaseResult.success) {
         return CreateAutomationController.badRequest(res, useCaseResult.error);
       }
 

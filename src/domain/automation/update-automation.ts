@@ -129,7 +129,7 @@ export class UpdateAutomation
               { jwt }
             );
 
-          if (getSelectorResponse.error) return false;
+          if (!getSelectorResponse.success) return false;
           if (!getSelectorResponse.value) return false;
           if (subscription.systemId !== getSelectorResponse.value.systemId)
             return false;

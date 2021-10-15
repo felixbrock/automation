@@ -89,7 +89,7 @@ export default class UpdateSubscriptionsController extends BaseController {
       const useCaseResult: UpdateSubscriptionsResponseDto =
         await this.#updateSubscriptions.execute(requestDto, authDto);
 
-      if (useCaseResult.error) {
+      if (!useCaseResult.success) {
         return UpdateSubscriptionsController.badRequest(
           res,
           useCaseResult.error

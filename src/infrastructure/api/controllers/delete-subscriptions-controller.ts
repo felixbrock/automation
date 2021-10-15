@@ -78,7 +78,7 @@ export default class DeleteSubscriptionsController extends BaseController {
       const useCaseResult: DeleteSubscriptionsResponseDto =
         await this.#deleteSubscriptions.execute(buildDtoResult, authDto);
 
-      if (useCaseResult.error) {
+      if (!useCaseResult.success) {
         return DeleteSubscriptionsController.badRequest(
           res,
           useCaseResult.error

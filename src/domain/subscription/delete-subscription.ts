@@ -46,7 +46,7 @@ export class DeleteSubscription
           { organizationId: auth.organizationId }
         );
 
-      if (readAutomationResult.error)
+      if (!readAutomationResult.success)
         throw new Error(readAutomationResult.error);
       if (!readAutomationResult.value)
         throw new Error(`Couldn't read automation ${request.automationId}`);

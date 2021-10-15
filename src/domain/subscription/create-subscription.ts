@@ -92,7 +92,7 @@ export class CreateSubscription
           { jwt: auth.jwt, organizationId: auth.organizationId }
         );
 
-      if (updateAutomationResult.error)
+      if (!updateAutomationResult.success)
         throw new Error(updateAutomationResult.error);
       if (!updateAutomationResult.value)
         throw new Error(`Couldn't update automation ${request.automationId}`);
@@ -117,7 +117,7 @@ export class CreateSubscription
         { jwt }
       );
 
-    if (getSelectorResponse.error)
+    if (!getSelectorResponse.success)
       return Promise.reject(getSelectorResponse.error);
     if (!getSelectorResponse.value)
       return Promise.reject(

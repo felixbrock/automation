@@ -69,7 +69,7 @@ export default class DeleteAutomationController extends BaseController {
       const useCaseResult: DeleteAutomationResponseDto =
         await this.#deleteAutomation.execute(requestDto, authDto);
 
-      if (useCaseResult.error) {
+      if (!useCaseResult.success) {
         return DeleteAutomationController.badRequest(res, useCaseResult.error);
       }
 
